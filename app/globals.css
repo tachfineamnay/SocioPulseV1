@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   LES EXTRAS - Design System 2026
+   Premium B2B Aesthetic
+   ======================================== */
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-800;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-coral-100 text-coral-900;
+  }
+
+  /* Focus visible */
+  :focus-visible {
+    @apply outline-none ring-2 ring-coral-400 ring-offset-2;
+  }
+}
+
+@layer components {
+
+  /* Premium Input Style */
+  .input-premium {
+    @apply w-full h-12 px-4 bg-slate-50/80 border border-slate-100 rounded-xl text-slate-900 text-sm transition-all duration-200 focus:outline-none focus:bg-white focus:border-coral-300 focus:ring-4 focus:ring-coral-100;
+  }
+
+  /* Pill Button */
+  .pill-btn {
+    @apply px-4 py-2 rounded-full text-xs font-medium cursor-pointer border transition-all duration-200;
+  }
+
+  .pill-btn-active {
+    @apply border-coral-500 bg-coral-500 text-white;
+  }
+
+  .pill-btn-inactive {
+    @apply border-slate-200 text-slate-600 hover:border-slate-300;
+  }
+}
+
+@layer utilities {
+
+  /* Glass Effect */
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl;
+  }
+
+  /* Gradient Text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-coral-500 to-coral-600;
+  }
+
+  /* Label Style */
+  .label-sm {
+    @apply text-[11px] font-semibold tracking-[0.15em] uppercase text-slate-400;
+  }
+
+  /* Modal Animation */
+  .animate-modal-in {
+    animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes modalIn {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+/* ========================================
+   Scrollbar - Minimal
+   ======================================== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-300;
+}
+
+/* ========================================
+   Form Elements - Custom
+   ======================================== */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  @apply opacity-50 cursor-pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  @apply opacity-100;
+}
+
+/* Number input spin buttons hidden */
+input[type="number"] {
+  -moz-appearance: textfield;
+}

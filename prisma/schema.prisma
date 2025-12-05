@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// SERVICE MODEL
+// =============================================================================
+model Service {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  slug        String   @unique
+  category    String?
+  
+  // Formules de tarification (ex: "Demi-journée", "Journée complète", "Cycle 5 séances")
+  // Structure JSON: [{ "name": "Demi-journée", "price": 150, "duration": "4h" }, ...]
+  pricingOptions Json?
+  
+  // Prix de base (optionnel si pricingOptions est utilisé)
+  basePrice   Float?
+  
+  // Média et contenu
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  
+  // Relations
+  bookings    Booking[]
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([category])
+}
+
+// =============================================================================
+// BOOKING MODEL - Widget de réservation détaillé
+// =============================================================================
+model Booking {
+  id              String   @id @default(cuid())
+  
+  // Relation avec le service
+  serviceId       String
+  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  // ===== Champs du formulaire de réservation =====
+  
+  // Formule choisie (ex: "Demi-journée", "Journée complète", "Cycle 5 séances")
+  selectedOption  String
+  
+  // Tranche d'âge (ex: "6-12 ans", "Adultes", "Séniors")
+  ageGroup        String
+  
+  // Objectifs et descriptif (textarea)
+  objectives      String   @db.Text
+  
+  // Nombre de participants
+  participantCount Int
+  
+  // Date de la séance
+  sessionDate     DateTime
+  
+  // Heure de la séance (format: "09:00", "14:30", etc.)
+  sessionTime     String
+  
+  // ===== Informations client =====
+  clientName      String
+  clientEmail     String
+  clientPhone     String?
+  
+  // ===== Statut et paiement =====
+  status          BookingStatus @default(PENDING)
+  totalPrice      Float?
+  notes           String?       @db.Text
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([serviceId])
+  @@index([status])
+  @@index([sessionDate])
+  @@index([clientEmail])
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+enum BookingStatus {
+  PENDING     // En attente de confirmation
+  CONFIRMED   // Confirmée
+  CANCELLED   // Annulée
+  COMPLETED   // Terminée
+}
