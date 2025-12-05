@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 
 // Core
 import { PrismaModule } from './common/prisma/prisma.module';
+import { GeocodingModule } from './common/services/geocoding.module';
 
 // Feature Modules
 import { AuthModule } from './auth/auth.module';
@@ -40,6 +41,7 @@ import { WallFeedModule } from './wall-feed/wall-feed.module';
 
         // Core
         PrismaModule,
+        GeocodingModule,
 
         // Features
         AuthModule,
