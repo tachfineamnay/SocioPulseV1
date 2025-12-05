@@ -1,11 +1,9 @@
 import { IsEmail, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { UserRole } from '@lesextras/types';
 
-export enum UserRole {
-    CLIENT = 'CLIENT',
-    EXTRA = 'EXTRA',
-    ADMIN = 'ADMIN',
-}
+// Re-export UserRole for backward compatibility
+export { UserRole } from '@lesextras/types';
 
 export class RegisterDto {
     @ApiProperty({ example: 'john.doe@example.com' })
@@ -48,7 +46,7 @@ export class AuthResponseDto {
     user: {
         id: string;
         email: string;
-        role: string;
+        role: UserRole;
         status: string;
     };
 }

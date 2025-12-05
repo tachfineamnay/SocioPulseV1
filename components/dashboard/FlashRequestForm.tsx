@@ -12,7 +12,7 @@ import {
     CheckCircle2,
     Users
 } from 'lucide-react';
-import { createReliefMission, CreateMissionInput } from '../actions';
+import { createReliefMission, CreateMissionInput } from '@/app/dashboard/relief/actions';
 
 const JOB_TITLES = [
     'Aide-soignant(e)',
