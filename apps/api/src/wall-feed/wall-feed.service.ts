@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { GetFeedDto, FeedItemType, CreatePostDto } from './dto';
+import { Prisma, Post, ReliefMission, User, Profile, Establishment } from '@prisma/client';
 
 interface FeedItem {
     id: string;
@@ -232,8 +233,8 @@ export class WallFeedService {
 
     // ==================== Private Helper Methods ====================
 
-    private buildLocationFilter(city?: string, postalCode?: string) {
-        const filter: any = {};
+    private buildLocationFilter(city?: string, postalCode?: string): Prisma.PostWhereInput | undefined {
+        const filter: Prisma.PostWhereInput = {};
 
         if (city) {
             filter.city = { contains: city, mode: 'insensitive' };
@@ -247,7 +248,7 @@ export class WallFeedService {
     }
 
     private async fetchPosts(options: {
-        locationFilter?: any;
+        locationFilter?: Prisma.PostWhereInput;
         tags?: string[];
         category?: string;
         skip: number;
@@ -255,7 +256,7 @@ export class WallFeedService {
     }) {
         const { locationFilter, tags, category, skip, take } = options;
 
-        const where: any = {
+        const where: Prisma.PostWhereInput = {
             isActive: true,
             OR: [
                 { validUntil: null },
@@ -298,14 +299,14 @@ export class WallFeedService {
     }
 
     private async fetchMissions(options: {
-        locationFilter?: any;
+        locationFilter?: Prisma.ReliefMissionWhereInput;
         tags?: string[];
         skip: number;
         take: number;
     }) {
         const { locationFilter, tags, skip, take } = options;
 
-        const where: any = {
+        const where: Prisma.ReliefMissionWhereInput = {
             status: 'OPEN',
             startDate: { gte: new Date() },
         };
@@ -341,7 +342,7 @@ export class WallFeedService {
         };
     }
 
-    private mapPostToFeedItem(post: any): FeedItem {
+    private mapPostToFeedItem(post: Post & { author: User & { profile: Profile | null } }): FeedItem {
         const profile = post.author?.profile;
 
         return {
@@ -366,7 +367,14 @@ export class WallFeedService {
         };
     }
 
-    private mapMissionToFeedItem(mission: any): FeedItem {
+    private mapMissionToFeedItem(
+        mission: ReliefMission & {
+            client: User & {
+                profile: Profile | null;
+                establishment: Establishment | null
+            }
+        }
+    ): FeedItem {
         const establishment = mission.client?.establishment;
         const profile = mission.client?.profile;
 

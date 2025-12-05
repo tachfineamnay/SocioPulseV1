@@ -13,6 +13,7 @@ import {
     ApiResponse,
     ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, RefreshTokenDto, AuthResponseDto } from './dto';
 import { JwtAuthGuard } from '../common/guards';
@@ -24,6 +25,7 @@ export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
     @Post('register')
+    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 registrations per minute
     @ApiOperation({ summary: 'Créer un nouveau compte' })
     @ApiResponse({ status: 201, description: 'Compte créé', type: AuthResponseDto })
     @ApiResponse({ status: 409, description: 'Email déjà utilisé' })
@@ -32,10 +34,12 @@ export class AuthController {
     }
 
     @Post('login')
+    @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 attempts per minute (brute force protection)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Se connecter' })
     @ApiResponse({ status: 200, description: 'Connexion réussie', type: AuthResponseDto })
     @ApiResponse({ status: 401, description: 'Identifiants invalides' })
+    @ApiResponse({ status: 429, description: 'Trop de tentatives - réessayez plus tard' })
     async login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
         return this.authService.login(dto);
     }
