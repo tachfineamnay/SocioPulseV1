@@ -1,0 +1,51 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+
+// Core
+import { PrismaModule } from './common/prisma/prisma.module';
+
+// Feature Modules
+import { AuthModule } from './auth/auth.module';
+import { MatchingEngineModule } from './matching-engine/matching-engine.module';
+import { VideoBookingModule } from './video-booking/video-booking.module';
+import { WallFeedModule } from './wall-feed/wall-feed.module';
+
+@Module({
+    imports: [
+        // Configuration
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: ['.env.local', '.env'],
+        }),
+
+        // Rate Limiting
+        ThrottlerModule.forRoot([
+            {
+                name: 'short',
+                ttl: 1000,
+                limit: 3,
+            },
+            {
+                name: 'medium',
+                ttl: 10000,
+                limit: 20,
+            },
+            {
+                name: 'long',
+                ttl: 60000,
+                limit: 100,
+            },
+        ]),
+
+        // Core
+        PrismaModule,
+
+        // Features
+        AuthModule,
+        MatchingEngineModule,
+        VideoBookingModule,
+        WallFeedModule,
+    ],
+})
+export class AppModule { }

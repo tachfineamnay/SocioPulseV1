@@ -1,5 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// =============================================================================
+// LES EXTRAS V2 - COMPLETE PRISMA SCHEMA
+// Modules: Marketplace, Wall, SOS Renfort, Educat'heure
+// =============================================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -11,93 +13,737 @@ datasource db {
 }
 
 // =============================================================================
-// SERVICE MODEL
+// ENUMS
 // =============================================================================
-model Service {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  slug        String   @unique
-  category    String?
+
+enum UserRole {
+  CLIENT       // Établissement (B2B)
+  EXTRA        // Freelance professionnel
+  ADMIN        // Administrateur plateforme
+}
+
+enum UserStatus {
+  PENDING      // En attente de vérification
+  VERIFIED     // Vérifié et actif
+  SUSPENDED    // Suspendu temporairement
+  BANNED       // Banni définitivement
+}
+
+enum ServiceType {
+  WORKSHOP       // Atelier présentiel (Educat'heure)
+  COACHING_VIDEO // Coaching vidéo en ligne
+}
+
+enum MissionStatus {
+  OPEN         // Mission ouverte aux candidatures
+  ASSIGNED     // Mission attribuée à un Extra
+  IN_PROGRESS  // Mission en cours
+  COMPLETED    // Mission terminée
+  CANCELLED    // Mission annulée
+}
+
+enum MissionUrgency {
+  LOW          // Sous 1 semaine
+  MEDIUM       // Sous 48h
+  HIGH         // Sous 24h
+  CRITICAL     // Immédiat
+}
+
+enum BookingStatus {
+  PENDING      // En attente de confirmation
+  CONFIRMED    // Confirmée par l'Extra
+  PAID         // Payée via Stripe
+  IN_PROGRESS  // En cours (session vidéo active)
+  COMPLETED    // Terminée
+  CANCELLED    // Annulée
+  REFUNDED     // Remboursée
+}
+
+enum PostType {
+  OFFER        // Offre de service (Extra → Établissement)
+  NEED         // Besoin exprimé (Établissement → Extras)
+}
+
+enum TransactionType {
+  BOOKING_PAYMENT   // Paiement d'une réservation
+  MISSION_PAYMENT   // Paiement d'une mission SOS
+  WITHDRAWAL        // Retrait vers compte bancaire
+  REFUND            // Remboursement
+  PLATFORM_FEE      // Commission plateforme
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// =============================================================================
+// USER & AUTHENTICATION
+// =============================================================================
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  passwordHash  String?
+  phone         String?    @unique
   
-  // Formules de tarification (ex: "Demi-journée", "Journée complète", "Cycle 5 séances")
-  // Structure JSON: [{ "name": "Demi-journée", "price": 150, "duration": "4h" }, ...]
-  pricingOptions Json?
+  // Rôle et statut
+  role          UserRole   @default(CLIENT)
+  status        UserStatus @default(PENDING)
   
-  // Prix de base (optionnel si pricingOptions est utilisé)
-  basePrice   Float?
+  // Wallet (solde disponible en centimes pour éviter les erreurs de float)
+  walletBalance Int        @default(0)
   
-  // Média et contenu
-  imageUrl    String?
-  isActive    Boolean  @default(true)
+  // Stripe Connect (pour les Extras)
+  stripeCustomerId  String?   @unique
+  stripeAccountId   String?   @unique  // Stripe Connect Account
+  stripeOnboarded   Boolean   @default(false)
+  
+  // Métadonnées
+  emailVerified DateTime?
+  lastLoginAt   DateTime?
   
   // Relations
-  bookings    Booking[]
+  profile       Profile?
+  establishment Establishment?
+  bookingsAsClient    Booking[]         @relation("ClientBookings")
+  bookingsAsProvider  Booking[]         @relation("ProviderBookings")
+  missionsAsClient    ReliefMission[]   @relation("ClientMissions")
+  missionsAsExtra     ReliefMission[]   @relation("ExtraMissions")
+  applications        MissionApplication[]
+  posts               Post[]
+  transactions        Transaction[]
+  notifications       Notification[]
+  sentMessages        Message[]         @relation("SentMessages")
+  receivedMessages    Message[]         @relation("ReceivedMessages")
+  
+  // Timestamps
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([stripeAccountId])
+}
+
+// =============================================================================
+// PROFILE (EXTRA) - Profil professionnel du freelance
+// =============================================================================
+
+model Profile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Informations personnelles
+  firstName     String
+  lastName      String
+  avatarUrl     String?
+  bio           String?  @db.Text
+  headline      String?  // Ex: "Éducateur spécialisé - 10 ans d'expérience"
+  
+  // Spécialités et compétences (JSON array de tags)
+  // Ex: ["autisme", "petite enfance", "art-thérapie", "EHPAD"]
+  specialties   Json     @default("[]")
+  
+  // Diplômes et certifications (JSON array d'objets)
+  // Ex: [{ "name": "DEES", "url": "https://...", "year": 2015 }]
+  diplomas      Json     @default("[]")
+  
+  // Tarification
+  hourlyRate    Float?   // Taux horaire par défaut
+  
+  // Localisation
+  address       String?
+  city          String?
+  postalCode    String?
+  latitude      Float?
+  longitude     Float?
+  radiusKm      Int      @default(30)  // Rayon d'intervention
+  
+  // Coaching vidéo
+  isVideoEnabled Boolean @default(false)
+  videoIntroUrl  String? // Vidéo de présentation
+  
+  // Statistiques
+  totalMissions   Int    @default(0)
+  totalBookings   Int    @default(0)
+  averageRating   Float  @default(0)
+  totalReviews    Int    @default(0)
+  
+  // Relations
+  availabilitySlots AvailabilitySlot[]
+  services          Service[]
+  talentPoolMembers TalentPoolMember[]
+  reviews           Review[]
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([city])
+  @@index([postalCode])
+  @@index([latitude, longitude])
+  @@index([averageRating])
+  @@index([isVideoEnabled])
+}
+
+// =============================================================================
+// ESTABLISHMENT - Profil de l'établissement (CLIENT)
+// =============================================================================
+
+model Establishment {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Informations établissement
+  name          String
+  type          String?  // Ex: "EHPAD", "IME", "Crèche", "Hôpital"
+  siret         String?  @unique
+  logoUrl       String?
+  description   String?  @db.Text
+  website       String?
+  
+  // Contact principal
+  contactName   String?
+  contactRole   String?
+  
+  // Localisation
+  address       String
+  city          String
+  postalCode    String
+  latitude      Float?
+  longitude     Float?
+  
+  // Relations
+  talentPools   TalentPool[]
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@index([city])
+  @@index([postalCode])
+  @@index([siret])
+  @@index([latitude, longitude])
+}
+
+// =============================================================================
+// TALENT POOL - Favoris Établissement ↔ Extras (Many-to-Many)
+// =============================================================================
+
+model TalentPool {
+  id              String   @id @default(cuid())
+  name            String   // Ex: "Mes éducateurs préférés", "Équipe weekend"
+  
+  establishmentId String
+  establishment   Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  
+  members         TalentPoolMember[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([establishmentId])
+}
+
+model TalentPoolMember {
+  id           String     @id @default(cuid())
+  
+  talentPoolId String
+  talentPool   TalentPool @relation(fields: [talentPoolId], references: [id], onDelete: Cascade)
+  
+  profileId    String
+  profile      Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  note         String?    // Note privée de l'établissement
+  addedAt      DateTime   @default(now())
+  
+  @@unique([talentPoolId, profileId])
+  @@index([talentPoolId])
+  @@index([profileId])
+}
+
+// =============================================================================
+// AVAILABILITY SLOTS - Créneaux pour coaching vidéo
+// =============================================================================
+
+model AvailabilitySlot {
+  id          String   @id @default(cuid())
+  
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  // Jour de la semaine (0 = Dimanche, 1 = Lundi, ..., 6 = Samedi)
+  dayOfWeek   Int
+  
+  // Heures (format 24h, ex: "09:00", "14:30")
+  startTime   String
+  endTime     String
+  
+  // Durée du créneau en minutes
+  duration    Int      @default(60)
+  
+  // Actif ou non
+  isActive    Boolean  @default(true)
+  
+  // Récurrence ou date spécifique
+  isRecurring Boolean  @default(true)
+  specificDate DateTime? // Si non récurrent
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([profileId])
+  @@index([dayOfWeek])
+  @@index([isActive])
+}
+
+// =============================================================================
+// SERVICE (CATALOGUE) - Marketplace Educat'heure
+// =============================================================================
+
+model Service {
+  id            String      @id @default(cuid())
+  
+  // Propriétaire du service (Extra)
+  profileId     String
+  profile       Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  // Informations service
+  name          String
+  slug          String      @unique
+  description   String?     @db.Text
+  shortDescription String?  // Pour les cartes
+  
+  // Type de service
+  type          ServiceType @default(WORKSHOP)
+  category      String?     // Ex: "Bien-être", "Art-thérapie", "Sport adapté"
+  
+  // Formules de tarification (JSON array)
+  // Ex: [{ "id": "half", "name": "Demi-journée", "price": 150, "duration": "4h", "description": "..." }]
+  pricingOptions Json       @default("[]")
+  
+  // Prix de base (si pas de formules)
+  basePrice     Float?
+  
+  // Options du service
+  minParticipants Int       @default(1)
+  maxParticipants Int       @default(20)
+  
+  // Tranches d'âge acceptées (JSON array)
+  // Ex: ["0-3 ans", "3-6 ans", "6-12 ans", "Adultes", "Séniors"]
+  ageGroups     Json        @default("[]")
+  
+  // Média
+  imageUrl      String?
+  galleryUrls   Json        @default("[]")  // Array d'URLs
+  videoUrl      String?     // Vidéo de présentation
+  
+  // SEO & Recherche
+  tags          Json        @default("[]")
+  
+  // Statut
+  isActive      Boolean     @default(true)
+  isFeatured    Boolean     @default(false)
+  
+  // Statistiques
+  totalBookings Int         @default(0)
+  averageRating Float       @default(0)
+  
+  // Relations
+  bookings      Booking[]
+  reviews       Review[]
+  
+  // Timestamps
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@index([slug])
+  @@index([profileId])
+  @@index([type])
+  @@index([category])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([averageRating])
+}
+
+// =============================================================================
+// RELIEF MISSION (SOS RENFORT) - Missions urgentes
+// =============================================================================
+
+model ReliefMission {
+  id              String        @id @default(cuid())
+  
+  // Client qui poste la mission
+  clientId        String
+  client          User          @relation("ClientMissions", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  // Extra assigné (null si pas encore assigné)
+  assignedExtraId String?
+  assignedExtra   User?         @relation("ExtraMissions", fields: [assignedExtraId], references: [id])
+  
+  // Informations mission
+  title           String
+  description     String        @db.Text
+  jobTitle        String        // Ex: "Aide-soignant(e)", "Éducateur spécialisé"
+  
+  // Urgence et timing
+  urgencyLevel    MissionUrgency @default(MEDIUM)
+  startDate       DateTime
+  endDate         DateTime
+  isNightShift    Boolean       @default(false)
+  
+  // Tarification
+  hourlyRate      Float
+  estimatedHours  Float?
+  totalBudget     Float?
+  
+  // Localisation
+  address         String
+  city            String
+  postalCode      String
+  latitude        Float?
+  longitude       Float?
+  radiusKm        Int           @default(20)  // Rayon de recherche
+  
+  // Exigences
+  requiredSkills  Json          @default("[]")  // Array de compétences requises
+  requiredDiplomas Json         @default("[]")  // Array de diplômes requis
+  
+  // Statut
+  status          MissionStatus @default(OPEN)
+  
+  // Relations
+  applications    MissionApplication[]
+  bookings        Booking[]
+  
+  // Timestamps
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  assignedAt      DateTime?
+  completedAt     DateTime?
+  
+  @@index([clientId])
+  @@index([assignedExtraId])
+  @@index([status])
+  @@index([urgencyLevel])
+  @@index([startDate])
+  @@index([city])
+  @@index([postalCode])
+  @@index([latitude, longitude])
+  @@index([jobTitle])
+}
+
+// =============================================================================
+// MISSION APPLICATION - Candidatures aux missions SOS
+// =============================================================================
+
+model MissionApplication {
+  id            String        @id @default(cuid())
+  
+  missionId     String
+  mission       ReliefMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  extraId       String
+  extra         User          @relation(fields: [extraId], references: [id], onDelete: Cascade)
+  
+  // Candidature
+  coverLetter   String?       @db.Text
+  proposedRate  Float?        // Taux horaire proposé (peut différer)
+  
+  // Statut
+  status        String        @default("PENDING")  // PENDING, ACCEPTED, REJECTED
+  
+  // Timestamps
+  createdAt     DateTime      @default(now())
+  respondedAt   DateTime?
+  
+  @@unique([missionId, extraId])
+  @@index([missionId])
+  @@index([extraId])
+  @@index([status])
+}
+
+// =============================================================================
+// BOOKING - Réservations (Services + Missions)
+// =============================================================================
+
+model Booking {
+  id                String        @id @default(cuid())
+  
+  // Client qui réserve
+  clientId          String
+  client            User          @relation("ClientBookings", fields: [clientId], references: [id], onDelete: Cascade)
+  
+  // Prestataire (Extra)
+  providerId        String
+  provider          User          @relation("ProviderBookings", fields: [providerId], references: [id], onDelete: Cascade)
+  
+  // Relation polymorphique : Service OU ReliefMission
+  serviceId         String?
+  service           Service?      @relation(fields: [serviceId], references: [id])
+  
+  reliefMissionId   String?
+  reliefMission     ReliefMission? @relation(fields: [reliefMissionId], references: [id])
+  
+  // ===== Informations Atelier/Coaching =====
+  selectedOption    String?       // Formule choisie
+  ageGroup          String?       // Tranche d'âge
+  objectives        String?       @db.Text  // Objectifs et descriptif
+  participantCount  Int?
+  
+  // Date et heure de la session
+  sessionDate       DateTime?
+  sessionTime       String?       // Format "HH:MM"
+  
+  // ===== Informations Coaching Vidéo =====
+  isVideoSession    Boolean       @default(false)
+  videoRoomId       String?       @unique  // ID LiveKit
+  videoRoomToken    String?       // Token d'accès
+  meetingUrl        String?       // URL de la visio
+  recordingUrl      String?       // URL de l'enregistrement
+  
+  // ===== Paiement =====
+  totalPrice        Float
+  platformFee       Float?        // Commission plateforme
+  providerPayout    Float?        // Montant reversé au prestataire
+  
+  stripePaymentIntentId String?   @unique
+  stripeTransferId  String?       // Transfer ID vers le compte Connect
+  paidAt            DateTime?
+  
+  // ===== Statut =====
+  status            BookingStatus @default(PENDING)
+  
+  // Notes et commentaires
+  clientNotes       String?       @db.Text
+  providerNotes     String?       @db.Text
+  cancellationReason String?      @db.Text
+  
+  // Relations
+  review            Review?
+  transaction       Transaction?
+  
+  // Timestamps
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  confirmedAt       DateTime?
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  
+  @@index([clientId])
+  @@index([providerId])
+  @@index([serviceId])
+  @@index([reliefMissionId])
+  @@index([status])
+  @@index([sessionDate])
+  @@index([isVideoSession])
+  @@index([stripePaymentIntentId])
+}
+
+// =============================================================================
+// POST (LE WALL) - Annonces Offres/Besoins
+// =============================================================================
+
+model Post {
+  id            String    @id @default(cuid())
+  
+  authorId      String
+  author        User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // Type et contenu
+  type          PostType
+  title         String
+  content       String    @db.Text
+  
+  // Localisation
+  city          String?
+  postalCode    String?
+  latitude      Float?
+  longitude     Float?
+  radiusKm      Int?
+  
+  // Catégorisation
+  tags          Json      @default("[]")  // Array de tags
+  category      String?
+  
+  // Média
+  imageUrls     Json      @default("[]")  // Array d'URLs
+  
+  // Date de validité (pour les besoins urgents)
+  validUntil    DateTime?
+  
+  // Statut
+  isActive      Boolean   @default(true)
+  isPinned      Boolean   @default(false)
+  viewCount     Int       @default(0)
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([authorId])
+  @@index([type])
+  @@index([city])
+  @@index([postalCode])
+  @@index([latitude, longitude])
+  @@index([isActive])
+  @@index([createdAt])
+  @@index([validUntil])
+}
+
+// =============================================================================
+// REVIEW - Avis et notations
+// =============================================================================
+
+model Review {
+  id          String   @id @default(cuid())
+  
+  // Booking associé
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  // Profil noté
+  profileId   String
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  
+  // Service noté (optionnel)
+  serviceId   String?
+  service     Service? @relation(fields: [serviceId], references: [id])
+  
+  // Notation
+  rating      Int      // 1-5
+  title       String?
+  comment     String?  @db.Text
+  
+  // Réponse du prestataire
+  response    String?  @db.Text
+  respondedAt DateTime?
+  
+  // Modération
+  isVisible   Boolean  @default(true)
+  isVerified  Boolean  @default(true)  // Vérifié = booking réel
   
   // Timestamps
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@index([slug])
-  @@index([category])
+  @@index([profileId])
+  @@index([serviceId])
+  @@index([rating])
+  @@index([isVisible])
 }
 
 // =============================================================================
-// BOOKING MODEL - Widget de réservation détaillé
+// TRANSACTION - Historique financier
 // =============================================================================
-model Booking {
-  id              String   @id @default(cuid())
+
+model Transaction {
+  id              String            @id @default(cuid())
   
-  // Relation avec le service
-  serviceId       String
-  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  // ===== Champs du formulaire de réservation =====
+  // Booking associé (optionnel)
+  bookingId       String?           @unique
+  booking         Booking?          @relation(fields: [bookingId], references: [id])
   
-  // Formule choisie (ex: "Demi-journée", "Journée complète", "Cycle 5 séances")
-  selectedOption  String
+  // Type et montant (en centimes)
+  type            TransactionType
+  amount          Int               // En centimes
+  currency        String            @default("EUR")
   
-  // Tranche d'âge (ex: "6-12 ans", "Adultes", "Séniors")
-  ageGroup        String
+  // Stripe
+  stripePaymentId String?
+  stripeTransferId String?
+  stripePayoutId  String?
   
-  // Objectifs et descriptif (textarea)
-  objectives      String   @db.Text
+  // Statut
+  status          TransactionStatus @default(PENDING)
   
-  // Nombre de participants
-  participantCount Int
-  
-  // Date de la séance
-  sessionDate     DateTime
-  
-  // Heure de la séance (format: "09:00", "14:30", etc.)
-  sessionTime     String
-  
-  // ===== Informations client =====
-  clientName      String
-  clientEmail     String
-  clientPhone     String?
-  
-  // ===== Statut et paiement =====
-  status          BookingStatus @default(PENDING)
-  totalPrice      Float?
-  notes           String?       @db.Text
+  // Description
+  description     String?
+  metadata        Json?
   
   // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime          @default(now())
+  completedAt     DateTime?
   
-  @@index([serviceId])
+  @@index([userId])
+  @@index([type])
   @@index([status])
-  @@index([sessionDate])
-  @@index([clientEmail])
+  @@index([createdAt])
 }
 
 // =============================================================================
-// ENUMS
+// NOTIFICATION
 // =============================================================================
-enum BookingStatus {
-  PENDING     // En attente de confirmation
-  CONFIRMED   // Confirmée
-  CANCELLED   // Annulée
-  COMPLETED   // Terminée
+
+model Notification {
+  id          String   @id @default(cuid())
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Contenu
+  type        String   // Ex: "BOOKING_CONFIRMED", "MISSION_ASSIGNED", "NEW_MESSAGE"
+  title       String
+  message     String
+  link        String?  // URL de redirection
+  
+  // Statut
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  
+  // Métadonnées
+  metadata    Json?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// =============================================================================
+// MESSAGE - Messagerie interne
+// =============================================================================
+
+model Message {
+  id          String   @id @default(cuid())
+  
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  receiverId  String
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  // Contenu
+  content     String   @db.Text
+  
+  // Fichiers attachés
+  attachments Json     @default("[]")  // Array d'URLs
+  
+  // Statut
+  isRead      Boolean  @default(false)
+  readAt      DateTime?
+  
+  // Référence (optionnel)
+  referenceType String?  // "BOOKING", "MISSION", "SERVICE"
+  referenceId   String?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([referenceType, referenceId])
 }

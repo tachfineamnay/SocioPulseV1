@@ -71,6 +71,16 @@
     @apply text-[11px] font-semibold tracking-[0.15em] uppercase text-slate-400;
   }
 
+  /* Hide Scrollbar */
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Modal Animation */
   .animate-modal-in {
     animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -123,4 +133,113 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 /* Number input spin buttons hidden */
 input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ========================================
+   Mobile Responsiveness - iPhone Optimized
+   ======================================== */
+
+/* Safe Area for iPhone notch and home indicator */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* Touch targets - minimum 44px for accessibility */
+@media (max-width: 768px) {
+
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+  }
+
+  /* Larger tap targets for cards on mobile */
+  .touch-card {
+    @apply active:scale-[0.98] transition-transform;
+  }
+
+  /* Prevent text selection on interactive elements */
+  .touch-none {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
+
+/* Bottom navigation safe spacing */
+.has-bottom-nav {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0));
+}
+
+/* Mobile-first masonry grid fix */
+@media (max-width: 768px) {
+  .columns-1 {
+    columns: 1 !important;
+  }
+
+  /* Full width cards on mobile */
+  .break-inside-avoid {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Floating SOS button on mobile */
+.sos-float {
+  position: fixed;
+  bottom: calc(5rem + env(safe-area-inset-bottom, 0));
+  right: 1rem;
+  z-index: 40;
+}
+
+/* Hide on desktop, show on mobile */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mobile-only {
+    display: block;
+  }
+}
+
+/* Hide on mobile, show on desktop */
+.desktop-only {
+  display: block;
+}
+
+@media (max-width: 1023px) {
+  .desktop-only {
+    display: none;
+  }
+}
+
+/* Smooth iOS scroll */
+.smooth-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Prevent pull-to-refresh on iOS */
+.no-overscroll {
+  overscroll-behavior: none;
+}
+
+/* iOS input zoom prevention */
+@media screen and (max-width: 768px) {
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }

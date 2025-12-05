@@ -1,13 +1,22 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { MobileBottomNav } from "@/components/layout";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Les Extras | Réservez votre expérience",
-    description:
-        "Activités team-building, animations et ateliers créatifs pour tous les âges.",
+    title: "Les Extras | Plateforme Médico-Sociale",
+    description: "La plateforme B2B2C pour le secteur médico-social. Trouvez des renforts, réservez des ateliers, connectez-vous avec des professionnels qualifiés.",
+    keywords: ["médico-social", "EHPAD", "renforts", "ateliers", "professionnels de santé"],
+};
+
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -16,8 +25,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="fr">
-            <body className={inter.className}>{children}</body>
+        <html lang="fr" className="smooth-scroll">
+            <body className={`${inter.className} has-bottom-nav lg:pb-0`}>
+                {children}
+                <MobileBottomNav />
+            </body>
         </html>
     );
 }
