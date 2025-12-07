@@ -2,8 +2,11 @@
     "name": "@lesextras/types",
     "version": "1.0.0",
     "private": true,
-    "main": "index.ts",
-    "types": "index.ts",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc"
+    },
     "dependencies": {
         "@prisma/client": "^5.22.0"
     },
