@@ -1,52 +1,147 @@
-                                <span className="inline-block px-3 py-1 mb-4 text-[10px] font-bold tracking-wider text-coral-600 uppercase bg-coral-100 rounded-full">
-                                    Établissements
-                                </span>
-                                <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                                    Besoin de renfort ?
-                                </h3>
-                                <p className="text-gray-500 text-sm mb-8 leading-relaxed">
-                                    Accédez à votre tableau de bord pour gérer vos demandes et trouver des experts qualifiés.
-                                </p>
+import { Metadata } from 'next';
+import { WallFeedClient, FeedItem, TalentPoolItem, ActivityItem } from '@/components/wall/WallFeedClient';
 
-                                <a
-                                    href="/dashboard"
-                                    className="flex items-center justify-between w-full px-6 py-4 bg-gray-900 text-white rounded-2xl hover:bg-gray-800 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-gray-900/20"
-                                >
-                                    <span className="font-medium">Accéder au Dashboard</span>
-                                    <svg className="w-5 h-5 text-gray-300 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                    </svg>
-                                </a>
-                            </div >
-                        </div >
+// SEO Metadata - Server-side rendered
+export const metadata: Metadata = {
+    title: 'Les Extras - Le Wall | Offres & Besoins Médico-Social',
+    description: 'La plateforme de mise en relation médico-sociale. Trouvez votre prochaine mission ou prestataire en temps réel.',
+    openGraph: {
+        title: 'Les Extras - Le Wall',
+        description: 'Plateforme de mise en relation médico-sociale B2B2C',
+        type: 'website',
+    },
+};
 
-    {/* Tile 2: Extras */ }
-    < div className = "bg-white/50 backdrop-blur-sm rounded-3xl p-8 border border-gray-200 hover:bg-white hover:shadow-lg transition-all duration-300 group" >
-        <div className="relative z-10">
-            <span className="inline-block px-3 py-1 mb-4 text-[10px] font-bold tracking-wider text-gray-500 uppercase bg-gray-100 rounded-full">
-                Extras
-            </span>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Rejoindre l'équipe
-            </h3>
-            <p className="text-gray-500 text-sm mb-6">
-                Proposez vos services et gérez votre emploi du temps en toute liberté.
-            </p>
+// Server-side data fetching
+// In production, this would call the API or Prisma directly
+async function getFeedData(): Promise<{
+    feed: FeedItem[];
+    talentPool: TalentPoolItem[];
+    activity: ActivityItem[];
+}> {
+    // TODO: Replace with actual API call
+    // const response = await fetch(`${process.env.API_URL}/api/v1/feed`, {
+    //     next: { revalidate: 60 } // ISR: revalidate every 60 seconds
+    // });
+    // const data = await response.json();
 
-            <a
-                href="/auth/login"
-                className="flex items-center text-coral-600 font-medium hover:text-coral-700 transition-colors"
-            >
-                <span className="border-b-2 border-coral-200 group-hover:border-coral-500 transition-colors">Se connecter</span>
-                <svg className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-            </a>
-        </div>
-                        </div >
-                    </div >
-                </div >
-            </div >
-        </main >
+    // Mock data for now - will be replaced by real API
+    const feed: FeedItem[] = [
+        {
+            id: '1',
+            type: 'NEED',
+            title: 'Éducateur(trice) spécialisé(e) pour weekend',
+            establishment: 'EHPAD Les Jardins',
+            city: 'Lyon 3e',
+            description: 'Recherche éducateur(trice) expérimenté(e) pour accompagnement de résidents le weekend. Expérience EHPAD requise.',
+            urgencyLevel: 'CRITICAL',
+            hourlyRate: 25,
+            jobTitle: 'Éducateur spécialisé',
+            startDate: '2024-12-07',
+            isNightShift: false,
+            tags: ['EHPAD', 'Weekend', 'Expérimenté'],
+        },
+        {
+            id: '2',
+            type: 'OFFER',
+            title: 'Atelier Art-Thérapie pour Séniors',
+            providerName: 'Marie Dupont',
+            providerRating: 4.8,
+            providerReviews: 23,
+            city: 'Paris 15e',
+            description: 'Séances d\'art-thérapie adaptées aux personnes âgées. Peinture, collage, expression libre.',
+            serviceType: 'WORKSHOP',
+            category: 'Art-thérapie',
+            basePrice: 150,
+            imageUrl: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=400',
+            tags: ['Séniors', 'Créatif'],
+        },
+        {
+            id: '3',
+            type: 'NEED',
+            title: 'Aide-soignant(e) de nuit',
+            establishment: 'Clinique Saint-Joseph',
+            city: 'Marseille',
+            description: 'Poste de nuit pour accompagnement des patients en service gériatrique.',
+            urgencyLevel: 'HIGH',
+            hourlyRate: 22,
+            jobTitle: 'Aide-soignant(e)',
+            startDate: '2024-12-08',
+            isNightShift: true,
+            tags: ['Nuit', 'Gériatrie'],
+        },
+        {
+            id: '4',
+            type: 'OFFER',
+            title: 'Coaching Sport Adapté en Visio',
+            providerName: 'Thomas Martin',
+            providerRating: 4.9,
+            providerReviews: 47,
+            city: 'Toulouse',
+            description: 'Séances de sport adapté en visioconférence. Mobilité douce, renforcement musculaire.',
+            serviceType: 'COACHING_VIDEO',
+            category: 'Sport adapté',
+            basePrice: 45,
+            imageUrl: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400',
+            tags: ['Visio', 'Sport'],
+        },
+        {
+            id: '5',
+            type: 'NEED',
+            title: 'Intervenant(e) atelier mémoire',
+            establishment: 'IME Les Oliviers',
+            city: 'Nice',
+            description: 'Animation d\'ateliers de stimulation cognitive pour résidents atteints de troubles.',
+            urgencyLevel: 'MEDIUM',
+            hourlyRate: 28,
+            jobTitle: 'Psychomotricien',
+            startDate: '2024-12-15',
+            isNightShift: false,
+            tags: ['Mémoire', 'Cognitif', 'IME'],
+        },
+        {
+            id: '6',
+            type: 'OFFER',
+            title: 'Musicothérapie - Séances de groupe',
+            providerName: 'Sophie Lefèvre',
+            providerRating: 4.7,
+            providerReviews: 31,
+            city: 'Bordeaux',
+            description: 'Ateliers musicaux thérapeutiques adaptés à tous les publics. Instruments, chant, écoute.',
+            serviceType: 'WORKSHOP',
+            category: 'Musicothérapie',
+            basePrice: 180,
+            imageUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400',
+            tags: ['Musique', 'Groupe'],
+        },
+    ];
+
+    const talentPool: TalentPoolItem[] = [
+        { id: '1', name: 'Marie D.', role: 'Éducatrice', avatar: null, rating: 4.8 },
+        { id: '2', name: 'Thomas M.', role: 'Coach sportif', avatar: null, rating: 4.9 },
+        { id: '3', name: 'Sophie L.', role: 'Musicothérapeute', avatar: null, rating: 4.7 },
+    ];
+
+    const activity: ActivityItem[] = [
+        { id: '1', text: 'Marie D. a postulé à votre mission', time: '2h' },
+        { id: '2', text: 'Nouvelle mission urgente à Lyon', time: '4h' },
+        { id: '3', text: 'Réservation confirmée avec Thomas M.', time: '6h' },
+    ];
+
+    return { feed, talentPool, activity };
+}
+
+// Server Component - async, no 'use client'
+export default async function HomePage() {
+    // Server-side data fetching
+    const { feed, talentPool, activity } = await getFeedData();
+
+    // Pass initial data to client component for interactivity
+    return (
+        <WallFeedClient
+            initialFeed={feed}
+            talentPool={talentPool}
+            activity={activity}
+        />
     );
 }
