@@ -1,9 +1,8 @@
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 
 # 1. Install dependencies only when needed
 FROM base AS deps
-# Install openssl and other dependencies
-RUN apk add --no-cache libc6-compat openssl openssl-dev
+RUN apt-get update -y && apt-get install -y openssl
 WORKDIR /app
 
 # Copy root package files
@@ -38,11 +37,8 @@ RUN npm run api:build
 FROM base AS runner
 WORKDIR /app
 
-# Install runtime dependencies including OpenSSL 1.1 compatibility
-RUN apk add --no-cache openssl openssl-dev
-
-ENV PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.prisma/client/libquery_engine-linux-musl.so.node
-ENV PRISMA_QUERY_ENGINE_BINARY=/app/node_modules/.prisma/client/query-engine-linux-musl
+# Install runtime dependencies
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
 
 ENV NODE_ENV production
 ENV PORT 4000
