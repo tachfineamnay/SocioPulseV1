@@ -26,7 +26,7 @@ export function MobileBottomNav() {
     return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
             {/* Glass background */}
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-xl border-t border-slate-200" />
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-xl border-t border-gray-200" />
 
             {/* Safe area padding for iPhone */}
             <div className="relative px-2 pb-safe">
@@ -71,12 +71,12 @@ export function MobileBottomNav() {
                                 >
                                     <Icon className={`
                     w-5 h-5 transition-colors
-                    ${isActive ? 'text-coral-600' : 'text-slate-400'}
+                    ${isActive ? 'text-coral-600' : 'text-gray-400'}
                   `} />
                                 </motion.div>
                                 <span className={`
                   text-[10px] font-medium transition-colors
-                  ${isActive ? 'text-coral-600' : 'text-slate-400'}
+                  ${isActive ? 'text-coral-600' : 'text-gray-400'}
                 `}>
                                     {item.label}
                                 </span>

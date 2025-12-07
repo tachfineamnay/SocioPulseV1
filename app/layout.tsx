@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { MobileBottomNav } from "@/components/layout";
 
-const inter = Inter({ subsets: ["latin"] });
+const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     title: "Les Extras | Plateforme Médico-Sociale",
@@ -26,7 +26,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="fr" className="smooth-scroll">
-            <body className={`${inter.className} has-bottom-nav lg:pb-0`}>
+            <body className={`${outfit.className} has-bottom-nav lg:pb-0`}>
                 {children}
                 <MobileBottomNav />
             </body>

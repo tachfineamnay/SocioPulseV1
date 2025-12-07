@@ -9,21 +9,35 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
+                // ADEPA Brand Colors
                 coral: {
-                    50: "#FEF2F2",
-                    100: "#FEE2E2",
-                    200: "#FECACA",
-                    300: "#FCA5A5",
-                    400: "#F87171",
+                    50: "#FFF1F1",
+                    100: "#FFE4E4",
+                    200: "#FEC8C8",
+                    300: "#FEA0A0",
+                    400: "#FF4D4D", // ADEPA Primary Red
                     500: "#EF4444",
                     600: "#DC2626",
                     700: "#B91C1C",
                     800: "#991B1B",
                     900: "#7F1D1D",
                 },
+                gray: {
+                    // ADEPA Cool Grays
+                    50: "#F9FAFB",
+                    100: "#F3F4F6",
+                    200: "#E5E7EB",
+                    300: "#D1D5DB",
+                    400: "#9CA3AF",
+                    500: "#6B7280", // ADEPA Secondary Grey
+                    600: "#4B5563",
+                    700: "#374151",
+                    800: "#1F2937",
+                    900: "#111827",
+                },
             },
             fontFamily: {
-                sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+                sans: ["Outfit", "Inter", "system-ui", "sans-serif"], // ADEPA Geometric Style
             },
             boxShadow: {
                 soft: "0 4px 16px -4px rgba(0, 0, 0, 0.08)",
