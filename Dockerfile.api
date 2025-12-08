@@ -1,8 +1,10 @@
 FROM node:20-slim AS base
 
+# System deps needed for Prisma/Nest builds and runtime
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+
 # 1. Install dependencies only when needed
 FROM base AS deps
-RUN apt-get update -y && apt-get install -y openssl
 WORKDIR /app
 
 # Copy root package files
@@ -36,9 +38,6 @@ RUN npm run api:build
 # 3. Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
-
-# Install runtime dependencies
-RUN apt-get update -y && apt-get install -y openssl ca-certificates
 
 ENV NODE_ENV production
 ENV PORT 4000
