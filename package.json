@@ -26,6 +26,8 @@
     "@hookform/resolvers": "^3.3.0",
     "@lesextras/types": "*",
     "@prisma/client": "^5.22.0",
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.5.3",
     "bcrypt": "^5.1.1",
     "framer-motion": "^12.23.25",
     "lucide-react": "^0.556.0",

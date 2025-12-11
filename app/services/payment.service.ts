@@ -1,0 +1,79 @@
+'use client';
+
+export interface CreatePaymentIntentPayload {
+    amount: number;
+    currency: string;
+    metadata?: Record<string, string | number | boolean>;
+}
+
+const getApiBase = () => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:4000';
+    const normalized = apiBase.replace(/\/+$/, '');
+    return normalized.endsWith('/api/v1') ? normalized : `${normalized}/api/v1`;
+};
+
+const getToken = () => {
+    if (typeof window === 'undefined') return null;
+
+    const candidates = [
+        window.localStorage.getItem('accessToken'),
+        window.localStorage.getItem('token'),
+        window.localStorage.getItem('jwt'),
+    ].filter(Boolean) as string[];
+
+    if (candidates.length > 0) return candidates[0];
+
+    const cookieToken = document.cookie
+        ?.split(';')
+        .map((c) => c.trim())
+        .find((c) => c.startsWith('token=') || c.startsWith('accessToken='));
+
+    if (cookieToken) {
+        const [, value] = cookieToken.split('=');
+        return value;
+    }
+
+    return null;
+};
+
+const getAuthHeaders = () => {
+    const token = getToken();
+    if (!token) return {};
+
+    const cleaned = token.replace(/^Bearer\s+/i, '').trim();
+    return { Authorization: `Bearer ${cleaned}` };
+};
+
+async function handleResponse(response: Response) {
+    if (!response.ok) {
+        const errorText = await response.text().catch(() => '');
+        throw new Error(`Payment request failed ${response.status}: ${errorText}`);
+    }
+
+    return response.json();
+}
+
+export async function createPaymentIntent(
+    amount: number,
+    currency: string,
+    metadata: CreatePaymentIntentPayload['metadata'] = {}
+) {
+    const body: CreatePaymentIntentPayload = {
+        amount,
+        currency,
+        metadata,
+    };
+
+    const response = await fetch(`${getApiBase()}/payments/create-intent`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeaders(),
+        },
+        body: JSON.stringify(body),
+        cache: 'no-store',
+    });
+
+    return handleResponse(response) as Promise<{ clientSecret: string }>;
+}
+

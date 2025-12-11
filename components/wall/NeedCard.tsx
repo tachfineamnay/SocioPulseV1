@@ -1,10 +1,15 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, MapPin, Users, AlertTriangle, Building2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Clock, MapPin, AlertTriangle, Building2 } from 'lucide-react';
 
 export interface NeedCardProps {
     id: string;
+    authorId?: string;
+    currentUserId?: string;
+    onSelfContact?: () => void;
     title: string;
     establishment: string;
     establishmentLogo?: string;
@@ -27,6 +32,9 @@ const urgencyConfig = {
 };
 
 export function NeedCard({
+    id,
+    authorId,
+    currentUserId,
     title,
     establishment,
     establishmentLogo,
@@ -39,9 +47,23 @@ export function NeedCard({
     isNightShift,
     tags = [],
     onClick,
+    onSelfContact,
 }: NeedCardProps) {
     const urgency = urgencyConfig[urgencyLevel];
     const isUrgent = urgencyLevel === 'HIGH' || urgencyLevel === 'CRITICAL';
+    const router = useRouter();
+
+    const handleContact = (event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+
+        if (!authorId) return;
+        if (currentUserId && authorId === currentUserId) {
+            onSelfContact?.();
+            return;
+        }
+
+        router.push(`/messages?recipientId=${encodeURIComponent(authorId)}`);
+    };
 
     return (
         <motion.article
@@ -111,11 +133,11 @@ export function NeedCard({
                         day: 'numeric',
                         month: 'short'
                     })}
-                    {isNightShift && ' • Nuit'}
+                    {isNightShift && ' - Nuit'}
                 </span>
                 {hourlyRate && (
                     <span className="ml-auto font-semibold text-slate-900">
-                        {hourlyRate}€/h
+                        {hourlyRate} EUR/h
                     </span>
                 )}
             </div>
@@ -136,6 +158,17 @@ export function NeedCard({
                     )}
                 </div>
             )}
+
+            <div className="mt-4 flex items-center justify-end">
+                <button
+                    type="button"
+                    onClick={handleContact}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+                    aria-label={`Contacter ${establishment}`}
+                >
+                    Contacter
+                </button>
+            </div>
 
             {/* Hover Effect Overlay */}
             <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-blue-200 transition-colors pointer-events-none" />

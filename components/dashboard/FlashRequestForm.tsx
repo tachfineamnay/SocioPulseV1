@@ -12,17 +12,19 @@ import {
     CheckCircle2,
     Users
 } from 'lucide-react';
-import { createReliefMission, CreateMissionInput } from '@/app/dashboard/relief/actions';
+import { useRouter } from 'next/navigation';
+import { ToastContainer, useToasts } from '@/components/ui/Toast';
+import { createReliefMission, type CreateReliefMissionInput } from '@/app/services/matching.service';
 
 const JOB_TITLES = [
     'Aide-soignant(e)',
-    'Infirmier(ère)',
-    'Éducateur spécialisé',
+    'Infirmier(ere)',
+    'Educateur specialise',
     'Auxiliaire de vie',
     'Psychomotricien(ne)',
-    'Ergothérapeute',
+    'Ergotherapeute',
     'Agent de service',
-    'Cuisinier(ère)',
+    'Cuisinier(ere)',
 ];
 
 interface FlashRequestFormProps {
@@ -36,6 +38,8 @@ export function FlashRequestForm({ onMissionCreated }: FlashRequestFormProps) {
     const [hourlyRate, setHourlyRate] = useState(22);
     const [showSuccess, setShowSuccess] = useState(false);
     const [candidatesFound, setCandidatesFound] = useState(0);
+    const router = useRouter();
+    const { toasts, addToast, removeToast } = useToasts();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,30 +47,43 @@ export function FlashRequestForm({ onMissionCreated }: FlashRequestFormProps) {
         if (!jobTitle) return;
 
         startTransition(async () => {
-            const input: CreateMissionInput = {
+            const input: CreateReliefMissionInput = {
                 jobTitle,
                 hourlyRate,
                 isNightShift,
                 urgencyLevel: 'CRITICAL',
                 startDate: new Date().toISOString(),
-                city: 'Lyon', // Would come from user profile
+                endDate: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
+                city: 'Lyon',
                 postalCode: '69003',
+                requiredSkills: [],
+                requiredDiplomas: [],
             };
 
-            const result = await createReliefMission(input);
+            try {
+                const result = await createReliefMission(input);
+                const missionId = result?.id || result?.missionId || '';
+                const found =
+                    result?.candidatesFound ??
+                    result?.candidatesCount ??
+                    (Array.isArray(result?.candidates) ? result.candidates.length : 0) ??
+                    0;
 
-            if (result.success) {
                 setShowSuccess(true);
-                setCandidatesFound(result.candidatesFound || 0);
-                onMissionCreated?.(result.missionId!, result.candidatesFound || 0);
+                setCandidatesFound(found);
+                onMissionCreated?.(missionId, found);
+                addToast({ message: 'Recherche de candidats lancee', type: 'success' });
+                router.refresh();
 
-                // Reset form after delay
                 setTimeout(() => {
                     setShowSuccess(false);
                     setJobTitle('');
                     setHourlyRate(22);
                     setIsNightShift(false);
                 }, 3000);
+            } catch (error) {
+                console.error('createReliefMission error', error);
+                addToast({ message: 'Erreur lors du lancement de la mission SOS', type: 'error' });
             }
         });
     };
@@ -77,6 +94,7 @@ export function FlashRequestForm({ onMissionCreated }: FlashRequestFormProps) {
             animate={{ opacity: 1, y: 0 }}
             className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 shadow-2xl"
         >
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
                 <div className="absolute inset-0" style={{
@@ -141,7 +159,7 @@ export function FlashRequestForm({ onMissionCreated }: FlashRequestFormProps) {
 
                     {/* Job Title Select */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-300">Poste recherché</label>
+                        <label className="text-sm font-medium text-slate-300">Poste recherche</label>
                         <select
                             value={jobTitle}
                             onChange={(e) => setJobTitle(e.target.value)}
@@ -150,7 +168,7 @@ export function FlashRequestForm({ onMissionCreated }: FlashRequestFormProps) {
                 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent
                 transition-all appearance-none cursor-pointer"
                         >
-                            <option value="">Sélectionner un poste...</option>
+                            <option value="">Selectionner un poste...</option>
                             {JOB_TITLES.map((title) => (
                                 <option key={title} value={title}>{title}</option>
                             ))}
@@ -161,7 +179,7 @@ export function FlashRequestForm({ onMissionCreated }: FlashRequestFormProps) {
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <label className="text-sm font-medium text-slate-300">Tarif horaire</label>
-                            <span className="text-2xl font-bold text-white">{hourlyRate}€<span className="text-sm font-normal text-slate-400">/h</span></span>
+                            <span className="text-2xl font-bold text-white">{hourlyRate} EUR<span className="text-sm font-normal text-slate-400">/h</span></span>
                         </div>
                         <input
                             type="range"
@@ -183,9 +201,9 @@ export function FlashRequestForm({ onMissionCreated }: FlashRequestFormProps) {
                 [&::-webkit-slider-thumb]:hover:scale-110"
                         />
                         <div className="flex justify-between text-xs text-slate-500">
-                            <span>15€</span>
-                            <span>30€</span>
-                            <span>45€</span>
+                            <span>15 EUR</span>
+                            <span>30 EUR</span>
+                            <span>45 EUR</span>
                         </div>
                     </div>
 
@@ -201,7 +219,7 @@ export function FlashRequestForm({ onMissionCreated }: FlashRequestFormProps) {
                             >
                                 <CheckCircle2 className="w-5 h-5 text-green-400" />
                                 <span className="font-semibold text-green-400">
-                                    Alerte lancée ! {candidatesFound} candidat(s) notifié(s)
+                                    Alerte lancee ! {candidatesFound} candidat(s) notifie(s)
                                 </span>
                                 <Users className="w-5 h-5 text-green-400" />
                             </motion.div>

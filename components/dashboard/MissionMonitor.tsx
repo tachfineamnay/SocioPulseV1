@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import {
     Search,
     CheckCircle2,
@@ -10,17 +11,23 @@ import {
     MoreHorizontal,
     Phone,
     MessageSquare,
-    XCircle
+    XCircle,
+    Users
 } from 'lucide-react';
+import { ToastContainer, useToasts } from '@/components/ui/Toast';
+import { getActiveMissions } from '@/app/services/matching.service';
+
+type MissionStatus = 'SEARCHING' | 'ASSIGNED' | 'CANCELLED';
 
 interface Mission {
     id: string;
     jobTitle: string;
-    startTime: string;
-    status: 'SEARCHING' | 'ASSIGNED' | 'CANCELLED';
+    startTime?: string;
+    status: MissionStatus;
     candidateName: string | null;
     urgencyLevel: 'HIGH' | 'CRITICAL';
     createdAt: string;
+    candidatesCount?: number;
 }
 
 interface MissionMonitorProps {
@@ -44,7 +51,7 @@ const statusConfig = {
         pulse: false,
     },
     CANCELLED: {
-        label: 'Annulée',
+        label: 'Annulee',
         color: 'text-slate-400',
         bgColor: 'bg-slate-500/10',
         icon: XCircle,
@@ -58,7 +65,7 @@ function formatTimeAgo(dateString: string): string {
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 1) return 'À l\'instant';
+    if (diffMins < 1) return 'A l instant';
     if (diffMins < 60) return `Il y a ${diffMins} min`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `Il y a ${diffHours}h`;
@@ -68,35 +75,69 @@ function formatTimeAgo(dateString: string): string {
 export function MissionMonitor({ initialMissions = [], onRefresh }: MissionMonitorProps) {
     const [missions, setMissions] = useState<Mission[]>(initialMissions);
     const [selectedMission, setSelectedMission] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const { toasts, addToast, removeToast } = useToasts();
 
-    // Simulate real-time updates
+    const mapMission = useMemo(
+        () => (mission: any): Mission => {
+            const startDate = mission?.startDate || mission?.startTime || mission?.createdAt;
+            return {
+                id: mission?.id || mission?.missionId || '',
+                jobTitle: mission?.jobTitle || mission?.title || 'Mission',
+                startTime: startDate
+                    ? new Date(startDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+                    : '',
+                status: (mission?.status || 'SEARCHING') as MissionStatus,
+                candidateName: mission?.candidateName || null,
+                urgencyLevel: mission?.urgencyLevel || 'HIGH',
+                createdAt: mission?.createdAt || startDate || new Date().toISOString(),
+                candidatesCount:
+                    mission?.candidatesCount ??
+                    (Array.isArray(mission?.candidates) ? mission.candidates.length : undefined),
+            };
+        },
+        []
+    );
+
     useEffect(() => {
-        const interval = setInterval(() => {
-            // In production, this would be a WebSocket or SSE connection
-            // For demo, we just trigger a visual "searching" animation
-        }, 2000);
+        setMissions(initialMissions.map(mapMission));
+    }, [initialMissions, mapMission]);
 
-        return () => clearInterval(interval);
-    }, []);
-
-    // Update missions when initialMissions changes
     useEffect(() => {
-        if (initialMissions.length > 0) {
-            setMissions(initialMissions);
-        }
-    }, [initialMissions]);
+        const fetchMissions = async () => {
+            setIsLoading(true);
+            try {
+                const response = await getActiveMissions();
+                const list =
+                    (Array.isArray(response) && response) ||
+                    (Array.isArray(response?.items) && response.items) ||
+                    (Array.isArray(response?.data) && response.data) ||
+                    (Array.isArray(response?.missions) && response.missions) ||
+                    [];
+                setMissions(list.map(mapMission));
+            } catch (error) {
+                console.error('getActiveMissions error', error);
+                addToast({ message: 'Erreur lors du chargement des missions', type: 'error' });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchMissions();
+    }, [addToast, mapMission]);
 
     const searchingCount = missions.filter(m => m.status === 'SEARCHING').length;
     const assignedCount = missions.filter(m => m.status === 'ASSIGNED').length;
 
     return (
         <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-100">
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="text-lg font-semibold text-slate-900">Suivi des missions</h2>
-                        <p className="text-sm text-slate-500">Temps réel</p>
+                        <p className="text-sm text-slate-500">Temps reel</p>
                     </div>
                     <div className="flex items-center gap-3">
                         {/* Stats */}
@@ -220,8 +261,8 @@ export function MissionMonitor({ initialMissions = [], onRefresh }: MissionMonit
 
                                         {/* Candidate */}
                                         <td className="px-6 py-4">
-                                            {mission.candidateName ? (
-                                                <div className="flex items-center gap-2">
+                        {mission.candidateName ? (
+                            <div className="flex items-center gap-2">
                                                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center">
                                                         <span className="text-xs font-semibold text-coral-600">
                                                             {mission.candidateName.charAt(0)}
@@ -232,13 +273,23 @@ export function MissionMonitor({ initialMissions = [], onRefresh }: MissionMonit
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-sm text-slate-400">—</span>
+                                                <span className="text-sm text-slate-400">-</span>
                                             )}
                                         </td>
 
                                         {/* Actions */}
                                         <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 text-xs text-slate-600">
+                                                    <Users className="w-3 h-3" />
+                                                    <span>{mission.candidatesCount ?? 0}</span>
+                                                </div>
+                                                <Link
+                                                    href={`/dashboard/missions/${mission.id}`}
+                                                    className="p-2 rounded-lg hover:bg-blue-100 text-slate-400 hover:text-blue-600 transition-colors text-xs font-medium"
+                                                >
+                                                    Voir les candidats
+                                                </Link>
                                                 {mission.candidateName && (
                                                     <>
                                                         <button
@@ -275,7 +326,7 @@ export function MissionMonitor({ initialMissions = [], onRefresh }: MissionMonit
             {missions.length > 0 && (
                 <div className="px-6 py-3 bg-slate-50 border-t border-slate-100">
                     <p className="text-xs text-slate-500 text-center">
-                        Mise à jour automatique • Dernière actualisation: maintenant
+                        Mise a jour automatique - Derniere actualisation: maintenant
                     </p>
                 </div>
             )}

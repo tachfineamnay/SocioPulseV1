@@ -1,10 +1,15 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import { motion } from 'framer-motion';
-import { Star, MapPin, Video, Calendar, Euro } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Star, MapPin, Video, Mail } from 'lucide-react';
 
 export interface OfferCardProps {
     id: string;
+    authorId?: string;
+    currentUserId?: string;
+    onSelfContact?: () => void;
     title: string;
     providerName: string;
     providerAvatar?: string;
@@ -21,6 +26,8 @@ export interface OfferCardProps {
 }
 
 export function OfferCard({
+    authorId,
+    currentUserId,
     title,
     providerName,
     providerAvatar,
@@ -34,8 +41,22 @@ export function OfferCard({
     imageUrl,
     tags = [],
     onClick,
+    onSelfContact,
 }: OfferCardProps) {
     const isVideo = serviceType === 'COACHING_VIDEO';
+    const router = useRouter();
+
+    const handleContact = (event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+
+        if (!authorId) return;
+        if (currentUserId && authorId === currentUserId) {
+            onSelfContact?.();
+            return;
+        }
+
+        router.push(`/messages?recipientId=${encodeURIComponent(authorId)}`);
+    };
 
     return (
         <motion.article
@@ -136,13 +157,23 @@ export function OfferCard({
                         ))}
                     </div>
 
-                    {/* Price */}
-                    {basePrice && (
-                        <span className="inline-flex items-center gap-0.5 font-semibold text-slate-900">
-                            <span className="text-lg">{basePrice}€</span>
-                            <span className="text-xs text-slate-400 font-normal">/séance</span>
-                        </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {basePrice && (
+                            <span className="inline-flex items-center gap-0.5 font-semibold text-slate-900">
+                                <span className="text-lg">{basePrice} EUR</span>
+                                <span className="text-xs text-slate-400 font-normal">/seance</span>
+                            </span>
+                        )}
+                        <button
+                            type="button"
+                            onClick={handleContact}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500 text-white text-xs font-semibold hover:bg-orange-600 transition-colors"
+                            aria-label={`Contacter ${providerName}`}
+                        >
+                            <Mail className="w-3.5 h-3.5" />
+                            Contacter
+                        </button>
+                    </div>
                 </div>
             </div>
 

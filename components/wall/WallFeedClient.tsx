@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
     Search,
@@ -18,10 +18,13 @@ import {
     Bell
 } from 'lucide-react';
 import { NeedCard, OfferCard } from '@/components/wall';
+import { getFeed, createPost, type CreatePostPayload } from '@/app/services/wall.service';
+import { ToastContainer, useToasts } from '@/components/ui/Toast';
 
 // Types for feed items
 export interface NeedItem {
     id: string;
+    authorId?: string;
     type: 'NEED';
     title: string;
     establishment: string;
@@ -37,6 +40,7 @@ export interface NeedItem {
 
 export interface OfferItem {
     id: string;
+    authorId?: string;
     type: 'OFFER';
     title: string;
     providerName: string;
@@ -52,6 +56,33 @@ export interface OfferItem {
 }
 
 export type FeedItem = NeedItem | OfferItem;
+
+type ApiFeedItem = {
+    id: string;
+    authorId?: string;
+    type?: 'POST' | 'MISSION' | 'NEED' | 'OFFER';
+    postType?: 'OFFER' | 'NEED';
+    title?: string;
+    content?: string;
+    description?: string;
+    authorName?: string;
+    establishment?: string;
+    city?: string | null;
+    tags?: string[] | null;
+    category?: string | null;
+    urgencyLevel?: NeedItem['urgencyLevel'];
+    hourlyRate?: number | null;
+    validUntil?: string | Date | null;
+    startDate?: string | Date | null;
+    isNightShift?: boolean | null;
+    serviceType?: OfferItem['serviceType'];
+    basePrice?: number | null;
+    providerName?: string;
+    providerRating?: number;
+    providerReviews?: number;
+    imageUrl?: string;
+    imageUrls?: string[] | null;
+};
 
 export interface TalentPoolItem {
     id: string;
@@ -77,7 +108,7 @@ const FILTER_BADGES = [
     { id: 'urgent', label: 'Urgent', icon: Zap, color: 'text-red-500' },
     { id: 'sport', label: 'Sport', icon: Dumbbell, color: 'text-blue-500' },
     { id: 'visio', label: 'Visio', icon: Video, color: 'text-purple-500' },
-    { id: 'bien-etre', label: 'Bien-être', icon: Heart, color: 'text-pink-500' },
+    { id: 'bien-etre', label: 'Bien-etre', icon: Heart, color: 'text-pink-500' },
     { id: 'art', label: 'Art', icon: Palette, color: 'text-orange-500' },
 ];
 
@@ -106,9 +137,126 @@ const itemVariants = {
     },
 };
 
+const toIsoString = (value?: string | Date | null) => {
+    if (!value) return new Date().toISOString();
+    const date = typeof value === 'string' ? new Date(value) : value;
+    return isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+};
+
+const decodeUserIdFromToken = (token?: string | null) => {
+    if (!token) return null;
+
+    try {
+        const cleaned = token.replace(/^Bearer\s+/i, '').trim();
+        const parts = cleaned.split('.');
+        if (parts.length < 2) return null;
+
+        const payload = JSON.parse(
+            atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'))
+        );
+
+        return payload.sub || payload.id || null;
+    } catch {
+        return null;
+    }
+};
+
+const mapApiItemToFeedItem = (item: ApiFeedItem | FeedItem): FeedItem | null => {
+    if (!item) return null;
+
+    const authorId = (item as any).authorId || (item as any)?.author?.id || undefined;
+
+    if (item.type === 'NEED' || item.type === 'OFFER') {
+        return { ...item, authorId } as FeedItem;
+    }
+
+    const normalizedTags = Array.isArray(item.tags)
+        ? item.tags.filter(Boolean)
+        : [];
+
+    if (item.type === 'MISSION' || item.postType === 'NEED') {
+        const startDate = item.validUntil || item.startDate;
+
+        return {
+            id: item.id,
+            authorId,
+            type: 'NEED',
+            title: item.title || 'Annonce',
+            establishment: item.establishment || item.authorName || 'Etablissement',
+            city: item.city || '',
+            description: item.content || item.description || '',
+            urgencyLevel: item.urgencyLevel || 'MEDIUM',
+            hourlyRate: item.hourlyRate ?? 0,
+            jobTitle: item.category || 'Mission',
+            startDate: toIsoString(startDate),
+            isNightShift: Boolean(item.isNightShift),
+            tags: normalizedTags,
+        };
+    }
+
+    return {
+        id: item.id,
+        authorId,
+        type: 'OFFER',
+        title: item.title || 'Offre',
+        providerName: item.providerName || item.authorName || 'Prestataire',
+        providerRating: item.providerRating ?? 0,
+        providerReviews: item.providerReviews ?? 0,
+        city: item.city || '',
+        description: item.content || item.description || '',
+        serviceType: item.serviceType || 'WORKSHOP',
+        category: item.category || undefined,
+        basePrice: item.basePrice ?? item.hourlyRate ?? undefined,
+        imageUrl: item.imageUrl || (Array.isArray(item.imageUrls) ? item.imageUrls[0] : undefined),
+        tags: normalizedTags,
+    };
+};
+
 export function WallFeedClient({ initialFeed, talentPool, activity }: WallFeedClientProps) {
+    const [posts, setPosts] = useState<FeedItem[]>(initialFeed);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const { toasts, addToast, removeToast } = useToasts();
+    const [newPostTitle, setNewPostTitle] = useState('');
+    const [newPostContent, setNewPostContent] = useState('');
+    const [newPostCity, setNewPostCity] = useState('');
+    const [newPostType, setNewPostType] = useState<'OFFER' | 'NEED'>('OFFER');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilters, setActiveFilters] = useState<string[]>([]);
+
+    useEffect(() => {
+        setPosts(initialFeed);
+    }, [initialFeed]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        const candidates = [
+            window.localStorage.getItem('accessToken'),
+            window.localStorage.getItem('token'),
+            window.localStorage.getItem('jwt'),
+        ];
+
+        for (const token of candidates) {
+            const userId = decodeUserIdFromToken(token);
+            if (userId) {
+                setCurrentUserId(userId);
+                return;
+            }
+        }
+
+        const cookieToken = document.cookie
+            ?.split(';')
+            .map((c) => c.trim())
+            .find((c) => c.startsWith('token=') || c.startsWith('accessToken='));
+
+        if (cookieToken) {
+            const [, value] = cookieToken.split('=');
+            const userId = decodeUserIdFromToken(value);
+            if (userId) setCurrentUserId(userId);
+        }
+    }, []);
 
     const toggleFilter = (filterId: string) => {
         setActiveFilters(prev =>
@@ -118,8 +266,74 @@ export function WallFeedClient({ initialFeed, talentPool, activity }: WallFeedCl
         );
     };
 
+    const fetchFeed = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const response = await getFeed();
+            const data = response as any;
+            const rawItems =
+                (Array.isArray(data) && data) ||
+                (Array.isArray(data?.items) && data.items) ||
+                (Array.isArray(data?.data?.items) && data.data.items) ||
+                (Array.isArray(data?.feed?.items) && data.feed.items) ||
+                (Array.isArray(data?.feed) && data.feed) ||
+                [];
+
+            const mappedItems = rawItems
+                .map((item: ApiFeedItem | FeedItem) => mapApiItemToFeedItem(item))
+                .filter((item): item is FeedItem => Boolean(item));
+
+            setPosts(mappedItems);
+        } catch (error) {
+            console.error('Erreur lors du chargement du wall', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchFeed();
+    }, [fetchFeed]);
+
+    const handlePublish = useCallback(async () => {
+        if (!newPostTitle.trim() || !newPostContent.trim()) {
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const payload: CreatePostPayload = {
+                type: newPostType,
+                title: newPostTitle.trim(),
+                content: newPostContent.trim(),
+                city: newPostCity.trim() || undefined,
+            };
+
+            const created = await createPost(payload as any);
+            const mapped = mapApiItemToFeedItem((created || {}) as ApiFeedItem);
+
+            if (mapped) {
+                setPosts((prev) => [mapped, ...prev]);
+            } else {
+                await fetchFeed();
+            }
+
+            setNewPostTitle('');
+            setNewPostContent('');
+            setNewPostCity('');
+        } catch (error) {
+            console.error('Erreur lors de la publication', error);
+            addToast({
+                message: 'Erreur lors de la publication',
+                type: 'error',
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [addToast, fetchFeed, newPostCity, newPostContent, newPostTitle, newPostType]);
+
     const filteredFeed = useMemo(() => {
-        let items = initialFeed;
+        let items = posts;
 
         // Search filter
         if (searchQuery) {
@@ -145,7 +359,16 @@ export function WallFeedClient({ initialFeed, talentPool, activity }: WallFeedCl
         }
 
         return items;
-    }, [searchQuery, activeFilters, initialFeed]);
+    }, [searchQuery, activeFilters, posts]);
+
+    const isPublishDisabled = isSubmitting || !newPostTitle.trim() || !newPostContent.trim();
+    const showSkeleton = isLoading && posts.length === 0;
+    const handleSelfContact = useCallback(() => {
+        addToast({
+            message: "C'est votre annonce",
+            type: 'info',
+        });
+    }, [addToast]);
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -214,67 +437,143 @@ export function WallFeedClient({ initialFeed, talentPool, activity }: WallFeedCl
                 </div>
             </header>
 
+            <ToastContainer toasts={toasts} onRemove={removeToast} />
+
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="flex gap-6">
                     {/* Feed Grid - Masonry */}
-                    <div className="flex-1">
-                        <motion.div
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            className="columns-1 md:columns-2 xl:columns-3 gap-4 space-y-4"
-                        >
-                            {filteredFeed.map((item) => (
-                                <motion.div
-                                    key={item.id}
-                                    variants={itemVariants}
-                                    className="break-inside-avoid"
-                                >
-                                    {item.type === 'NEED' ? (
-                                        <NeedCard
-                                            id={item.id}
-                                            title={item.title}
-                                            establishment={item.establishment}
-                                            city={item.city}
-                                            description={item.description}
-                                            urgencyLevel={item.urgencyLevel}
-                                            hourlyRate={item.hourlyRate}
-                                            jobTitle={item.jobTitle}
-                                            startDate={item.startDate}
-                                            isNightShift={item.isNightShift}
-                                            tags={item.tags}
-                                            onClick={() => console.log('Need clicked:', item.id)}
-                                        />
-                                    ) : (
-                                        <OfferCard
-                                            id={item.id}
-                                            title={item.title}
-                                            providerName={item.providerName}
-                                            providerRating={item.providerRating}
-                                            providerReviews={item.providerReviews}
-                                            city={item.city}
-                                            description={item.description}
-                                            serviceType={item.serviceType}
-                                            category={item.category}
-                                            basePrice={item.basePrice}
-                                            imageUrl={item.imageUrl}
-                                            tags={item.tags}
-                                            onClick={() => console.log('Offer clicked:', item.id)}
-                                        />
-                                    )}
-                                </motion.div>
-                            ))}
-                        </motion.div>
+                    <div className="flex-1 space-y-4">
+                        <div className="bg-white rounded-2xl p-5 shadow-soft">
+                            <div className="flex items-center justify-between gap-3 mb-3">
+                                <div>
+                                    <h2 className="font-semibold text-slate-900">Publier sur le Wall</h2>
+                                    <p className="text-sm text-slate-500">Partage un besoin ou une offre</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewPostType('NEED')}
+                                        className={`pill-btn ${newPostType === 'NEED' ? 'pill-btn-active' : 'pill-btn-inactive'}`}
+                                    >
+                                        Besoin
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewPostType('OFFER')}
+                                        className={`pill-btn ${newPostType === 'OFFER' ? 'pill-btn-active' : 'pill-btn-inactive'}`}
+                                    >
+                                        Offre
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid gap-3">
+                                <input
+                                    value={newPostTitle}
+                                    onChange={(e) => setNewPostTitle(e.target.value)}
+                                    placeholder="Titre de l'annonce"
+                                    className="input-premium"
+                                />
+                                <textarea
+                                    value={newPostContent}
+                                    onChange={(e) => setNewPostContent(e.target.value)}
+                                    placeholder="Decris ton annonce"
+                                    className="input-premium min-h-[120px]"
+                                />
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                                    <input
+                                        value={newPostCity}
+                                        onChange={(e) => setNewPostCity(e.target.value)}
+                                        placeholder="Ville (optionnel)"
+                                        className="input-premium sm:flex-1"
+                                    />
+                                    <div className="flex justify-end gap-2 sm:w-auto">
+                                        <button
+                                            type="button"
+                                            onClick={handlePublish}
+                                            disabled={isPublishDisabled}
+                                            className={`inline-flex items-center justify-center px-4 py-2 rounded-xl font-semibold text-white bg-coral-500 hover:bg-coral-600 transition-colors ${isPublishDisabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                        >
+                                            {isSubmitting ? 'Publication...' : 'Publier'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {showSkeleton ? (
+                            <div className="columns-1 md:columns-2 xl:columns-3 gap-4 space-y-4">
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                    <div key={index} className="break-inside-avoid">
+                                        <div className="h-56 bg-white rounded-2xl shadow-soft border border-slate-100 animate-pulse" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <motion.div
+                                variants={containerVariants}
+                                initial="hidden"
+                                animate="visible"
+                                className="columns-1 md:columns-2 xl:columns-3 gap-4 space-y-4"
+                            >
+                                {filteredFeed.map((item) => (
+                                    <motion.div
+                                        key={item.id}
+                                        variants={itemVariants}
+                                        className="break-inside-avoid"
+                                    >
+                                        {item.type === 'NEED' ? (
+                                            <NeedCard
+                                                id={item.id}
+                                                authorId={item.authorId}
+                                                currentUserId={currentUserId || undefined}
+                                                onSelfContact={handleSelfContact}
+                                                title={item.title}
+                                                establishment={item.establishment}
+                                                city={item.city}
+                                                description={item.description}
+                                                urgencyLevel={item.urgencyLevel}
+                                                hourlyRate={item.hourlyRate}
+                                                jobTitle={item.jobTitle}
+                                                startDate={item.startDate}
+                                                isNightShift={item.isNightShift}
+                                                tags={item.tags}
+                                                onClick={() => console.log('Need clicked:', item.id)}
+                                            />
+                                        ) : (
+                                            <OfferCard
+                                                id={item.id}
+                                                authorId={item.authorId}
+                                                currentUserId={currentUserId || undefined}
+                                                onSelfContact={handleSelfContact}
+                                                title={item.title}
+                                                providerName={item.providerName}
+                                                providerRating={item.providerRating}
+                                                providerReviews={item.providerReviews}
+                                                city={item.city}
+                                                description={item.description}
+                                                serviceType={item.serviceType}
+                                                category={item.category}
+                                                basePrice={item.basePrice}
+                                                imageUrl={item.imageUrl}
+                                                tags={item.tags}
+                                                onClick={() => console.log('Offer clicked:', item.id)}
+                                            />
+                                        )}
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        )}
 
                         {/* Empty State */}
-                        {filteredFeed.length === 0 && (
+                        {!isLoading && filteredFeed.length === 0 && (
                             <div className="flex flex-col items-center justify-center py-20 text-center">
                                 <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                                     <Search className="w-8 h-8 text-slate-400" />
                                 </div>
                                 <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                                    Aucun résultat
+                                    Aucun resultat
                                 </h3>
                                 <p className="text-sm text-slate-500 max-w-sm">
                                     Essayez de modifier vos filtres ou votre recherche pour trouver ce que vous cherchez.
@@ -324,12 +623,12 @@ export function WallFeedClient({ initialFeed, talentPool, activity }: WallFeedCl
                             </div>
                         </div>
 
-                        {/* Activité Récente */}
+                        {/* Activite Recente */}
                         <div className="bg-white rounded-2xl p-5 shadow-soft">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="font-semibold text-slate-900 flex items-center gap-2">
                                     <Activity className="w-4 h-4 text-blue-500" />
-                                    Activité récente
+                                    Activite recente
                                 </h2>
                             </div>
 
