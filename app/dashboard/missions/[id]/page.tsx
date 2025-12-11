@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, MapPin, Send, Award, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Users, MapPin, Send, Award, AlertCircle, CheckCircle2, Shield } from 'lucide-react';
 import { ToastContainer, useToasts } from '@/components/ui/Toast';
-import { getMissionCandidates } from '@/app/services/matching.service';
+import { getMissionCandidates, getMissionById } from '@/app/services/matching.service';
 
 type Candidate = {
     id: string;
@@ -17,6 +18,42 @@ type Candidate = {
 interface PageProps {
     params: { id: string };
 }
+
+type ContractStatus = 'PENDING' | 'SIGNED';
+
+type MissionInfo = {
+    id: string;
+    title: string;
+    jobTitle?: string;
+    hourlyRate?: number;
+    city?: string;
+    address?: string;
+    startDate?: string;
+    assignedExtraId?: string;
+    contract?: {
+        status?: ContractStatus;
+        signatureUrl?: string;
+        signedAt?: string;
+    };
+};
+
+const decodeUserId = () => {
+    if (typeof window === 'undefined') return null;
+    const token =
+        window.localStorage.getItem('accessToken') ||
+        window.localStorage.getItem('token') ||
+        window.localStorage.getItem('jwt');
+    if (!token) return null;
+    try {
+        const cleaned = token.replace(/^Bearer\\s+/i, '').trim();
+        const parts = cleaned.split('.');
+        if (parts.length < 2) return null;
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        return payload.sub || payload.id || null;
+    } catch {
+        return null;
+    }
+};
 
 const SkeletonCard = () => (
     <div className="rounded-2xl border border-slate-100 bg-white shadow-soft p-5 animate-pulse space-y-3">
@@ -35,8 +72,42 @@ export default function MissionDetailPage({ params }: PageProps) {
     const [candidates, setCandidates] = useState<Candidate[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [mission, setMission] = useState<MissionInfo | null>(null);
+    const [isMissionLoading, setIsMissionLoading] = useState(true);
+    const currentUserId = useMemo(() => decodeUserId(), []);
     const router = useRouter();
     const { toasts, addToast, removeToast } = useToasts();
+
+    const fetchMission = useCallback(async () => {
+        setIsMissionLoading(true);
+        try {
+            const response = await getMissionById(missionId);
+            const mapped: MissionInfo = {
+                id: response?.id || missionId,
+                title: response?.title || response?.jobTitle || 'Mission',
+                jobTitle: response?.jobTitle,
+                hourlyRate: response?.hourlyRate,
+                city: response?.city,
+                address: response?.address,
+                startDate: response?.startDate,
+                assignedExtraId: response?.assignedExtraId,
+                contract: response?.contract
+                    ? {
+                          status: response.contract.status,
+                          signatureUrl: response.contract.signatureUrl,
+                          signedAt: response.contract.signedAt,
+                      }
+                    : undefined,
+            };
+            setMission(mapped);
+        } catch (err) {
+            console.error('getMissionById error', err);
+            setError('Erreur lors du chargement de la mission');
+            addToast({ message: 'Erreur lors du chargement de la mission', type: 'error' });
+        } finally {
+            setIsMissionLoading(false);
+        }
+    }, [addToast, missionId]);
 
     const fetchCandidates = useCallback(async () => {
         setIsLoading(true);
@@ -69,7 +140,8 @@ export default function MissionDetailPage({ params }: PageProps) {
 
     useEffect(() => {
         fetchCandidates();
-    }, [fetchCandidates]);
+        fetchMission();
+    }, [fetchCandidates, fetchMission]);
 
     const handleContact = (candidateId: string) => {
         router.push(`/messages?recipientId=${encodeURIComponent(candidateId)}`);
@@ -160,19 +232,42 @@ export default function MissionDetailPage({ params }: PageProps) {
         <div className="min-h-screen bg-slate-50">
             <ToastContainer toasts={toasts} onRemove={removeToast} />
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-3">
                     <div>
                         <p className="text-sm text-slate-500">Mission</p>
-                        <h1 className="text-2xl font-semibold text-slate-900">Candidats trouves</h1>
+                        <h1 className="text-2xl font-semibold text-slate-900">
+                            {mission?.title || 'Candidats trouves'}
+                        </h1>
+                        {mission?.city && (
+                            <p className="text-sm text-slate-500">
+                                {mission.city}
+                            </p>
+                        )}
                     </div>
-                    <button
-                        type="button"
-                        onClick={fetchCandidates}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors"
-                    >
-                        <Users className="w-4 h-4" />
-                        Rafraichir
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {mission && mission.contract?.status === 'SIGNED' ? (
+                            <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-semibold">
+                                <CheckCircle2 className="w-4 h-4" />
+                                Contrat signe
+                            </span>
+                        ) : (
+                            <Link
+                                href={`/dashboard/missions/${missionId}/contract`}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-coral-500 text-white text-sm font-semibold hover:bg-coral-600 transition-colors"
+                            >
+                                <Shield className="w-4 h-4" />
+                                Signer le contrat
+                            </Link>
+                        )}
+                        <button
+                            type="button"
+                            onClick={fetchCandidates}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800 transition-colors"
+                        >
+                            <Users className="w-4 h-4" />
+                            Rafraichir
+                        </button>
+                    </div>
                 </div>
 
                 {renderContent()}

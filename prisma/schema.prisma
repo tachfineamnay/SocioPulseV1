@@ -80,6 +80,11 @@ enum TransactionStatus {
   REFUNDED
 }
 
+enum ContractStatus {
+  PENDING
+  SIGNED
+}
+
 // =============================================================================
 // USER & AUTHENTICATION
 // =============================================================================
@@ -425,6 +430,7 @@ model ReliefMission {
   // Relations
   applications    MissionApplication[]
   bookings        Booking[]
+  contract        Contract?
   
   // Timestamps
   createdAt       DateTime      @default(now())
@@ -445,6 +451,32 @@ model ReliefMission {
   // Composite indexes for SOS Renfort
   @@index([status, urgencyLevel])  // Filter urgent open missions
   @@index([city, status])          // Geo + status filter
+}
+
+// =============================================================================
+// CONTRACT - Signature mission SOS
+// =============================================================================
+
+model Contract {
+  id           String          @id @default(cuid())
+
+  missionId    String          @unique
+  mission      ReliefMission   @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  extraId      String
+  extra        User            @relation(fields: [extraId], references: [id], onDelete: Cascade)
+
+  content      String
+  signatureUrl String?
+  status       ContractStatus  @default(PENDING)
+  signedAt     DateTime?
+
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([missionId])
+  @@index([extraId])
+  @@index([status])
 }
 
 // =============================================================================

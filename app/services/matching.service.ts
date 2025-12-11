@@ -108,3 +108,15 @@ export async function getMissionCandidates(missionId: string) {
 
     return handleResponse(response);
 }
+
+export async function getMissionById(missionId: string) {
+    const response = await fetch(`${getApiBase()}/matching/missions/${missionId}`, {
+        method: 'GET',
+        headers: {
+            ...getAuthHeaders(),
+        },
+        cache: 'no-store',
+    });
+
+    return handleResponse(response);
+}
