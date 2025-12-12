@@ -25,14 +25,17 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Install TypeScript globally for builds
+RUN npm install -g typescript @nestjs/cli
+
 # Generate Prisma Client (needed for types)
 RUN npx prisma generate
 
 # Build shared-types package
-RUN cd packages/shared-types && npx tsc || echo "shared-types build skipped"
+RUN cd packages/shared-types && tsc
 
-# Build API using npx to ensure nest CLI is found
-RUN cd apps/api && npx nest build
+# Build API
+RUN cd apps/api && nest build
 
 # 3. Production image, copy all the files and run next
 FROM base AS runner
