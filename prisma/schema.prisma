@@ -124,6 +124,7 @@ model User {
   notifications       Notification[]
   sentMessages        Message[]         @relation("SentMessages")
   receivedMessages    Message[]         @relation("ReceivedMessages")
+  contracts           Contract[]
   
   // Timestamps
   createdAt     DateTime   @default(now())
