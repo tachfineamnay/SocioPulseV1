@@ -282,9 +282,13 @@ export function WallFeedClient({ initialFeed, talentPool, activity }: WallFeedCl
             const mapped = rawItems.map((item: ApiFeedItem | FeedItem) => mapApiItemToFeedItem(item));
             const mappedItems: FeedItem[] = mapped.filter((item: FeedItem | null): item is FeedItem => item !== null);
 
-            setPosts(mappedItems);
+            // Only update if API returned data, otherwise keep initial mock data
+            if (mappedItems.length > 0) {
+                setPosts(mappedItems);
+            }
         } catch (error) {
             console.error('Erreur lors du chargement du wall', error);
+            // Keep initial data on error - don't clear posts
         } finally {
             setIsLoading(false);
         }
