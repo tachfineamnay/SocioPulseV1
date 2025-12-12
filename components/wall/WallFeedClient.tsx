@@ -49,8 +49,8 @@ export interface OfferItem {
     city: string;
     description: string;
     serviceType: 'WORKSHOP' | 'COACHING_VIDEO';
-    category: string;
-    basePrice: number;
+    category?: string;
+    basePrice?: number;
     imageUrl?: string;
     tags: string[];
 }
@@ -130,7 +130,7 @@ const itemVariants = {
         opacity: 1,
         y: 0,
         transition: {
-            type: 'spring',
+            type: 'spring' as const,
             stiffness: 100,
             damping: 15,
         },
@@ -279,9 +279,8 @@ export function WallFeedClient({ initialFeed, talentPool, activity }: WallFeedCl
                 (Array.isArray(data?.feed) && data.feed) ||
                 [];
 
-            const mappedItems = rawItems
-                .map((item: ApiFeedItem | FeedItem) => mapApiItemToFeedItem(item))
-                .filter((item): item is FeedItem => Boolean(item));
+            const mapped = rawItems.map((item: ApiFeedItem | FeedItem) => mapApiItemToFeedItem(item));
+            const mappedItems: FeedItem[] = mapped.filter((item: FeedItem | null): item is FeedItem => item !== null);
 
             setPosts(mappedItems);
         } catch (error) {

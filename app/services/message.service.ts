@@ -30,7 +30,7 @@ const getToken = () => {
     return null;
 };
 
-const getAuthHeaders = () => {
+const getAuthHeaders = (): Record<string, string> => {
     const token = getToken();
     if (!token) return {};
 

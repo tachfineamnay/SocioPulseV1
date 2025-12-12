@@ -78,6 +78,7 @@ async function main() {
             jobTitle: 'Surveillant de nuit', urgencyLevel: MissionUrgency.CRITICAL,
             startDate: new Date(), endDate: new Date(Date.now() + 8*3600*1000),
             isNightShift: true, hourlyRate: 22, status: MissionStatus.OPEN,
+            address: '25 Rue du MECS', postalCode: '75011',
             city: locations.mecs.city, latitude: locations.mecs.latitude, longitude: locations.mecs.longitude
         }
     });
