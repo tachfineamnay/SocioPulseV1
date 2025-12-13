@@ -51,116 +51,78 @@ export interface Amenity {
 const amenityConfig: Record<AmenityType, {
     icon: LucideIcon;
     label: string;
-    color: string;
-    bgColor: string;
 }> = {
     parking: {
         icon: Car,
         label: 'Parking gratuit',
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-50',
     },
     meals: {
         icon: Utensils,
         label: 'Repas offert',
-        color: 'text-orange-600',
-        bgColor: 'bg-orange-50',
     },
     young_team: {
         icon: Users,
         label: 'Équipe jeune',
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-50',
     },
     coffee: {
         icon: Coffee,
         label: 'Café à volonté',
-        color: 'text-amber-600',
-        bgColor: 'bg-amber-50',
     },
     wifi: {
         icon: Wifi,
         label: 'WiFi disponible',
-        color: 'text-cyan-600',
-        bgColor: 'bg-cyan-50',
     },
     flexible_hours: {
         icon: Clock,
         label: 'Horaires flexibles',
-        color: 'text-green-600',
-        bgColor: 'bg-green-50',
     },
     insurance: {
         icon: Shield,
         label: 'Assurance incluse',
-        color: 'text-slate-600',
-        bgColor: 'bg-slate-50',
     },
     care: {
         icon: Heart,
         label: 'Ambiance bienveillante',
-        color: 'text-pink-600',
-        bgColor: 'bg-pink-50',
     },
     accessibility: {
         icon: Accessibility,
         label: 'Accessible PMR',
-        color: 'text-indigo-600',
-        bgColor: 'bg-indigo-50',
     },
     garden: {
         icon: TreePine,
         label: 'Espace vert',
-        color: 'text-emerald-600',
-        bgColor: 'bg-emerald-50',
     },
     transport: {
         icon: Bus,
         label: 'Transports à proximité',
-        color: 'text-sky-600',
-        bgColor: 'bg-sky-50',
     },
     childcare: {
         icon: Baby,
         label: 'Crèche d\'entreprise',
-        color: 'text-rose-600',
-        bgColor: 'bg-rose-50',
     },
     gym: {
         icon: Dumbbell,
         label: 'Salle de sport',
-        color: 'text-red-600',
-        bgColor: 'bg-red-50',
     },
     music_therapy: {
         icon: Music,
         label: 'Musicothérapie',
-        color: 'text-violet-600',
-        bgColor: 'bg-violet-50',
     },
     art_therapy: {
         icon: Palette,
         label: 'Art-thérapie',
-        color: 'text-fuchsia-600',
-        bgColor: 'bg-fuchsia-50',
     },
     pets_allowed: {
         icon: Dog,
         label: 'Animaux acceptés',
-        color: 'text-yellow-600',
-        bgColor: 'bg-yellow-50',
     },
     day_shift: {
         icon: Sun,
         label: 'Poste de jour',
-        color: 'text-amber-500',
-        bgColor: 'bg-amber-50',
     },
     night_shift: {
         icon: Moon,
         label: 'Poste de nuit',
-        color: 'text-indigo-500',
-        bgColor: 'bg-indigo-50',
     },
 };
 
@@ -215,16 +177,18 @@ export function AmenitiesList({
                     return (
                         <span
                             key={index}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-transparent hover:border-coral-200 transition-all duration-200"
                             title={amenity.label || config.label}
                         >
-                            <Icon className="w-3.5 h-3.5" />
+                            <span className="w-4 h-4 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                <Icon className="w-2.5 h-2.5 text-blue-600" />
+                            </span>
                             {amenity.label || config.label}
                         </span>
                     );
                 })}
                 {hiddenCount > 0 && (
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-transparent hover:border-slate-200 cursor-pointer transition-all duration-200">
                         +{hiddenCount}
                     </span>
                 )}
@@ -248,10 +212,13 @@ export function AmenitiesList({
                         <motion.div
                             key={index}
                             variants={itemVariants}
-                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl ${config.bgColor} border border-slate-100`}
+                            whileHover={{ scale: 1.02 }}
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-100 hover:border-coral-200 shadow-sm hover:shadow transition-all duration-200"
                         >
-                            <Icon className={`w-4 h-4 ${config.color}`} />
-                            <span className="text-sm font-medium text-slate-700">
+                            <span className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                                <Icon className="w-3.5 h-3.5 text-blue-600" />
+                            </span>
+                            <span className="text-sm text-slate-600">
                                 {amenity.label || config.label}
                             </span>
                         </motion.div>
@@ -261,7 +228,8 @@ export function AmenitiesList({
         );
     }
 
-    // Grid variant (default)
+    // Grid variant (default) - Premium Icon + Text Design
+    // 2 columns on mobile, 3 columns on desktop
     return (
         <motion.div
             variants={containerVariants}
@@ -278,12 +246,13 @@ export function AmenitiesList({
                         key={index}
                         variants={itemVariants}
                         whileHover={{ scale: 1.02 }}
-                        className={`flex items-center gap-3 p-3 rounded-xl ${config.bgColor} border border-slate-100/50 cursor-default`}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-white border border-slate-100 hover:border-coral-200 shadow-sm hover:shadow transition-all duration-200 cursor-default"
                     >
-                        <div className={`w-9 h-9 rounded-lg bg-white/80 flex items-center justify-center shadow-sm`}>
-                            <Icon className={`w-5 h-5 ${config.color}`} />
+                        {/* Icon Circle - Blue theme */}
+                        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-4 h-4 text-blue-600" />
                         </div>
-                        <span className="text-sm font-medium text-slate-700">
+                        <span className="text-sm text-slate-600">
                             {amenity.label || config.label}
                         </span>
                     </motion.div>
@@ -294,9 +263,9 @@ export function AmenitiesList({
                 <motion.button
                     variants={itemVariants}
                     whileHover={{ scale: 1.02 }}
-                    className="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors"
+                    className="flex items-center justify-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-medium text-slate-500 hover:text-coral-600 hover:border-coral-200 transition-all duration-200 cursor-pointer"
                 >
-                    +{hiddenCount} autres avantages
+                    +{hiddenCount} autres
                 </motion.button>
             )}
         </motion.div>

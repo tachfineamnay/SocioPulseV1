@@ -34,38 +34,53 @@ export interface SkillsTagsProps {
     animated?: boolean;
 }
 
-// Skill category styling
-const categoryStyles: Record<string, { bg: string; text: string; border: string }> = {
+// Skill category styling - Premium Soft Pill Design
+// Default: slate-100 background, Highlighted: coral-50 background
+const categoryStyles: Record<string, { bg: string; text: string; border: string; hoverBorder: string }> = {
     medical: {
-        bg: 'bg-blue-50',
-        text: 'text-blue-700',
-        border: 'border-blue-200',
+        bg: 'bg-slate-100',
+        text: 'text-slate-700',
+        border: 'border-transparent',
+        hoverBorder: 'hover:border-coral-200',
     },
     soft: {
-        bg: 'bg-purple-50',
-        text: 'text-purple-700',
-        border: 'border-purple-200',
+        bg: 'bg-slate-100',
+        text: 'text-slate-700',
+        border: 'border-transparent',
+        hoverBorder: 'hover:border-coral-200',
     },
     transport: {
-        bg: 'bg-green-50',
-        text: 'text-green-700',
-        border: 'border-green-200',
+        bg: 'bg-slate-100',
+        text: 'text-slate-700',
+        border: 'border-transparent',
+        hoverBorder: 'hover:border-coral-200',
     },
     language: {
-        bg: 'bg-amber-50',
-        text: 'text-amber-700',
-        border: 'border-amber-200',
+        bg: 'bg-slate-100',
+        text: 'text-slate-700',
+        border: 'border-transparent',
+        hoverBorder: 'hover:border-coral-200',
     },
     certification: {
-        bg: 'bg-coral-50',
-        text: 'text-coral-700',
-        border: 'border-coral-200',
+        bg: 'bg-slate-100',
+        text: 'text-slate-700',
+        border: 'border-transparent',
+        hoverBorder: 'hover:border-coral-200',
     },
     default: {
-        bg: 'bg-slate-50',
+        bg: 'bg-slate-100',
         text: 'text-slate-700',
-        border: 'border-slate-200',
+        border: 'border-transparent',
+        hoverBorder: 'hover:border-coral-200',
     },
+};
+
+// Highlighted skill style (coral theme)
+const highlightedStyle = {
+    bg: 'bg-coral-50',
+    text: 'text-coral-700',
+    border: 'border-coral-200',
+    hoverBorder: 'hover:border-coral-300',
 };
 
 // Auto-detect category from skill name
@@ -146,7 +161,8 @@ export function SkillsTags({
 
     const getItemProps = (skill: Skill, index: number) => animated ? {
         variants: itemVariants,
-        whileHover: { scale: 1.05 },
+        whileHover: { scale: 1.05, transition: { duration: 0.2 } },
+        whileTap: { scale: 0.98 },
         key: index,
     } : { key: index };
 
@@ -154,20 +170,19 @@ export function SkillsTags({
         return (
             <Container {...containerProps} className="flex flex-wrap gap-2">
                 {visibleSkills.map((skill, index) => {
-                    const category = skill.category || detectCategory(skill.name);
-                    const style = categoryStyles[category || 'default'];
+                    const style = skill.isHighlighted ? highlightedStyle : categoryStyles[skill.category || detectCategory(skill.name) || 'default'];
 
                     return (
                         <Item
                             {...getItemProps(skill, index)}
                             className={`
                                 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border
-                                ${style.bg} ${style.text} ${style.border}
-                                text-sm font-medium
-                                ${skill.isHighlighted ? 'ring-2 ring-coral-300 ring-offset-1' : ''}
+                                ${style.bg} ${style.text} ${style.border} ${style.hoverBorder}
+                                text-sm font-medium cursor-default
+                                transition-all duration-200
                             `}
                         >
-                            {skill.isHighlighted && <Sparkles className="w-3.5 h-3.5" />}
+                            {skill.isHighlighted && <Sparkles className="w-3.5 h-3.5 text-coral-500" />}
                             {skill.name}
                         </Item>
                     );
@@ -175,7 +190,7 @@ export function SkillsTags({
                 {hiddenCount > 0 && (
                     <Item
                         {...getItemProps({ name: 'more' }, visibleSkills.length)}
-                        className="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-sm font-medium border border-slate-200"
+                        className="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-500 text-sm font-medium border border-transparent hover:border-slate-200 cursor-pointer transition-all duration-200"
                     >
                         +{hiddenCount}
                     </Item>
@@ -188,16 +203,16 @@ export function SkillsTags({
         return (
             <Container {...containerProps} className="flex flex-wrap gap-2">
                 {visibleSkills.map((skill, index) => {
-                    const category = skill.category || detectCategory(skill.name);
-                    const style = categoryStyles[category || 'default'];
+                    const style = skill.isHighlighted ? highlightedStyle : categoryStyles['default'];
 
                     return (
                         <Item
                             {...getItemProps(skill, index)}
                             className={`
-                                inline-flex items-center gap-1 px-2.5 py-1 rounded-md
-                                ${style.bg} ${style.text}
+                                inline-flex items-center gap-1 px-2.5 py-1 rounded-md border
+                                ${style.bg} ${style.text} ${style.border} ${style.hoverBorder}
                                 text-xs font-semibold uppercase tracking-wide
+                                cursor-default transition-all duration-200
                             `}
                         >
                             {skill.name}
@@ -208,28 +223,26 @@ export function SkillsTags({
         );
     }
 
-    // Pills variant (default) - Colored, rounded pills
+    // Pills variant (default) - Premium Soft Pill Design
     return (
         <Container {...containerProps} className="flex flex-wrap gap-2">
             {visibleSkills.map((skill, index) => {
-                const category = skill.category || detectCategory(skill.name);
-                const style = categoryStyles[category || 'default'];
+                const isHighlighted = skill.isHighlighted;
 
                 return (
                     <Item
                         {...getItemProps(skill, index)}
                         className={`
-                            inline-flex items-center gap-1.5 px-4 py-2 rounded-full
-                            ${style.bg} ${style.text}
-                            text-sm font-medium
-                            shadow-sm hover:shadow transition-shadow cursor-default
-                            ${skill.isHighlighted 
-                                ? 'ring-2 ring-coral-400 ring-offset-2 bg-gradient-to-r from-coral-50 to-orange-50' 
-                                : ''
+                            inline-flex items-center gap-1.5 px-4 py-2 rounded-full border
+                            text-sm font-medium cursor-default
+                            transition-all duration-200
+                            ${isHighlighted 
+                                ? 'bg-coral-50 text-coral-700 border-coral-200 hover:border-coral-300' 
+                                : 'bg-slate-100 text-slate-700 border-transparent hover:border-coral-200'
                             }
                         `}
                     >
-                        {skill.isHighlighted && (
+                        {isHighlighted && (
                             <Sparkles className="w-3.5 h-3.5 text-coral-500" />
                         )}
                         {skill.name}
@@ -239,7 +252,7 @@ export function SkillsTags({
             {hiddenCount > 0 && (
                 <Item
                     {...getItemProps({ name: 'more' }, visibleSkills.length)}
-                    className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-200 transition-colors cursor-pointer"
+                    className="inline-flex items-center justify-center px-3 py-2 rounded-full bg-slate-100 text-slate-500 text-sm font-medium border border-transparent hover:border-coral-200 hover:text-coral-600 transition-all duration-200 cursor-pointer"
                     title={`${hiddenCount} compétences supplémentaires`}
                 >
                     +{hiddenCount}
