@@ -1,79 +1,34 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Send } from 'lucide-react';
-import { ToastContainer, useToasts } from '@/components/ui/Toast';
-import { sendMessage } from '@/app/services/message.service';
+import { MessageCircle } from 'lucide-react';
+
+// ===========================================
+// MESSAGES INDEX PAGE (Desktop placeholder)
+// ===========================================
 
 export default function MessagesPage() {
-    const searchParams = useSearchParams();
-    const recipientId = useMemo(() => searchParams.get('recipientId'), [searchParams]);
-    const [content, setContent] = useState('');
-    const [isSending, setIsSending] = useState(false);
-    const { toasts, addToast, removeToast } = useToasts();
-
-    const handleSend = useCallback(async () => {
-        if (!recipientId) {
-            addToast({ message: 'Aucun destinataire selectionne.', type: 'warning' });
-            return;
-        }
-
-        if (!content.trim()) {
-            addToast({ message: 'Le message ne peut pas etre vide.', type: 'warning' });
-            return;
-        }
-
-        setIsSending(true);
-        try {
-            await sendMessage(recipientId, content.trim());
-            addToast({ message: 'Message envoye !', type: 'success' });
-            setContent('');
-        } catch (error) {
-            console.error('sendMessage error', error);
-            addToast({ message: "Erreur lors de l'envoi du message.", type: 'error' });
-        } finally {
-            setIsSending(false);
-        }
-    }, [addToast, content, recipientId]);
-
     return (
-        <div className="min-h-screen bg-slate-50">
-            <ToastContainer toasts={toasts} onRemove={removeToast} />
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div className="bg-white rounded-2xl shadow-soft p-6 border border-slate-100">
-                    <h1 className="text-xl font-semibold text-slate-900 mb-4">Messagerie</h1>
+        <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-slate-50/50">
+            {/* Icon */}
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center mb-6">
+                <MessageCircle className="w-10 h-10 text-coral-500" />
+            </div>
 
-                    {recipientId ? (
-                        <div className="space-y-4">
-                            <p className="text-sm text-slate-500">
-                                Envoyer un message a l&apos;utilisateur <span className="font-semibold text-slate-900">{recipientId}</span>
-                            </p>
-                            <textarea
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                placeholder="Ecrivez votre message..."
-                                className="w-full min-h-[150px] rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-coral-500 transition"
-                            />
-                            <div className="flex justify-end">
-                                <button
-                                    type="button"
-                                    onClick={handleSend}
-                                    disabled={isSending}
-                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-coral-500 hover:bg-coral-600 transition-colors ${isSending ? 'opacity-70 cursor-not-allowed' : ''
-                                        }`}
-                                >
-                                    <Send className="w-4 h-4" />
-                                    {isSending ? 'Envoi...' : 'Envoyer'}
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="text-center py-12">
-                            <p className="text-sm text-slate-500">Selectionnez une conversation pour commencer.</p>
-                        </div>
-                    )}
-                </div>
+            {/* Title */}
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">
+                Vos messages
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-slate-500 max-w-sm">
+                Sélectionnez une conversation dans la liste pour commencer à échanger.
+            </p>
+
+            {/* Decorative Elements */}
+            <div className="mt-8 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-coral-300 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-coral-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                <div className="w-2 h-2 rounded-full bg-coral-500 animate-pulse" style={{ animationDelay: '0.4s' }} />
             </div>
         </div>
     );
