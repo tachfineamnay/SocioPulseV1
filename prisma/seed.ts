@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, UserStatus, MissionStatus, BookingStatus, MissionUrgency, TransactionType, TransactionStatus, ServiceType } from '@prisma/client';
+import { PrismaClient, UserRole, UserStatus, MissionStatus, BookingStatus, MissionUrgency, TransactionType, TransactionStatus, ServiceType, PostType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -325,6 +325,76 @@ async function main() {
             }
         });
     }
+
+    // 7. Posts (Wall)
+    console.log('📰 Creating Posts (Wall)...');
+
+    // OFFERS (from Extras)
+    await prisma.post.create({
+        data: {
+            authorId: extras[0].id, // Jean Dupont (Infirmier)
+            type: PostType.OFFER,
+            title: 'Soins infirmiers à domicile',
+            content: 'Disponible pour tournées de soins ou gardes de nuit sur Paris.',
+            city: 'Paris',
+            postalCode: '75004',
+            tags: ['soins', 'nuit', 'domicile'],
+            category: 'Santé'
+        }
+    });
+
+    await prisma.post.create({
+        data: {
+            authorId: extras[1].id, // Marie Curie (Aide-soignant)
+            type: PostType.OFFER,
+            title: 'Aide à la toilette et repas',
+            content: 'Expérience confirmée en gériatrie. Douce et ponctuelle.',
+            city: 'Paris',
+            postalCode: '75011',
+            tags: ['gériatrie', 'toilette'],
+            category: 'Aide à la personne'
+        }
+    });
+
+    await prisma.post.create({
+        data: {
+            authorId: extras[2].id, // Paul Verlaine (Educateur)
+            type: PostType.OFFER,
+            title: 'Atelier écriture et poésie',
+            content: 'Animation d\'ateliers d\'écriture pour résidents.',
+            category: 'Animation',
+            tags: ['culture', 'atelier', 'senior']
+        }
+    });
+
+    // NEEDS (from Clients)
+    await prisma.post.create({
+        data: {
+            authorId: clients[0].id, // EHPAD Les Jardins
+            type: PostType.NEED,
+            title: 'Recherche kiné remplaçant',
+            content: 'Besoin urgent pour remplacement congé maternité (3 mois).',
+            city: 'Paris',
+            postalCode: '75004',
+            tags: ['kiné', 'remplacement', 'cdj'],
+            category: 'Paramédical',
+            validUntil: new Date(Date.now() + 7776000000) // +3 months
+        }
+    });
+
+    await prisma.post.create({
+        data: {
+            authorId: clients[1].id, // Crèche
+            type: PostType.NEED,
+            title: 'Auxiliaire petite enfance',
+            content: 'Cherche renfort pour la semaine du goût. Animation culinaire bienvenue.',
+            city: 'Lyon',
+            postalCode: '69002',
+            tags: ['enfance', 'animation'],
+            category: 'Petite Enfance',
+            validUntil: new Date(Date.now() + 604800000) // +1 week
+        }
+    });
 
     console.log('✅ Seeding completed.');
 }

@@ -152,19 +152,14 @@ export default function HomePage() {
         try {
             const response = await getFeed();
             const data = response as any;
-            const rawItems = Array.isArray(data) 
-                ? data 
+            const rawItems = Array.isArray(data)
+                ? data
                 : data?.items || data?.data?.items || data?.feed?.items || data?.feed || [];
 
             const mappedItems = (rawItems as any[]).map(mapApiItemToFeedItem).filter(Boolean);
 
-            // Utiliser les données API si disponibles, sinon fallback aux MOCK
-            if (mappedItems.length > 0) {
-                setPosts(mappedItems);
-            } else {
-                // Fallback aux données mock si API vide
-                setPosts(MOCK_FEED);
-            }
+            // Utiliser les données API
+            setPosts(mappedItems);
         } catch (error) {
             console.error('Error loading feed:', error);
             // Fallback aux données mock en cas d'erreur
