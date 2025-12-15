@@ -9,13 +9,27 @@ async function bootstrap() {
     const logger = new common_1.Logger('Bootstrap');
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.setGlobalPrefix('api/v1');
-    const corsOrigins = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS || 'http://localhost:3000')
+    const isDev = process.env.NODE_ENV !== 'production';
+    const allowedOrigins = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS || 'http://localhost:3000')
         .split(',')
         .map((o) => o.trim())
         .filter(Boolean);
     app.enableCors({
-        origin: corsOrigins,
+        origin: (origin, callback) => {
+            if (!origin) {
+                return callback(null, true);
+            }
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            if (isDev || origin.includes('localhost') || origin.includes('sslip.io')) {
+                return callback(null, true);
+            }
+            callback(new Error('Not allowed by CORS'));
+        },
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     });
     app.useGlobalFilters(new filters_1.AllExceptionsFilter());
     app.useGlobalPipes(new common_1.ValidationPipe({
