@@ -111,9 +111,9 @@ const decodeUserIdFromToken = (token?: string | null) => {
 // ===========================================
 
 export default function HomePage() {
-    // State
-    const [posts, setPosts] = useState<FeedItem[]>(MOCK_FEED);
-    const [isLoading, setIsLoading] = useState(false);
+    // State - Initialisation vide pour afficher le skeleton au chargement
+    const [posts, setPosts] = useState<FeedItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [hasMore, setHasMore] = useState(true);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const { toasts, addToast, removeToast } = useToasts();
@@ -152,28 +152,30 @@ export default function HomePage() {
         try {
             const response = await getFeed();
             const data = response as any;
-            const rawItems = Array.isArray(data) ? data : data?.items || data?.feed || [];
+            const rawItems = Array.isArray(data) 
+                ? data 
+                : data?.items || data?.data?.items || data?.feed?.items || data?.feed || [];
 
             const mappedItems = (rawItems as any[]).map(mapApiItemToFeedItem).filter(Boolean);
 
+            // Utiliser les données API si disponibles, sinon fallback aux MOCK
             if (mappedItems.length > 0) {
-                setPosts(prev => {
-                    // Merge mock and API (for demo density) unique by ID
-                    const existingIds = new Set(prev.map(p => p.id));
-                    const newItems = mappedItems.filter(i => !existingIds.has(i.id));
-                    return [...newItems, ...prev]; // Put real items fast, then fallback to mock
-                });
+                setPosts(mappedItems);
+            } else {
+                // Fallback aux données mock si API vide
+                setPosts(MOCK_FEED);
             }
         } catch (error) {
             console.error('Error loading feed:', error);
+            // Fallback aux données mock en cas d'erreur
+            setPosts(MOCK_FEED);
         } finally {
             setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        // Mock loading delay for effect
-        setTimeout(() => fetchFeed(), 800);
+        fetchFeed();
     }, [fetchFeed]);
 
     // Filter logic
@@ -212,14 +214,14 @@ export default function HomePage() {
 
     // Load more (infinite scroll simulation)
     const handleLoadMore = useCallback(() => {
-        // For demo: just duplicate existing items with new IDs to simulate infinite scroll
-        const moreItems = filteredFeed.slice(0, 10).map(item => ({
+        // Utiliser les posts existants ou fallback aux mocks
+        const sourceItems = posts.length > 0 ? posts : MOCK_FEED;
+        const moreItems = sourceItems.slice(0, 10).map(item => ({
             ...item,
-            id: `${item.id}-dup-${Date.now()}`
+            id: `${item.id}-dup-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
         }));
         setPosts(prev => [...prev, ...moreItems]);
-        // setHasMore(false); // Keep it infinite for demo fun
-    }, [filteredFeed]);
+    }, [posts]);
 
     // Publish
     const handlePublish = useCallback(async () => {
