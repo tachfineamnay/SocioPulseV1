@@ -7,7 +7,7 @@ import { getFeed } from '@/app/services/wall.service';
 import Link from 'next/link';
 import { BentoFeed } from './BentoFeed';
 import { SmartSearchBar, type FloatingAvatar } from './SmartSearchBar';
-import type { DiscoveryMode } from './SmartCard';
+import { SmartCard, type DiscoveryMode } from './SmartCard';
 
 export interface TalentPoolItem {
     id: string;
@@ -149,6 +149,26 @@ export function WallFeedClient({
         const filtered = filterItemsForMode(allItems, mode);
         return filtered.length > 0 ? filtered : allItems;
     }, [allItems, mode]);
+
+    const offers = useMemo(
+        () =>
+            visibleItems.filter(
+                (item) =>
+                    isServiceItem(item) ||
+                    (isPostItem(item) && String(item?.postType || item?.type).toUpperCase() === 'OFFER'),
+            ),
+        [visibleItems],
+    );
+
+    const needs = useMemo(
+        () =>
+            visibleItems.filter(
+                (item) =>
+                    isMissionItem(item) ||
+                    (isPostItem(item) && String(item?.postType || item?.type).toUpperCase() === 'NEED'),
+            ),
+        [visibleItems],
+    );
 
     useEffect(() => {
         if (searchTerm.trim()) return;
@@ -325,6 +345,53 @@ export function WallFeedClient({
                             </h2>
                         </div>
                         {isLoading ? <span className="text-sm text-slate-500">Mise à jour…</span> : null}
+                    </div>
+
+                    {/* Focus Offres / Besoins */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-8">
+                        <div className="rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-soft p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Offres</p>
+                                    <p className="text-sm font-semibold text-slate-900">Talents & ateliers</p>
+                                </div>
+                                <span className="text-xs font-semibold text-indigo-500">{offers.length} items</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {offers.slice(0, 4).map((item, idx) => (
+                                    <div key={`${item?.id ?? idx}-offer`} className="h-full">
+                                        <SmartCard item={item} mode={mode} />
+                                    </div>
+                                ))}
+                                {offers.length === 0 ? (
+                                    <div className="col-span-full text-sm text-slate-500">
+                                        Aucune offre visio/atelier trouvée.
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
+
+                        <div className="rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-soft p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Besoins</p>
+                                    <p className="text-sm font-semibold text-slate-900">Demandes & missions</p>
+                                </div>
+                                <span className="text-xs font-semibold text-[#FF6B6B]">{needs.length} items</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {needs.slice(0, 4).map((item, idx) => (
+                                    <div key={`${item?.id ?? idx}-need`} className="h-full">
+                                        <SmartCard item={item} mode={mode} />
+                                    </div>
+                                ))}
+                                {needs.length === 0 ? (
+                                    <div className="col-span-full text-sm text-slate-500">
+                                        Aucune mission ou demande pour le moment.
+                                    </div>
+                                ) : null}
+                            </div>
+                        </div>
                     </div>
 
                     <BentoFeed items={visibleItems} mode={mode} isLoading={isLoading} />
