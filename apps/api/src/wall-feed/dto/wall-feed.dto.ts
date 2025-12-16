@@ -24,7 +24,7 @@ export class GetFeedDto {
     @IsString()
     city?: string;
 
-    @ApiPropertyOptional({ description: 'Filtrer par code postal (préfixe)' })
+    @ApiPropertyOptional({ description: 'Filtrer par code postal (prefixe)' })
     @IsOptional()
     @IsString()
     postalCode?: string;
@@ -36,17 +36,22 @@ export class GetFeedDto {
     @Transform(({ value }) => (typeof value === 'string' ? [value] : value))
     tags?: string[];
 
-    @ApiPropertyOptional({ description: 'Filtrer par catégorie' })
+    @ApiPropertyOptional({ description: 'Recherche texte' })
+    @IsOptional()
+    @IsString()
+    search?: string;
+
+    @ApiPropertyOptional({ description: 'Filtrer par categorie' })
     @IsOptional()
     @IsString()
     category?: string;
 
-    @ApiPropertyOptional({ description: 'Latitude pour recherche géo' })
+    @ApiPropertyOptional({ description: 'Latitude pour recherche geo' })
     @IsOptional()
     @IsNumber()
     latitude?: number;
 
-    @ApiPropertyOptional({ description: 'Longitude pour recherche géo' })
+    @ApiPropertyOptional({ description: 'Longitude pour recherche geo' })
     @IsOptional()
     @IsNumber()
     longitude?: number;

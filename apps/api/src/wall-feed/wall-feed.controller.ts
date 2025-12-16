@@ -49,6 +49,23 @@ export class WallFeedController {
         return this.wallService.getPost(id);
     }
 
+    @Get('services/:id')
+    @ApiOperation({ summary: 'Obtenir le d\u00e9tail d\'un service' })
+    async getService(@Param('id') id: string): Promise<any> {
+        return this.wallService.getServiceById(id);
+    }
+
+    @Post('bookings')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @ApiOperation({ summary: 'Cr\u00e9er une r\u00e9servation' })
+    async createBooking(
+        @CurrentUser() user: CurrentUserPayload,
+        @Body() body: { serviceId: string; date: string; startTime: string; duration: number; message?: string },
+    ) {
+        return this.wallService.createBooking(user.id, body);
+    }
+
     @Delete('posts/:id')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

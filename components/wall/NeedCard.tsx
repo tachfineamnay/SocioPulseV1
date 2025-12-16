@@ -1,33 +1,14 @@
 'use client';
 
 import type { MouseEvent } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Clock, MapPin, AlertTriangle, Building2 } from 'lucide-react';
-import { CardShell } from './CardShell';
+import { Clock, MapPin, AlertTriangle } from 'lucide-react';
 
 export interface NeedCardProps {
-    id: string;
-    authorId?: string;
-    currentUserId?: string;
-    onSelfContact?: () => void;
-    title: string;
-    establishment: string;
-    establishmentLogo?: string;
-    city: string;
-    description: string;
-    urgencyLevel?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-    hourlyRate?: number;
-    jobTitle: string;
-    startDate: string;
-    isNightShift?: boolean;
-    tags?: string[];
+    data: any;
     onClick?: () => void;
-    /** Whether the card is favorited */
-    isFavorite?: boolean;
-    /** Callback when favorite is toggled */
-    onFavoriteToggle?: () => void;
-    /** Callback when share is clicked */
-    onShare?: () => void;
 }
 
 const urgencyConfig = {
@@ -37,116 +18,113 @@ const urgencyConfig = {
     CRITICAL: { label: 'Urgent', color: 'bg-red-100 text-red-700' },
 };
 
+const getInitials = (value?: string) => {
+    if (!value) return 'LX';
+    const parts = value.split(' ').filter(Boolean);
+    if (parts.length === 0) return 'LX';
+    return parts.map((part) => part[0]?.toUpperCase()).join('').slice(0, 2);
+};
+
+const formatRelativeTime = (value?: string | Date | null) => {
+    if (!value) return '';
+    const date = typeof value === 'string' ? new Date(value) : value;
+    if (isNaN(date.getTime())) return '';
+
+    const diffMs = Date.now() - date.getTime();
+    const diffMinutes = Math.max(1, Math.round(diffMs / 60000));
+
+    if (diffMinutes < 60) return `Il y a ${diffMinutes} min`;
+    const diffHours = Math.round(diffMinutes / 60);
+    if (diffHours < 24) return `Il y a ${diffHours}h`;
+    const diffDays = Math.round(diffHours / 24);
+    return `Il y a ${diffDays}j`;
+};
+
 export function NeedCard({
-    id,
-    authorId,
-    currentUserId,
-    title,
-    establishment,
-    establishmentLogo,
-    city,
-    description,
-    urgencyLevel = 'MEDIUM',
-    hourlyRate,
-    jobTitle,
-    startDate,
-    isNightShift,
-    tags = [],
+    data,
     onClick,
-    onSelfContact,
-    isFavorite = false,
-    onFavoriteToggle,
-    onShare,
 }: NeedCardProps) {
-    const urgency = urgencyConfig[urgencyLevel] || urgencyConfig.MEDIUM;
+    const mission = data || {};
+    const missionId = mission?.id;
+    const establishment = mission?.client?.establishment?.name || mission?.establishment || mission?.authorName || 'Etablissement';
+    const establishmentLogo = mission?.client?.establishment?.logoUrl || mission?.establishmentLogo;
+    const city = mission?.city || mission?.client?.establishment?.city || '';
+    const description = mission?.description || mission?.content || '';
+    const urgencyLevel = (mission?.urgencyLevel || 'MEDIUM') as keyof typeof urgencyConfig;
+    const hourlyRate = mission?.hourlyRate !== undefined && mission?.hourlyRate !== null ? Number(mission.hourlyRate) : null;
+    const missionTitle = mission?.title || mission?.jobTitle || 'Mission';
+    const missionType = mission?.jobTitle || missionTitle;
+    const startDate = mission?.startDate || mission?.validUntil || mission?.createdAt;
+    const isNightShift = Boolean(mission?.isNightShift);
+    const postedLabel = formatRelativeTime(mission?.createdAt || startDate);
+    const startDateLabel = postedLabel || (startDate ? new Date(startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '');
+    const tags = Array.isArray(mission?.tags)
+        ? mission.tags
+        : Array.isArray(mission?.requiredSkills)
+            ? mission.requiredSkills
+            : [];
+    const detailHref = missionId ? `/need/${missionId}` : undefined;
+    const urgency = urgencyConfig[urgencyLevel];
     const isUrgent = urgencyLevel === 'HIGH' || urgencyLevel === 'CRITICAL';
     const router = useRouter();
 
-    const handleContact = (event: MouseEvent<HTMLButtonElement>) => {
+    const handleView = (event: MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
 
-        if (!authorId) return;
-        if (currentUserId && authorId === currentUserId) {
-            onSelfContact?.();
-            return;
-        }
-
-        router.push(`/messages?recipientId=${encodeURIComponent(authorId)}`);
+        if (!missionId) return;
+        router.push(`/missions/${missionId}`);
     };
 
-    const handleFavoriteToggle = () => {
-        onFavoriteToggle?.();
-    };
-
-    const handleShare = () => {
-        onShare?.();
-    };
-
-    // Hero content with establishment branding
-    const heroContent = (
-        <div className="pattern-hero-need">
+    const card = (
+        <motion.article
+            whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onClick}
+            className={`
+        group relative bg-white rounded-2xl p-5 cursor-pointer
+        border-l-4 border-blue-500
+        shadow-soft hover:shadow-soft-lg
+        transition-shadow duration-300
+      `}
+        >
             {/* Urgent Badge */}
             {isUrgent && (
-                <div className="absolute top-3 right-3 z-10">
+                <div className="absolute -top-2 -right-2 z-10">
                     <span className={`
-                        inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
-                        ${urgency.color} animate-pulse shadow-sm
-                    `}>
+            inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold
+            ${urgency.color} animate-pulse
+          `}>
                         <AlertTriangle className="w-3 h-3" />
                         {urgency.label}
                     </span>
                 </div>
             )}
 
-            {/* Establishment Logo - Centered in hero */}
-            <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-2xl bg-white/90 backdrop-blur-sm flex items-center justify-center overflow-hidden shadow-soft">
+            {/* Header */}
+            <div className="flex items-start gap-3 mb-4">
+                {/* Establishment Logo */}
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center overflow-hidden">
                     {establishmentLogo ? (
                         <img src={establishmentLogo} alt={establishment} className="w-full h-full object-cover" />
                     ) : (
-                        <Building2 className="w-8 h-8 text-blue-500" />
+                        <span className="text-sm font-semibold text-blue-600">
+                            {getInitials(establishment)}
+                        </span>
                     )}
                 </div>
-            </div>
-        </div>
-    );
 
-    // Contact button (secondary style for feed)
-    const contactButton = (
-        <button
-            type="button"
-            onClick={handleContact}
-            className="btn-secondary"
-            aria-label={`Contacter ${establishment}`}
-        >
-            Contacter
-        </button>
-    );
-
-    return (
-        <CardShell
-            variant="need"
-            hasImage={false}
-            heroContent={heroContent}
-            onClick={onClick}
-            isFavorite={isFavorite}
-            onFavoriteToggle={handleFavoriteToggle}
-            onShare={handleShare}
-            showSocialActions={true}
-            footerContent={contactButton}
-        >
-            {/* Header */}
-            <div className="mb-4">
-                <h3 className="font-semibold text-slate-900 text-base leading-tight line-clamp-1 group-hover:text-blue-600 transition-colors">
-                    {title}
-                </h3>
-                <p className="text-sm text-slate-500 mt-1">{establishment}</p>
+                <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-slate-900 text-base leading-tight line-clamp-1 group-hover:text-blue-600 transition-colors">
+                        {missionTitle}
+                    </h3>
+                    <p className="text-sm text-slate-500 mt-0.5">{establishment}</p>
+                </div>
             </div>
 
             {/* Job Title Badge */}
             <div className="mb-3">
                 <span className="inline-block px-3 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-medium">
-                    {jobTitle}
+                    {missionType}
                 </span>
             </div>
 
@@ -158,27 +136,24 @@ export function NeedCard({
             {/* Meta Info */}
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
                 <span className="inline-flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-blue-400" />
+                    <MapPin className="w-3.5 h-3.5" />
                     {city}
                 </span>
                 <span className="inline-flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-blue-400" />
-                    {new Date(startDate).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'short'
-                    })}
+                    <Clock className="w-3.5 h-3.5" />
+                    {startDateLabel}
                     {isNightShift && ' - Nuit'}
                 </span>
-                {hourlyRate && (
+                {hourlyRate !== null && hourlyRate !== undefined && (
                     <span className="ml-auto font-semibold text-slate-900">
-                        {hourlyRate} €/h
+                        {hourlyRate} EUR/h
                     </span>
                 )}
             </div>
 
             {/* Tags */}
             {tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-4 pt-4 border-t border-slate-100">
+                <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-slate-100">
                     {tags.slice(0, 3).map((tag, index) => (
                         <span
                             key={index}
@@ -192,6 +167,28 @@ export function NeedCard({
                     )}
                 </div>
             )}
-        </CardShell>
+
+            <div className="mt-4 flex items-center justify-end">
+                <button
+                    type="button"
+                    onClick={handleView}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+                    aria-label={`Voir la mission ${missionTitle}`}
+                >
+                    Voir
+                </button>
+            </div>
+
+            {/* Hover Effect Overlay */}
+            <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-blue-200 transition-colors pointer-events-none" />
+        </motion.article>
+    );
+
+    return detailHref ? (
+        <Link href={detailHref} className="block h-full">
+            {card}
+        </Link>
+    ) : (
+        card
     );
 }

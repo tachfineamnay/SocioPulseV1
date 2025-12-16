@@ -177,39 +177,14 @@ export function FeedList({
                     >
                         {item.type === 'NEED' ? (
                             <NeedCard
-                                id={item.id}
-                                authorId={item.authorId}
-                                currentUserId={currentUserId || undefined}
-                                onSelfContact={onSelfContact}
-                                title={item.title}
-                                establishment={item.establishment}
-                                city={item.city}
-                                description={item.description}
-                                urgencyLevel={item.urgencyLevel}
-                                hourlyRate={item.hourlyRate}
-                                jobTitle={item.jobTitle}
-                                startDate={item.startDate}
-                                isNightShift={item.isNightShift}
-                                tags={item.tags}
+                                data={item}
                                 onClick={() => router.push(`/need/${item.id}`)}
                             />
                         ) : (
                             <OfferCard
-                                id={item.id}
-                                authorId={item.authorId}
+                                data={item}
                                 currentUserId={currentUserId || undefined}
                                 onSelfContact={onSelfContact}
-                                title={item.title}
-                                providerName={item.providerName}
-                                providerRating={item.providerRating}
-                                providerReviews={item.providerReviews}
-                                city={item.city}
-                                description={item.description}
-                                serviceType={item.serviceType}
-                                category={item.category}
-                                basePrice={item.basePrice}
-                                imageUrl={item.imageUrl}
-                                tags={item.tags}
                                 onClick={() => router.push(`/offer/${item.id}`)}
                             />
                         )}

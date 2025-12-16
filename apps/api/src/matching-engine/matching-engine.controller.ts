@@ -21,12 +21,12 @@ import { Roles, CurrentUser, CurrentUserPayload } from '../common/decorators';
 
 @ApiTags('matching')
 @Controller('matching')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
 export class MatchingEngineController {
     constructor(private readonly matchingService: MatchingEngineService) { }
 
     @Post('missions')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
     @Roles('CLIENT', 'ADMIN')
     @ApiOperation({ summary: 'Créer une mission SOS' })
     @ApiResponse({ status: 201, description: 'Mission créée' })
@@ -38,6 +38,8 @@ export class MatchingEngineController {
     }
 
     @Get('missions/:missionId/candidates')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
     @Roles('CLIENT', 'ADMIN')
     @ApiOperation({ summary: 'Trouver des candidats pour une mission SOS' })
     @ApiParam({ name: 'missionId', description: 'ID de la mission' })
@@ -57,6 +59,8 @@ export class MatchingEngineController {
     }
 
     @Post('missions/:missionId/apply')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
     @Roles('EXTRA')
     @ApiOperation({ summary: 'Postuler à une mission SOS' })
     @ApiParam({ name: 'missionId', description: 'ID de la mission' })
