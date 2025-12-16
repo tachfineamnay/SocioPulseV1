@@ -236,6 +236,24 @@ export function WallFeedClient({
             </div>
 
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-safe pb-safe">
+                {/* Badge Principal - Zone marquante */}
+                <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="flex justify-center pt-6 pb-4"
+                >
+                    <div className="relative group">
+                        {/* Glow effect */}
+                        <div className="absolute -inset-1 bg-gradient-to-r from-coral-400 via-rose-400 to-coral-400 rounded-full opacity-30 blur-md group-hover:opacity-50 transition-opacity" />
+                        <div className="relative inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-coral-500 to-rose-500 px-6 py-3 text-base font-bold text-white shadow-lg">
+                            <Sparkles className="h-5 w-5 text-white animate-pulse" />
+                            <span className="tracking-wide">LES EXTRAS • Le hub du social</span>
+                            <Sparkles className="h-5 w-5 text-white animate-pulse" />
+                        </div>
+                    </div>
+                </motion.div>
+
                 {/* Segmented control */}
                 <div className="sticky top-5 lg:top-24 z-30 flex justify-center">
                     <div className="relative inline-flex rounded-2xl bg-white/70 backdrop-blur-md border border-white/60 p-1 shadow-soft">
@@ -278,12 +296,6 @@ export function WallFeedClient({
                         transition={{ duration: 0.55, ease: 'easeOut' }}
                         className="mx-auto max-w-3xl"
                     >
-                        {/* Badge */}
-                        <div className="inline-flex items-center gap-2 rounded-full bg-coral-50 border border-coral-200 px-5 py-2.5 text-sm font-bold text-coral-600 shadow-soft mb-8">
-                            <Sparkles className="h-4 w-4 text-coral-500" />
-                            LES EXTRAS • Le hub du social
-                        </div>
-
                         <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-slate-900">
                             Un renfort demain.
                             <span className="block text-gradient">Une visio maintenant.</span>
