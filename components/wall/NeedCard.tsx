@@ -58,11 +58,12 @@ export function NeedCard({
     const isNightShift = Boolean(mission?.isNightShift);
     const postedLabel = formatRelativeTime(mission?.createdAt || startDate);
     const startDateLabel = postedLabel || (startDate ? new Date(startDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '');
-    const tags = Array.isArray(mission?.tags)
+    const rawTags = Array.isArray(mission?.tags)
         ? mission.tags
         : Array.isArray(mission?.requiredSkills)
             ? mission.requiredSkills
             : [];
+    const tags: string[] = rawTags.filter((tag: unknown): tag is string => typeof tag === 'string' && tag.trim().length > 0);
     const detailHref = missionId ? `/need/${missionId}` : undefined;
     const urgency = urgencyConfig[urgencyLevel];
     const isUrgent = urgencyLevel === 'HIGH' || urgencyLevel === 'CRITICAL';

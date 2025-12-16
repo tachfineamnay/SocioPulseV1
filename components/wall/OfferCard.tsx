@@ -48,7 +48,8 @@ export function OfferCard({
         service?.imageUrl ||
         (Array.isArray(service?.imageUrls) ? service.imageUrls[0] : undefined) ||
         (Array.isArray(service?.galleryUrls) ? service.galleryUrls[0] : undefined);
-    const tags = Array.isArray(service?.tags) ? service.tags : [];
+    const rawTags = Array.isArray(service?.tags) ? service.tags : [];
+    const tags: string[] = rawTags.filter((tag: unknown): tag is string => typeof tag === 'string' && tag.trim().length > 0);
     const isVideo = serviceType === 'COACHING_VIDEO';
     const router = useRouter();
 
