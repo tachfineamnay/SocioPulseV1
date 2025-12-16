@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, MapPin, MessageCircle, Siren, Sparkles, Video } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin, MessageCircle, Search, Siren, Sparkles, Video } from 'lucide-react';
 import { getFeed } from '@/app/services/wall.service';
 import Link from 'next/link';
 import { BentoFeed } from './BentoFeed';
@@ -75,13 +75,15 @@ const QUICK_ACTIONS = [
 const isMissionItem = (item: any) =>
     String(item?.type || '').toUpperCase() === 'MISSION' || Boolean(item?.urgencyLevel);
 
-const isVisioServiceItem = (item: any) => {
-    const isService =
-        String(item?.type || '').toUpperCase() === 'SERVICE' ||
-        Boolean(item?.serviceType) ||
-        Boolean(item?.profile);
+const isPostItem = (item: any) => String(item?.type || '').toUpperCase() === 'POST';
 
-    if (!isService) return false;
+const isServiceItem = (item: any) => {
+    const type = String(item?.type || '').toUpperCase();
+    return type === 'SERVICE' || Boolean(item?.serviceType) || Boolean(item?.profile);
+};
+
+const isVisioServiceItem = (item: any) => {
+    if (!isServiceItem(item)) return false;
 
     const serviceType = String(item?.serviceType || '').toUpperCase();
     return serviceType === 'COACHING_VIDEO';
@@ -89,8 +91,16 @@ const isVisioServiceItem = (item: any) => {
 
 const filterItemsForMode = (items: any[], mode: DiscoveryMode) => {
     if (!Array.isArray(items)) return [];
-    if (mode === 'FIELD') return items.filter(isMissionItem);
-    return items.filter(isVisioServiceItem);
+    if (mode === 'FIELD') {
+        return items.filter((item) => {
+            if (isMissionItem(item)) return true;
+            if (isPostItem(item)) return true;
+            if (isServiceItem(item) && !isVisioServiceItem(item)) return true;
+            return false;
+        });
+    }
+
+    return items.filter((item) => isPostItem(item) || isVisioServiceItem(item));
 };
 
 const extractHeroAvatars = (items: any[]): FloatingAvatar[] => {
@@ -193,8 +203,8 @@ export function WallFeedClient({
     const emptyState = !isLoading && visibleItems.length === 0;
     const modeCopy =
         mode === 'FIELD'
-            ? 'Renfort terrain en établissement • Missions urgentes'
-            : "Visio 1:1 • Educ'at'heure et accompagnement";
+            ? 'Renfort terrain en établissement | Missions urgentes'
+            : "Visio 1:1 | Educat'heure et accompagnement";
 
     return (
         <div className="relative min-h-screen bg-canvas overflow-hidden">
@@ -309,7 +319,9 @@ export function WallFeedClient({
                         <div>
                             <p className="label-sm">Découverte</p>
                             <h2 className="mt-2 text-xl font-semibold text-slate-900 tracking-tight">
-                                {mode === 'FIELD' ? 'Missions disponibles' : 'Profils visio disponibles'}
+                                {mode === 'FIELD'
+                                    ? 'Renfort terrain - Offres & demandes'
+                                    : "Educat'heure / Visio - Offres & demandes"}
                             </h2>
                         </div>
                         {isLoading ? <span className="text-sm text-slate-500">Mise à jour…</span> : null}
@@ -320,7 +332,7 @@ export function WallFeedClient({
                     {emptyState ? (
                         <div className="col-span-full text-center py-20">
                             <div className="bg-gray-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                                🔍
+                                <Search className="h-7 w-7 text-slate-400" />
                             </div>
                             <h3 className="text-lg font-medium text-gray-900">Aucun résultat trouvé</h3>
                             <p className="text-gray-500">Essayez de modifier vos filtres ou votre recherche.</p>

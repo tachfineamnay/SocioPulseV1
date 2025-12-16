@@ -1,409 +1,862 @@
-import { PrismaClient, UserRole, UserStatus, MissionStatus, BookingStatus, MissionUrgency, TransactionType, TransactionStatus, ServiceType, PostType } from '@prisma/client';
+import {
+  BookingStatus,
+  MissionStatus,
+  MissionUrgency,
+  PostType,
+  PrismaClient,
+  ServiceType,
+  TransactionStatus,
+  TransactionType,
+  UserStatus,
+} from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+const hoursFromNow = (hours: number) => new Date(Date.now() + hours * 60 * 60 * 1000);
+const daysFromNow = (days: number) => new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+const hoursAgo = (hours: number) => new Date(Date.now() - hours * 60 * 60 * 1000);
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 60);
+
+const pic = (seed: string, width = 1200, height = 800) =>
+  `https://picsum.photos/seed/${seed}/${width}/${height}`;
+const avatar = (img: number) => `https://i.pravatar.cc/150?img=${img}`;
+
 async function main() {
-    console.log('🌱 Start seeding...');
+  console.log('🌱 Seeding database (Wall MVP)...');
 
-    // 1. Clean DB
-    console.log('🧹 Cleaning database...');
-    await prisma.transaction.deleteMany();
-    await prisma.message.deleteMany();
-    await prisma.review.deleteMany();
-    await prisma.booking.deleteMany();
-    await prisma.missionApplication.deleteMany();
-    await prisma.contract.deleteMany();
-    await prisma.reliefMission.deleteMany();
-    await prisma.service.deleteMany();
-    await prisma.availabilitySlot.deleteMany();
-    await prisma.talentPoolMember.deleteMany();
-    await prisma.talentPool.deleteMany();
-    await prisma.profile.deleteMany();
-    await prisma.establishment.deleteMany();
-    await prisma.notification.deleteMany();
-    await prisma.post.deleteMany();
-    await prisma.user.deleteMany();
+  console.log('🧹 Cleaning database...');
+  await prisma.transaction.deleteMany();
+  await prisma.message.deleteMany();
+  await prisma.review.deleteMany();
+  await prisma.booking.deleteMany();
+  await prisma.missionApplication.deleteMany();
+  await prisma.contract.deleteMany();
+  await prisma.reliefMission.deleteMany();
+  await prisma.service.deleteMany();
+  await prisma.availabilitySlot.deleteMany();
+  await prisma.talentPoolMember.deleteMany();
+  await prisma.talentPool.deleteMany();
+  await prisma.profile.deleteMany();
+  await prisma.establishment.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.post.deleteMany();
+  await prisma.user.deleteMany();
 
-    const passwordHash = await bcrypt.hash('password123', 10);
+  const passwordHash = await bcrypt.hash('password123', 10);
 
-    // 2. Create Admin
-    console.log('👤 Creating Admin...');
-    const admin = await prisma.user.create({
-        data: {
-            email: 'admin@lesextras.fr',
-            passwordHash,
-            role: 'ADMIN',
-            status: 'VERIFIED',
-            walletBalance: 500000, // 5000.00 EUR
-            profile: {
-                create: {
-                    firstName: 'Admin',
-                    lastName: 'System',
-                    bio: 'Super Admin',
-                    specialties: [],
-                    diplomas: []
-                }
-            }
-        }
+  console.log('👤 Creating admin...');
+  const admin = await prisma.user.create({
+    data: {
+      email: 'admin@lesextras.fr',
+      passwordHash,
+      role: 'ADMIN',
+      status: UserStatus.VERIFIED,
+      walletBalance: 500000,
+      profile: {
+        create: {
+          firstName: 'Admin',
+          lastName: 'System',
+          bio: 'Super Admin',
+          specialties: [],
+          diplomas: [],
+        },
+      },
+    },
+  });
+
+  console.log('🏢 Creating clients (establishments)...');
+  const clientsData = [
+    {
+      email: 'ehpad.paris@exemple.fr',
+      name: 'EHPAD Les Jardins',
+      type: 'EHPAD',
+      city: 'Paris',
+      postalCode: '75004',
+      address: '12 Rue de Rivoli',
+      latitude: 48.8566,
+      longitude: 2.3522,
+      description: "EHPAD familial, besoins réguliers en renforts de nuit.",
+    },
+    {
+      email: 'ime.paris@exemple.fr',
+      name: "IME L'Espoir",
+      type: 'IME',
+      city: 'Paris',
+      postalCode: '75001',
+      address: '150 Rue Saint-Honoré',
+      latitude: 48.8606,
+      longitude: 2.3376,
+      description: 'IME spécialisé TSA, accompagnements éducatifs et ateliers.',
+    },
+    {
+      email: 'creche.lyon@exemple.fr',
+      name: 'Crèche Les Petits Pas',
+      type: 'Crèche',
+      city: 'Lyon',
+      postalCode: '69002',
+      address: '5 Place Bellecour',
+      latitude: 45.764,
+      longitude: 4.8357,
+      description: "Crèche associative, renforts réguliers sur les pics d’activité.",
+    },
+    {
+      email: 'mecs.lille@exemple.fr',
+      name: 'MECS Horizon',
+      type: 'MECS',
+      city: 'Lille',
+      postalCode: '59000',
+      address: '8 Rue Nationale',
+      latitude: 50.62925,
+      longitude: 3.057256,
+      description: "Maison d’enfants, besoins en éducateurs et veilles.",
+    },
+    {
+      email: 'foyer.bordeaux@exemple.fr',
+      name: 'Foyer Les Amandiers',
+      type: 'Foyer de vie',
+      city: 'Bordeaux',
+      postalCode: '33000',
+      address: '20 Cours de l’Intendance',
+      latitude: 44.841225,
+      longitude: -0.574,
+      description: 'Foyer de vie pour adultes, missions de jour et week-end.',
+    },
+    {
+      email: 'ehpad.nantes@exemple.fr',
+      name: 'Résidence Beau Séjour',
+      type: 'EHPAD',
+      city: 'Nantes',
+      postalCode: '44000',
+      address: '3 Rue de Strasbourg',
+      latitude: 47.2184,
+      longitude: -1.5536,
+      description: 'Résidence seniors, renforts ponctuels sur périodes chargées.',
+    },
+    {
+      email: 'cms.marseille@exemple.fr',
+      name: 'Centre Médico-Social Prado',
+      type: 'CMS',
+      city: 'Marseille',
+      postalCode: '13008',
+      address: '10 Avenue du Prado',
+      latitude: 43.2677,
+      longitude: 5.382,
+      description: 'CMS, consultations et suivis, besoins en profils polyvalents.',
+    },
+    {
+      email: 'sse.toulouse@exemple.fr',
+      name: 'Service Social Enfance Garonne',
+      type: 'Service social',
+      city: 'Toulouse',
+      postalCode: '31000',
+      address: '15 Rue d’Alsace-Lorraine',
+      latitude: 43.6047,
+      longitude: 1.4442,
+      description: 'Accompagnement familles, besoins en renfort éducatif & visio.',
+    },
+  ];
+
+  const clients: any[] = [];
+  for (let index = 0; index < clientsData.length; index += 1) {
+    const data = clientsData[index];
+    const client = await prisma.user.create({
+      data: {
+        email: data.email,
+        passwordHash,
+        role: 'CLIENT',
+        status: UserStatus.VERIFIED,
+        walletBalance: 200000,
+        establishment: {
+          create: {
+            name: data.name,
+            type: data.type,
+            city: data.city,
+            address: data.address,
+            postalCode: data.postalCode,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            description: data.description,
+            contactName: 'Direction',
+            contactRole: 'Direction',
+            siret: `SEED${String(index + 1).padStart(12, '0')}`,
+            logoUrl: pic(`est-${slugify(data.name)}`, 128, 128),
+          },
+        },
+      },
+      include: { establishment: true },
+    });
+    clients.push(client);
+  }
+
+  console.log('🧑‍⚕️ Creating extras...');
+  const extrasData = [
+    {
+      email: 'jean.dupont@exemple.fr',
+      firstName: 'Jean',
+      lastName: 'Dupont',
+      headline: 'Infirmier - Renfort de nuit',
+      city: 'Paris',
+      postalCode: '75011',
+      latitude: 48.857,
+      longitude: 2.38,
+      hourlyRate: 35,
+      isVideoEnabled: false,
+      specialties: ['soins', 'nuit', 'gériatrie'],
+      avatarImg: 12,
+    },
+    {
+      email: 'marie.curie@exemple.fr',
+      firstName: 'Marie',
+      lastName: 'Curie',
+      headline: 'Aide-soignante - EHPAD & domicile',
+      city: 'Paris',
+      postalCode: '75004',
+      latitude: 48.8566,
+      longitude: 2.3522,
+      hourlyRate: 28,
+      isVideoEnabled: false,
+      specialties: ['toilette', 'repas', 'EHPAD'],
+      avatarImg: 32,
+    },
+    {
+      email: 'paul.verlaine@exemple.fr',
+      firstName: 'Paul',
+      lastName: 'Verlaine',
+      headline: 'Éducateur spécialisé - TSA',
+      city: 'Lyon',
+      postalCode: '69002',
+      latitude: 45.764,
+      longitude: 4.8357,
+      hourlyRate: 32,
+      isVideoEnabled: true,
+      specialties: ['autisme', 'adolescents', 'TSA'],
+      avatarImg: 5,
+    },
+    {
+      email: 'ines.martin@exemple.fr',
+      firstName: 'Inès',
+      lastName: 'Martin',
+      headline: 'Coach parental - Educat’heure',
+      city: 'Nantes',
+      postalCode: '44000',
+      latitude: 47.2184,
+      longitude: -1.5536,
+      hourlyRate: 55,
+      isVideoEnabled: true,
+      specialties: ['parentalité', 'routines', 'visio'],
+      avatarImg: 47,
+    },
+    {
+      email: 'yassine.ben@exemple.fr',
+      firstName: 'Yassine',
+      lastName: 'Benali',
+      headline: 'Psychomotricien - Ateliers seniors',
+      city: 'Bordeaux',
+      postalCode: '33000',
+      latitude: 44.841225,
+      longitude: -0.574,
+      hourlyRate: 45,
+      isVideoEnabled: false,
+      specialties: ['motricité', 'seniors', 'stimulation'],
+      avatarImg: 19,
+    },
+    {
+      email: 'clara.durand@exemple.fr',
+      firstName: 'Clara',
+      lastName: 'Durand',
+      headline: 'Orthophoniste - Troubles DYS',
+      city: 'Lille',
+      postalCode: '59000',
+      latitude: 50.62925,
+      longitude: 3.057256,
+      hourlyRate: 60,
+      isVideoEnabled: true,
+      specialties: ['dyslexie', 'langage', 'visio'],
+      avatarImg: 23,
+    },
+    {
+      email: 'adam.cherif@exemple.fr',
+      firstName: 'Adam',
+      lastName: 'Chérif',
+      headline: 'Médiateur - Gestion de conflits',
+      city: 'Marseille',
+      postalCode: '13008',
+      latitude: 43.2677,
+      longitude: 5.382,
+      hourlyRate: 42,
+      isVideoEnabled: true,
+      specialties: ['médiation', 'conflits', 'visio'],
+      avatarImg: 8,
+    },
+    {
+      email: 'sarah.lopez@exemple.fr',
+      firstName: 'Sarah',
+      lastName: 'Lopez',
+      headline: 'Éducatrice jeunes enfants - Crèche',
+      city: 'Lyon',
+      postalCode: '69007',
+      latitude: 45.7485,
+      longitude: 4.8467,
+      hourlyRate: 30,
+      isVideoEnabled: false,
+      specialties: ['petite_enfance', 'animation', 'crèche'],
+      avatarImg: 41,
+    },
+    {
+      email: 'lucas.moreau@exemple.fr',
+      firstName: 'Lucas',
+      lastName: 'Moreau',
+      headline: 'Éducateur - MECS & veilles',
+      city: 'Lille',
+      postalCode: '59800',
+      latitude: 50.636,
+      longitude: 3.063,
+      hourlyRate: 34,
+      isVideoEnabled: false,
+      specialties: ['mecs', 'veilles', 'groupe'],
+      avatarImg: 15,
+    },
+    {
+      email: 'emma.roux@exemple.fr',
+      firstName: 'Emma',
+      lastName: 'Roux',
+      headline: 'Art-thérapeute - Ateliers créatifs',
+      city: 'Paris',
+      postalCode: '75020',
+      latitude: 48.863,
+      longitude: 2.401,
+      hourlyRate: 48,
+      isVideoEnabled: true,
+      specialties: ['art_therapie', 'émotions', 'visio'],
+      avatarImg: 27,
+    },
+    {
+      email: 'mohamed.ali@exemple.fr',
+      firstName: 'Mohamed',
+      lastName: 'Ali',
+      headline: 'Animateur - Sport adapté',
+      city: 'Toulouse',
+      postalCode: '31000',
+      latitude: 43.6047,
+      longitude: 1.4442,
+      hourlyRate: 33,
+      isVideoEnabled: false,
+      specialties: ['sport_adapté', 'cohésion', 'motivation'],
+      avatarImg: 36,
+    },
+    {
+      email: 'lea.petit@exemple.fr',
+      firstName: 'Léa',
+      lastName: 'Petit',
+      headline: 'Conseillère - Suivi famille (visio)',
+      city: 'Paris',
+      postalCode: '75015',
+      latitude: 48.842,
+      longitude: 2.293,
+      hourlyRate: 52,
+      isVideoEnabled: true,
+      specialties: ['suivi_famille', 'visio', 'accompagnement'],
+      avatarImg: 2,
+    },
+  ];
+
+  const extras: any[] = [];
+  for (let index = 0; index < extrasData.length; index += 1) {
+    const data = extrasData[index];
+    const extra = await prisma.user.create({
+      data: {
+        email: data.email,
+        passwordHash,
+        role: 'EXTRA',
+        status: UserStatus.VERIFIED,
+        stripeAccountId: `acct_seed_${index + 1}`,
+        stripeOnboarded: true,
+        profile: {
+          create: {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            avatarUrl: avatar(data.avatarImg),
+            headline: data.headline,
+            bio: `Disponible pour des missions de renfort et/ou des sessions visio. ${data.headline}.`,
+            city: data.city,
+            postalCode: data.postalCode,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            specialties: data.specialties,
+            diplomas: [{ name: "Diplôme d'État", year: 2018 }],
+            hourlyRate: data.hourlyRate,
+            isVideoEnabled: data.isVideoEnabled,
+            averageRating: 4.6,
+            totalReviews: 18,
+          },
+        },
+      },
+      include: { profile: true },
+    });
+    extras.push(extra);
+  }
+
+  console.log('🛍️ Creating services (workshop + visio)...');
+  const workshopTemplates = [
+    {
+      name: 'Atelier Boxe éducative',
+      category: 'Sport adapté',
+      tags: ['sport', 'cohésion', 'gestion_émotion'],
+      basePrice: 70,
+      shortDescription:
+        'Un atelier structuré pour canaliser l’énergie et renforcer la confiance.',
+    },
+    {
+      name: 'Atelier Mémoire',
+      category: 'Seniors',
+      tags: ['mémoire', 'stimulation', 'seniors'],
+      basePrice: 55,
+      shortDescription: 'Stimulation cognitive douce, ludique et progressive.',
+    },
+    {
+      name: 'Atelier Arts & émotions',
+      category: 'Art-thérapie',
+      tags: ['créatif', 'émotions', 'expression'],
+      basePrice: 65,
+      shortDescription: 'Créer pour apaiser : une bulle créative guidée.',
+    },
+    {
+      name: 'Atelier Motricité',
+      category: 'Psychomotricité',
+      tags: ['motricité', 'coordination', 'équilibre'],
+      basePrice: 60,
+      shortDescription: 'Parcours et jeux moteurs adaptés à tous les niveaux.',
+    },
+    {
+      name: 'Atelier Cuisine & autonomie',
+      category: 'Petite enfance',
+      tags: ['cuisine', 'autonomie', 'sensoriel'],
+      basePrice: 58,
+      shortDescription: 'Une activité sensorielle et éducative, simple et sécurisée.',
+    },
+    {
+      name: 'Atelier Cohésion de groupe',
+      category: 'Éducatif',
+      tags: ['groupe', 'règles', 'collectif'],
+      basePrice: 62,
+      shortDescription: 'Structurer le collectif et faciliter les interactions.',
+    },
+  ];
+
+  const videoTemplates = [
+    {
+      name: 'Coaching parental (Visio)',
+      category: "Educat'heure",
+      tags: ['visio', 'parentalité', '1:1'],
+      basePrice: 60,
+      shortDescription:
+        'Un rendez-vous clair pour débloquer une situation du quotidien.',
+    },
+    {
+      name: 'Suivi éducatif (Visio)',
+      category: "Educat'heure",
+      tags: ['visio', 'suivi', 'routines'],
+      basePrice: 55,
+      shortDescription: 'Un accompagnement régulier, simple et actionnable.',
+    },
+    {
+      name: 'Bilan express (Visio)',
+      category: 'Accompagnement',
+      tags: ['visio', 'bilan', 'conseils'],
+      basePrice: 50,
+      shortDescription: "45 minutes pour poser un plan d’action concret.",
+    },
+  ];
+
+  const createdServices: Array<{
+    id: string;
+    type: ServiceType;
+    basePrice: number | null;
+    providerId: string;
+  }> = [];
+
+  let serviceCounter = 1;
+  for (let index = 0; index < extras.length; index += 1) {
+    const extra = extras[index];
+    const profile = extra.profile;
+    if (!profile) continue;
+
+    const workshop = workshopTemplates[index % workshopTemplates.length];
+    const workshopSlug = [
+      slugify(workshop.name),
+      slugify(`${profile.firstName}-${profile.lastName}`),
+      String(serviceCounter),
+    ].join('-');
+    serviceCounter += 1;
+
+    const workshopService = await prisma.service.create({
+      data: {
+        profileId: profile.id,
+        name: workshop.name,
+        slug: workshopSlug,
+        description: `${workshop.shortDescription}\n\n${profile.headline || ''}`.trim(),
+        shortDescription: workshop.shortDescription,
+        type: ServiceType.WORKSHOP,
+        category: workshop.category,
+        basePrice: workshop.basePrice,
+        minParticipants: 3,
+        maxParticipants: 12,
+        ageGroups: ['6-12 ans', 'Ados', 'Adultes'],
+        tags: workshop.tags,
+        imageUrl: pic(`svc-${workshopSlug}`),
+        galleryUrls: [pic(`svc-${workshopSlug}-2`), pic(`svc-${workshopSlug}-3`)],
+      },
     });
 
-    // 3. Create Clients (Establishments)
-    console.log('🏥 Creating Clients...');
-    const clientsData = [
-        {
-            email: 'ehpad.paris@exemple.fr',
-            name: 'EHPAD Les Jardins',
-            type: 'EHPAD',
-            city: 'Paris',
-            lat: 48.8566,
-            lng: 2.3522,
-            address: '12 Rue de Rivoli',
-            postalCode: '75004'
-        },
-        {
-            email: 'creche.lyon@exemple.fr',
-            name: 'Crèche Les Petits Pas',
-            type: 'Crèche',
-            city: 'Lyon',
-            lat: 45.7640,
-            lng: 4.8357,
-            address: '5 Place Bellecour',
-            postalCode: '69002'
-        },
-        {
-            email: 'ime.paris@exemple.fr',
-            name: 'IME L\'Espoir',
-            type: 'IME',
-            city: 'Paris',
-            lat: 48.8606,
-            lng: 2.3376,
-            address: '150 Rue Saint-Honoré',
-            postalCode: '75001'
-        }
-    ];
+    createdServices.push({
+      id: workshopService.id,
+      type: ServiceType.WORKSHOP,
+      basePrice: workshop.basePrice,
+      providerId: profile.userId,
+    });
 
-    const clients = [];
-    for (const clientData of clientsData) {
-        const client = await prisma.user.create({
-            data: {
-                email: clientData.email,
-                passwordHash,
-                role: 'CLIENT',
-                status: 'VERIFIED',
-                walletBalance: 200000, // 2000.00 EUR
-                establishment: {
-                    create: {
-                        name: clientData.name,
-                        type: clientData.type,
-                        city: clientData.city,
-                        latitude: clientData.lat,
-                        longitude: clientData.lng,
-                        address: clientData.address,
-                        postalCode: clientData.postalCode,
-                        contactName: 'Directeur',
-                        contactRole: 'Direction',
-                        siret: Math.random().toString().slice(2, 16)
-                    }
-                }
-            }
-        });
-        clients.push(client);
-    }
+    if (!profile.isVideoEnabled) continue;
 
-    // 4. Create Extras (Soignants)
-    console.log('👨‍⚕️ Creating Extras...');
-    const extrasData = [
-        {
-            email: 'infirmier.paris@exemple.fr',
-            firstName: 'Jean',
-            lastName: 'Dupont',
-            job: 'Infirmier',
-            city: 'Paris',
-            lat: 48.8580,
-            lng: 2.3500, // Proche client 1
-            specialties: ['soins_palliatifs', 'geriatrie']
-        },
-        {
-            email: 'aide.paris@exemple.fr',
-            firstName: 'Marie',
-            lastName: 'Curie',
-            job: 'Aide-soignant',
-            city: 'Paris',
-            lat: 48.8700,
-            lng: 2.3600,
-            specialties: ['toilette', 'repas']
-        },
-        {
-            email: 'educ.lyon@exemple.fr',
-            firstName: 'Paul',
-            lastName: 'Verlaine',
-            job: 'Éducateur',
-            city: 'Lyon',
-            lat: 45.7600,
-            lng: 4.8300,
-            specialties: ['autisme', 'jeunes']
-        },
-        {
-            email: 'infirmier.loin@exemple.fr',
-            firstName: 'Lointain',
-            lastName: 'Extra',
-            job: 'Infirmier',
-            city: 'Versailles',
-            lat: 48.8049,
-            lng: 2.1204, // > 10km Paris
-            specialties: ['nuit']
-        },
-        {
-            email: 'polyvalent@exemple.fr',
-            firstName: 'Alex',
-            lastName: 'Terieur',
-            job: 'Aide-soignant',
-            city: 'Paris',
-            lat: 48.8500,
-            lng: 2.3400,
-            specialties: ['geriatrie', 'handicap']
-        }
-    ];
+    const video = videoTemplates[index % videoTemplates.length];
+    const videoSlug = [
+      slugify(video.name),
+      slugify(`${profile.firstName}-${profile.lastName}`),
+      String(serviceCounter),
+    ].join('-');
+    serviceCounter += 1;
 
-    const extras = [];
-    for (const extraData of extrasData) {
-        const extra = await prisma.user.create({
-            data: {
-                email: extraData.email,
-                passwordHash,
-                role: 'EXTRA',
-                status: 'VERIFIED',
-                profile: {
-                    create: {
-                        firstName: extraData.firstName,
-                        lastName: extraData.lastName,
-                        headline: extraData.job,
-                        bio: `Passionné par mon métier de ${extraData.job}`,
-                        city: extraData.city,
-                        latitude: extraData.lat,
-                        longitude: extraData.lng,
-                        specialties: extraData.specialties,
-                        diplomas: [
-                            { name: "Diplôme d'État", year: 2018, url: "https://example.com/diplome.pdf" }
-                        ],
-                        hourlyRate: 25.0
-                    }
-                },
-                stripeAccountId: `acct_${Math.random().toString(36).substring(7)}`,
-                stripeOnboarded: true
-            }
-        });
-        extras.push(extra);
-    }
+    const videoService = await prisma.service.create({
+      data: {
+        profileId: profile.id,
+        name: video.name,
+        slug: videoSlug,
+        description: `${video.shortDescription}\n\nObjectif : repartir avec des actions concrètes.`,
+        shortDescription: video.shortDescription,
+        type: ServiceType.COACHING_VIDEO,
+        category: video.category,
+        basePrice: video.basePrice,
+        minParticipants: 1,
+        maxParticipants: 1,
+        ageGroups: ['Parents', 'Adultes'],
+        tags: video.tags,
+        imageUrl: pic(`svc-${videoSlug}`),
+      },
+    });
 
-    // 5. Missions & Matching
-    console.log('🚀 Creating Missions...');
+    createdServices.push({
+      id: videoService.id,
+      type: ServiceType.COACHING_VIDEO,
+      basePrice: video.basePrice,
+      providerId: profile.userId,
+    });
+  }
 
-    // Mission OUVERTE (Client 0 - Paris)
+  console.log('🆘 Creating relief missions (SOS renfort)...');
+  const openMissions = [
+    {
+      clientIndex: 0,
+      title: 'Renfort IDE Nuit - urgence',
+      description: 'Remplacement arrêt maladie. Besoin cette nuit.',
+      jobTitle: 'Infirmier',
+      urgencyLevel: MissionUrgency.CRITICAL,
+      startInHours: 6,
+      durationHours: 8,
+      hourlyRate: 38,
+      skills: ['nuit', 'soins', 'EHPAD'],
+    },
+    {
+      clientIndex: 1,
+      title: 'Renfort éducateur TSA (week-end)',
+      description: 'Accompagnement atelier et temps collectif.',
+      jobTitle: 'Éducateur spécialisé',
+      urgencyLevel: MissionUrgency.HIGH,
+      startInHours: 18,
+      durationHours: 7,
+      hourlyRate: 32,
+      skills: ['TSA', 'groupe', 'communication'],
+    },
+    {
+      clientIndex: 2,
+      title: 'Renfort crèche - ouverture',
+      description: 'Besoin sur l’accueil du matin + activités.',
+      jobTitle: 'EJE',
+      urgencyLevel: MissionUrgency.HIGH,
+      startInHours: 28,
+      durationHours: 6,
+      hourlyRate: 28,
+      skills: ['petite_enfance', 'animation', 'sécurité'],
+    },
+    {
+      clientIndex: 3,
+      title: 'Veille éducative - nuit',
+      description: 'Veille en MECS, présence sécurisante.',
+      jobTitle: 'Éducateur',
+      urgencyLevel: MissionUrgency.MEDIUM,
+      startInHours: 36,
+      durationHours: 10,
+      hourlyRate: 30,
+      skills: ['veilles', 'mecs', 'gestion_crise'],
+    },
+    {
+      clientIndex: 4,
+      title: 'Atelier motricité - adultes',
+      description: 'Animation + accompagnement, profil psychomotricien apprécié.',
+      jobTitle: 'Psychomotricien',
+      urgencyLevel: MissionUrgency.MEDIUM,
+      startInHours: 44,
+      durationHours: 4,
+      hourlyRate: 42,
+      skills: ['motricité', 'équilibre', 'adapté'],
+    },
+    {
+      clientIndex: 6,
+      title: 'Renfort médiation - situation tendue',
+      description: 'Apaiser un conflit et remettre du cadre.',
+      jobTitle: 'Médiateur',
+      urgencyLevel: MissionUrgency.CRITICAL,
+      startInHours: 12,
+      durationHours: 5,
+      hourlyRate: 45,
+      skills: ['médiation', 'conflits', 'cadre'],
+    },
+  ];
+
+  for (const mission of openMissions) {
+    const client = clients[mission.clientIndex];
+    const est = client?.establishment;
+    if (!client || !est) continue;
+
+    const startDate = hoursFromNow(mission.startInHours);
+    const endDate = hoursFromNow(mission.startInHours + mission.durationHours);
+    const estimatedHours = mission.durationHours;
+    const totalBudget = Math.round(mission.hourlyRate * estimatedHours * 100) / 100;
+
     await prisma.reliefMission.create({
-        data: {
-            clientId: clients[0].id,
-            title: 'Renfort IDE Nuit',
-            description: 'Besoin urgent pour remplacement arrêt maladie.',
-            jobTitle: 'Infirmier',
-            urgencyLevel: MissionUrgency.HIGH,
-            status: MissionStatus.OPEN,
-            startDate: new Date(Date.now() + 86400000), // Demain
-            endDate: new Date(Date.now() + 86400000 + 28800000), // +8h
-            hourlyRate: 35.0,
-            estimatedHours: 8,
-            totalBudget: 280.0,
-            address: '12 Rue de Rivoli',
-            city: 'Paris',
-            postalCode: '75004',
-            latitude: 48.8566,
-            longitude: 2.3522,
-            isNightShift: true
-        }
+      data: {
+        clientId: client.id,
+        title: mission.title,
+        description: mission.description,
+        jobTitle: mission.jobTitle,
+        urgencyLevel: mission.urgencyLevel,
+        status: MissionStatus.OPEN,
+        startDate,
+        endDate,
+        hourlyRate: mission.hourlyRate,
+        estimatedHours,
+        totalBudget,
+        address: est.address || 'Adresse à préciser',
+        city: est.city,
+        postalCode: est.postalCode || '',
+        latitude: est.latitude,
+        longitude: est.longitude,
+        requiredSkills: mission.skills,
+        requiredDiplomas: ["Diplôme d'État"],
+        isNightShift: mission.title.toLowerCase().includes('nuit'),
+      },
     });
+  }
 
-    // Mission ASSIGNÉE (Client 1 - Lyon, Extra 2 - Lyon)
-    await prisma.reliefMission.create({
-        data: {
-            clientId: clients[1].id,
-            assignedExtraId: extras[2].id,
-            title: 'Renfort Éducateur',
-            description: 'Accompagnement sortie groupe.',
-            jobTitle: 'Éducateur',
-            urgencyLevel: MissionUrgency.MEDIUM,
-            status: MissionStatus.ASSIGNED,
-            startDate: new Date(Date.now() + 172800000), // J+2
-            endDate: new Date(Date.now() + 172800000 + 14400000), // +4h
-            hourlyRate: 30.0,
-            estimatedHours: 4,
-            totalBudget: 120.0,
-            address: '5 Place Bellecour',
-            city: 'Lyon',
-            postalCode: '69002',
-            latitude: 45.7640,
-            longitude: 4.8357,
-            contract: {
-                create: {
-                    extraId: extras[2].id,
-                    content: "Contrat standard...",
-                    status: "SIGNED",
-                    signedAt: new Date()
-                }
-            }
-        }
-    });
+  console.log('📰 Creating wall posts (offers + needs)...');
+  const offerTemplates = [
+    {
+      title: 'Disponible cette semaine',
+      content: 'Réactivité, ponctualité, et expérience en établissement.',
+      category: 'Renfort',
+    },
+    {
+      title: 'Atelier collectif clé en main',
+      content: 'Je propose un atelier structuré avec objectifs, matériel et suivi.',
+      category: 'Atelier',
+    },
+    {
+      title: 'Accompagnement individualisé',
+      content: 'Approche bienveillante, plan d’action concret, retours réguliers.',
+      category: 'Accompagnement',
+    },
+  ];
 
-    // Mission TERMINÉE (Client 2 - Paris, Extra 0 - Paris)
-    await prisma.reliefMission.create({
-        data: {
-            clientId: clients[2].id,
-            assignedExtraId: extras[0].id,
-            title: 'Aide Soignant Jour',
-            description: 'Renfort journée normale.',
-            jobTitle: 'Aide-soignant',
-            urgencyLevel: MissionUrgency.LOW,
-            status: MissionStatus.COMPLETED,
-            startDate: new Date(Date.now() - 86400000), // Hier
-            endDate: new Date(Date.now() - 86400000 + 25200000), // +7h
-            hourlyRate: 20.0,
-            estimatedHours: 7,
-            totalBudget: 140.0,
-            address: '150 Rue Saint-Honoré',
-            city: 'Paris',
-            postalCode: '75001',
-            latitude: 48.8606,
-            longitude: 2.3376,
-            completedAt: new Date()
-        }
-    });
+  for (let index = 0; index < extras.length; index += 1) {
+    const extra = extras[index];
+    const profile = extra.profile;
+    if (!profile) continue;
 
-    // 6. Flux Financier
-    console.log('💸 Creating Transactions...');
+    const template = offerTemplates[index % offerTemplates.length];
+    const specialties = Array.isArray(profile.specialties)
+      ? (profile.specialties as unknown[])
+      : [];
+    const specialtyTags = specialties
+      .filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0)
+      .slice(0, 4);
 
-    // Transaction factice COMPLETED pour Client 0
-    await prisma.transaction.create({
-        data: {
-            userId: clients[0].id,
-            type: TransactionType.MISSION_PAYMENT,
-            amount: 28000, // 280.00 EUR
-            status: TransactionStatus.COMPLETED,
-            description: 'Paiement mission Renfort IDE Nuit',
-            stripePaymentId: 'pi_fake_123456789'
-        }
-    });
-
-    // Transaction pour l'Admin (Commission)
-    await prisma.transaction.create({
-        data: {
-            userId: admin.id,
-            type: TransactionType.PLATFORM_FEE,
-            amount: 1500, // 15.00 EUR
-            status: TransactionStatus.COMPLETED,
-            description: 'Commission sur mission #123'
-        }
-    });
-
-    // Create a Service for marketplace testing
-    console.log('🛍️ Creating Services...');
-    // CORRECTION : Récupérer le profil explicitement avant de créer le service
-    const profileForService = await prisma.profile.findUnique({
-        where: { userId: extras[2].id }
-    });
-
-    if (profileForService) {
-        await prisma.service.create({
-            data: {
-                profileId: profileForService.id,
-                name: "Atelier Mémoire",
-                slug: "atelier-memoire",
-                description: "Stimulation cognitive pour seniors",
-                type: ServiceType.WORKSHOP,
-                basePrice: 50,
-                minParticipants: 3,
-                maxParticipants: 10
-            }
-        });
-    }
-
-    // 7. Posts (Wall)
-    console.log('📰 Creating Posts (Wall)...');
-
-    // OFFERS (from Extras)
-    await prisma.post.create({
-        data: {
-            authorId: extras[0].id, // Jean Dupont (Infirmier)
-            type: PostType.OFFER,
-            title: 'Soins infirmiers à domicile',
-            content: 'Disponible pour tournées de soins ou gardes de nuit sur Paris.',
-            city: 'Paris',
-            postalCode: '75004',
-            tags: ['soins', 'nuit', 'domicile'],
-            category: 'Santé'
-        }
-    });
+    const tags = profile.isVideoEnabled ? ['visio', ...specialtyTags] : ['terrain', ...specialtyTags];
 
     await prisma.post.create({
-        data: {
-            authorId: extras[1].id, // Marie Curie (Aide-soignant)
-            type: PostType.OFFER,
-            title: 'Aide à la toilette et repas',
-            content: 'Expérience confirmée en gériatrie. Douce et ponctuelle.',
-            city: 'Paris',
-            postalCode: '75011',
-            tags: ['gériatrie', 'toilette'],
-            category: 'Aide à la personne'
-        }
+      data: {
+        authorId: extra.id,
+        type: PostType.OFFER,
+        title: `${template.title} · ${profile.headline || 'Profil'}`,
+        content: template.content,
+        city: profile.city || undefined,
+        postalCode: profile.postalCode || undefined,
+        tags,
+        category: profile.isVideoEnabled ? 'Visio' : template.category,
+        validUntil: daysFromNow(14),
+        createdAt: hoursAgo(2 + index),
+        imageUrls: [pic(`post-offer-${index + 1}`, 900, 600)],
+      },
     });
+  }
+
+  const needTemplates = [
+    {
+      title: 'Besoin renfort éducateur demain',
+      content: 'Mission courte, équipe bienveillante, prise de poste rapide.',
+      tags: ['urgent', 'renfort'],
+      category: 'Renfort',
+      validInDays: 5,
+    },
+    {
+      title: 'Recherche profil pour atelier collectif',
+      content: 'Objectif : cohésion, autonomie, activités structurées.',
+      tags: ['atelier', 'collectif'],
+      category: 'Atelier',
+      validInDays: 14,
+    },
+    {
+      title: 'Demande session visio Educat’heure',
+      content: 'Accompagnement parental 1:1, créneaux en soirée possibles.',
+      tags: ['visio', 'parentalité'],
+      category: 'Visio',
+      validInDays: 10,
+    },
+  ];
+
+  for (let index = 0; index < clients.length; index += 1) {
+    const client = clients[index];
+    const est = client.establishment;
+    const template = needTemplates[index % needTemplates.length];
 
     await prisma.post.create({
-        data: {
-            authorId: extras[2].id, // Paul Verlaine (Educateur)
-            type: PostType.OFFER,
-            title: 'Atelier écriture et poésie',
-            content: 'Animation d\'ateliers d\'écriture pour résidents.',
-            category: 'Animation',
-            tags: ['culture', 'atelier', 'senior']
-        }
+      data: {
+        authorId: client.id,
+        type: PostType.NEED,
+        title: `${template.title} · ${est?.name || 'Établissement'}`,
+        content: template.content,
+        city: est?.city || undefined,
+        postalCode: est?.postalCode || undefined,
+        tags: template.tags,
+        category: template.category,
+        validUntil: daysFromNow(template.validInDays),
+        createdAt: hoursAgo(1 + index),
+        imageUrls: [pic(`post-need-${index + 1}`, 900, 600)],
+      },
     });
+  }
 
-    // NEEDS (from Clients)
-    await prisma.post.create({
-        data: {
-            authorId: clients[0].id, // EHPAD Les Jardins
-            type: PostType.NEED,
-            title: 'Recherche kiné remplaçant',
-            content: 'Besoin urgent pour remplacement congé maternité (3 mois).',
-            city: 'Paris',
-            postalCode: '75004',
-            tags: ['kiné', 'remplacement', 'cdj'],
-            category: 'Paramédical',
-            validUntil: new Date(Date.now() + 7776000000) // +3 months
-        }
+  console.log('📅 Creating a few bookings (agenda demo)...');
+  const videoServices = createdServices.filter((service) => service.type === ServiceType.COACHING_VIDEO);
+  const workshopServices = createdServices.filter((service) => service.type === ServiceType.WORKSHOP);
+
+  const bookingSeeds = [
+    {
+      kind: 'VIDEO' as const,
+      inDays: 1,
+      time: '18:30',
+      durationHours: 1,
+      status: BookingStatus.PENDING,
+      note: "Besoin d'un plan d'action concret pour les routines du soir.",
+    },
+    {
+      kind: 'VIDEO' as const,
+      inDays: 3,
+      time: '20:00',
+      durationHours: 1,
+      status: BookingStatus.CONFIRMED,
+      note: "Suivi visio : situation à l’école, communication et cadre.",
+    },
+    {
+      kind: 'WORKSHOP' as const,
+      inDays: 5,
+      time: '14:00',
+      durationHours: 2,
+      status: BookingStatus.CONFIRMED,
+      note: 'Atelier collectif : cohésion de groupe (12 pers).',
+    },
+    {
+      kind: 'WORKSHOP' as const,
+      inDays: 8,
+      time: '10:00',
+      durationHours: 2,
+      status: BookingStatus.PENDING,
+      note: 'Atelier mémoire pour seniors, groupe de 8 personnes.',
+    },
+  ];
+
+  for (let index = 0; index < bookingSeeds.length; index += 1) {
+    const seed = bookingSeeds[index];
+    const client = clients[index % clients.length];
+
+    const servicePool = seed.kind === 'VIDEO' ? videoServices : workshopServices;
+    const pickedService = servicePool[index % Math.max(1, servicePool.length)];
+    if (!pickedService) continue;
+
+    const pricePerHour = pickedService.basePrice ?? 50;
+    const totalPrice = pricePerHour * seed.durationHours;
+
+    await prisma.booking.create({
+      data: {
+        clientId: client.id,
+        providerId: pickedService.providerId,
+        serviceId: pickedService.id,
+        sessionDate: daysFromNow(seed.inDays),
+        sessionTime: seed.time,
+        totalPrice,
+        status: seed.status,
+        isVideoSession: seed.kind === 'VIDEO',
+        clientNotes: seed.note,
+      },
     });
+  }
 
-    await prisma.post.create({
-        data: {
-            authorId: clients[1].id, // Crèche
-            type: PostType.NEED,
-            title: 'Auxiliaire petite enfance',
-            content: 'Cherche renfort pour la semaine du goût. Animation culinaire bienvenue.',
-            city: 'Lyon',
-            postalCode: '69002',
-            tags: ['enfance', 'animation'],
-            category: 'Petite Enfance',
-            validUntil: new Date(Date.now() + 604800000) // +1 week
-        }
-    });
+  console.log('💸 Creating a couple transactions...');
+  await prisma.transaction.create({
+    data: {
+      userId: clients[0].id,
+      type: TransactionType.MISSION_PAYMENT,
+      amount: 28000,
+      status: TransactionStatus.COMPLETED,
+      description: 'Paiement mission SOS (seed)',
+      stripePaymentId: 'pi_seed_001',
+    },
+  });
 
-    console.log('✅ Seeding completed.');
+  await prisma.transaction.create({
+    data: {
+      userId: admin.id,
+      type: TransactionType.PLATFORM_FEE,
+      amount: 1500,
+      status: TransactionStatus.COMPLETED,
+      description: 'Commission plateforme (seed)',
+    },
+  });
+
+  console.log('✅ Seed completed.');
 }
 
 main()
-    .catch((e) => {
-        console.error(e);
-        process.exit(1);
-    })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
