@@ -404,7 +404,8 @@ export class WallFeedService {
         }
 
         if (andConditions.length > 0) {
-            where.AND = [...(where.AND || []), ...andConditions];
+            const existingAnd = Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : [];
+            where.AND = [...existingAnd, ...andConditions];
         }
 
         const [posts, count] = await Promise.all([
@@ -474,7 +475,8 @@ export class WallFeedService {
         }
 
         if (andConditions.length > 0) {
-            where.AND = [...(where.AND || []), ...andConditions];
+            const existingAnd = Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : [];
+            where.AND = [...existingAnd, ...andConditions];
         }
 
         const [missions, count] = await Promise.all([
