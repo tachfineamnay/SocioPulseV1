@@ -2,6 +2,26 @@ import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nest
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateAdminNoteDto } from './dto';
 
+export interface UserFilter {
+    role?: string;
+    status?: string;
+    search?: string;
+    isVerified?: boolean;
+    clientType?: string;
+    page?: number;
+    limit?: number;
+}
+
+export interface PaginatedResult<T> {
+    data: T[];
+    meta: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+}
+
 @Injectable()
 export class AdminService {
     private readonly logger = new Logger(AdminService.name);
@@ -20,47 +40,105 @@ export class AdminService {
     }
 
     /**
-     * Liste tous les utilisateurs (CRM)
+     * Crée une entrée dans le journal d'audit
      */
-    async listUsers(filters?: { role?: string; status?: string; search?: string }) {
+    async createAuditLog(params: {
+        adminId: string;
+        action: string;
+        targetUserId?: string;
+        resourceId?: string;
+        resourceType?: string;
+        metadata?: any;
+        ipAddress?: string;
+        userAgent?: string;
+    }) {
+        return this.prisma.auditLog.create({
+            data: {
+                adminId: params.adminId,
+                action: params.action,
+                targetUserId: params.targetUserId,
+                resourceId: params.resourceId,
+                resourceType: params.resourceType,
+                metadata: params.metadata,
+                ipAddress: params.ipAddress,
+                userAgent: params.userAgent,
+            },
+        });
+    }
+
+    /**
+     * Liste tous les utilisateurs avec pagination et filtres (CRM)
+     */
+    async findAllUsers(filters: UserFilter = {}): Promise<PaginatedResult<any>> {
+        const { role, status, search, isVerified, clientType, page = 1, limit = 20 } = filters;
+        const skip = (page - 1) * limit;
+
         const where: any = {};
 
-        if (filters?.role) {
-            where.role = filters.role;
+        if (role) {
+            where.role = role;
         }
-        if (filters?.status) {
-            where.status = filters.status;
+        if (status) {
+            where.status = status;
         }
-        if (filters?.search) {
+        if (typeof isVerified === 'boolean') {
+            where.isVerified = isVerified;
+        }
+        if (clientType) {
+            where.clientType = clientType;
+        }
+        if (search) {
             where.OR = [
-                { email: { contains: filters.search, mode: 'insensitive' } },
-                { profile: { firstName: { contains: filters.search, mode: 'insensitive' } } },
-                { profile: { lastName: { contains: filters.search, mode: 'insensitive' } } },
-                { establishment: { name: { contains: filters.search, mode: 'insensitive' } } },
+                { email: { contains: search, mode: 'insensitive' } },
+                { profile: { firstName: { contains: search, mode: 'insensitive' } } },
+                { profile: { lastName: { contains: search, mode: 'insensitive' } } },
+                { establishment: { name: { contains: search, mode: 'insensitive' } } },
             ];
         }
 
-        const users = await this.prisma.user.findMany({
-            where,
-            include: {
-                profile: {
-                    select: { firstName: true, lastName: true, avatarUrl: true },
-                },
-                establishment: {
-                    select: { name: true },
-                },
-                _count: {
-                    select: {
-                        bookingsAsClient: true,
-                        bookingsAsProvider: true,
-                        adminNotesReceived: true,
+        const [users, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                skip,
+                take: limit,
+                include: {
+                    profile: {
+                        select: { firstName: true, lastName: true, avatarUrl: true, city: true },
+                    },
+                    establishment: {
+                        select: { name: true, type: true, city: true },
+                    },
+                    _count: {
+                        select: {
+                            bookingsAsClient: true,
+                            bookingsAsProvider: true,
+                            adminNotesReceived: true,
+                            documents: true,
+                        },
                     },
                 },
-            },
-            orderBy: { createdAt: 'desc' },
-        });
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.user.count({ where }),
+        ]);
 
-        return users;
+        return {
+            data: users,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
+
+    /**
+     * Alias pour compatibilité avec l'ancien code
+     */
+    async listUsers(filters?: { role?: string; status?: string; search?: string }) {
+        const result = await this.findAllUsers(filters);
+        return result.data;
     }
 
     /**
@@ -83,12 +161,41 @@ export class AdminService {
                     },
                     orderBy: { createdAt: 'desc' },
                 },
+                bookingsAsClient: {
+                    take: 10,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        provider: {
+                            select: { profile: { select: { firstName: true, lastName: true } } },
+                        },
+                        service: { select: { name: true } },
+                    },
+                },
+                bookingsAsProvider: {
+                    take: 10,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        client: {
+                            select: { profile: { select: { firstName: true, lastName: true } }, establishment: { select: { name: true } } },
+                        },
+                        service: { select: { name: true } },
+                    },
+                },
+                missionsAsClient: {
+                    take: 10,
+                    orderBy: { createdAt: 'desc' },
+                },
+                missionsAsExtra: {
+                    take: 10,
+                    orderBy: { createdAt: 'desc' },
+                },
                 _count: {
                     select: {
                         bookingsAsClient: true,
                         bookingsAsProvider: true,
                         missionsAsClient: true,
                         missionsAsExtra: true,
+                        transactions: true,
                     },
                 },
             },
@@ -102,9 +209,53 @@ export class AdminService {
     }
 
     /**
-     * Ajoute une note admin sur un utilisateur
+     * Vérifie un utilisateur (isVerified = true) + Log dans AuditLog
      */
-    async createAdminNote(adminId: string, targetUserId: string, dto: CreateAdminNoteDto) {
+    async validateUser(adminId: string, targetUserId: string) {
+        const isAdmin = await this.isAdmin(adminId);
+        if (!isAdmin) {
+            throw new ForbiddenException('Seuls les administrateurs peuvent vérifier les utilisateurs');
+        }
+
+        // Vérifier que l'utilisateur existe
+        const targetUser = await this.prisma.user.findUnique({ where: { id: targetUserId } });
+        if (!targetUser) {
+            throw new NotFoundException(`Utilisateur ${targetUserId} non trouvé`);
+        }
+
+        // Mise à jour de l'utilisateur
+        const user = await this.prisma.user.update({
+            where: { id: targetUserId },
+            data: {
+                isVerified: true,
+                status: 'VERIFIED',
+            },
+        });
+
+        // Log dans AuditLog
+        await this.createAuditLog({
+            adminId,
+            action: 'VALIDATE_USER',
+            targetUserId,
+            metadata: { previousStatus: targetUser.status },
+        });
+
+        this.logger.log(`Utilisateur ${targetUserId} validé par ${adminId}`);
+
+        return user;
+    }
+
+    /**
+     * Alias pour compatibilité
+     */
+    async verifyUser(adminId: string, targetUserId: string) {
+        return this.validateUser(adminId, targetUserId);
+    }
+
+    /**
+     * Ajoute une note admin sur un utilisateur + Log
+     */
+    async addNote(adminId: string, targetUserId: string, content: string) {
         // Vérifier que l'admin est bien admin
         const isAdmin = await this.isAdmin(adminId);
         if (!isAdmin) {
@@ -123,7 +274,7 @@ export class AdminService {
             data: {
                 adminId,
                 targetUserId,
-                content: dto.content,
+                content,
             },
             include: {
                 admin: {
@@ -132,9 +283,25 @@ export class AdminService {
             },
         });
 
+        // Log dans AuditLog
+        await this.createAuditLog({
+            adminId,
+            action: 'ADD_NOTE',
+            targetUserId,
+            resourceId: note.id,
+            resourceType: 'AdminNote',
+        });
+
         this.logger.log(`Note admin créée par ${adminId} sur ${targetUserId}`);
 
         return note;
+    }
+
+    /**
+     * Alias pour compatibilité avec DTO
+     */
+    async createAdminNote(adminId: string, targetUserId: string, dto: CreateAdminNoteDto) {
+        return this.addNote(adminId, targetUserId, dto.content);
     }
 
     /**
@@ -153,29 +320,7 @@ export class AdminService {
     }
 
     /**
-     * Vérifie un utilisateur (isVerified = true)
-     */
-    async verifyUser(adminId: string, targetUserId: string) {
-        const isAdmin = await this.isAdmin(adminId);
-        if (!isAdmin) {
-            throw new ForbiddenException('Seuls les administrateurs peuvent vérifier les utilisateurs');
-        }
-
-        const user = await this.prisma.user.update({
-            where: { id: targetUserId },
-            data: {
-                isVerified: true,
-                status: 'VERIFIED',
-            },
-        });
-
-        this.logger.log(`Utilisateur ${targetUserId} vérifié par ${adminId}`);
-
-        return user;
-    }
-
-    /**
-     * Met à jour le statut d'un document
+     * Met à jour le statut d'un document + Log
      */
     async updateDocumentStatus(adminId: string, documentId: string, status: string, comment?: string) {
         const isAdmin = await this.isAdmin(adminId);
@@ -193,8 +338,135 @@ export class AdminService {
             },
         });
 
+        // Log dans AuditLog
+        await this.createAuditLog({
+            adminId,
+            action: status === 'APPROVED' ? 'APPROVE_DOCUMENT' : 'REJECT_DOCUMENT',
+            targetUserId: document.userId,
+            resourceId: documentId,
+            resourceType: 'UserDocument',
+            metadata: { status, comment },
+        });
+
         this.logger.log(`Document ${documentId} mis à jour: ${status}`);
 
         return document;
+    }
+
+    /**
+     * Récupère l'historique d'audit
+     */
+    async getAuditLogs(filters?: { adminId?: string; targetUserId?: string; action?: string; page?: number; limit?: number }) {
+        const { adminId, targetUserId, action, page = 1, limit = 50 } = filters || {};
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+        if (adminId) where.adminId = adminId;
+        if (targetUserId) where.targetUserId = targetUserId;
+        if (action) where.action = action;
+
+        const [logs, total] = await Promise.all([
+            this.prisma.auditLog.findMany({
+                where,
+                skip,
+                take: limit,
+                include: {
+                    admin: {
+                        select: { email: true, profile: { select: { firstName: true, lastName: true } } },
+                    },
+                    targetUser: {
+                        select: { email: true, profile: { select: { firstName: true, lastName: true } } },
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.auditLog.count({ where }),
+        ]);
+
+        return {
+            data: logs,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
+
+    /**
+     * Suspend un utilisateur
+     */
+    async suspendUser(adminId: string, targetUserId: string, reason?: string) {
+        const isAdmin = await this.isAdmin(adminId);
+        if (!isAdmin) {
+            throw new ForbiddenException('Seuls les administrateurs peuvent suspendre les utilisateurs');
+        }
+
+        const user = await this.prisma.user.update({
+            where: { id: targetUserId },
+            data: { status: 'SUSPENDED' },
+        });
+
+        await this.createAuditLog({
+            adminId,
+            action: 'SUSPEND_USER',
+            targetUserId,
+            metadata: { reason },
+        });
+
+        this.logger.log(`Utilisateur ${targetUserId} suspendu par ${adminId}`);
+
+        return user;
+    }
+
+    /**
+     * Bannit un utilisateur
+     */
+    async banUser(adminId: string, targetUserId: string, reason?: string) {
+        const isAdmin = await this.isAdmin(adminId);
+        if (!isAdmin) {
+            throw new ForbiddenException('Seuls les administrateurs peuvent bannir les utilisateurs');
+        }
+
+        const user = await this.prisma.user.update({
+            where: { id: targetUserId },
+            data: { status: 'BANNED' },
+        });
+
+        await this.createAuditLog({
+            adminId,
+            action: 'BAN_USER',
+            targetUserId,
+            metadata: { reason },
+        });
+
+        this.logger.log(`Utilisateur ${targetUserId} banni par ${adminId}`);
+
+        return user;
+    }
+
+    /**
+     * Met à jour les tags internes d'un utilisateur
+     */
+    async updateInternalTags(adminId: string, targetUserId: string, tags: string[]) {
+        const isAdmin = await this.isAdmin(adminId);
+        if (!isAdmin) {
+            throw new ForbiddenException('Seuls les administrateurs peuvent modifier les tags');
+        }
+
+        const user = await this.prisma.user.update({
+            where: { id: targetUserId },
+            data: { internalTags: tags },
+        });
+
+        await this.createAuditLog({
+            adminId,
+            action: 'UPDATE_TAGS',
+            targetUserId,
+            metadata: { tags },
+        });
+
+        return user;
     }
 }

@@ -109,6 +109,9 @@ model User {
   isVerified    Boolean    @default(false)
   onboardingStep Int       @default(1)
   
+  // CRM - Tags internes pour filtrage admin
+  internalTags  String[]   @default([])
+  
   // Wallet (solde disponible en centimes pour éviter les erreurs de float)
   walletBalance Int        @default(0)
   
@@ -138,6 +141,8 @@ model User {
   documents           UserDocument[]
   adminNotesWritten   AdminNote[]       @relation("AdminAuthor")
   adminNotesReceived  AdminNote[]       @relation("AdminTarget")
+  auditLogsPerformed  AuditLog[]        @relation("AuditAdmin")
+  auditLogsReceived   AuditLog[]        @relation("AuditTarget")
   
   // Timestamps
   createdAt     DateTime   @default(now())
@@ -865,4 +870,41 @@ model AdminNote {
   @@index([adminId])
   @@index([targetUserId])
   @@index([createdAt])
+}
+
+// =============================================================================
+// AUDIT LOG (CRM) - Traçabilité des actions admin
+// =============================================================================
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  
+  // Admin qui a effectué l'action
+  adminId       String
+  admin         User     @relation("AuditAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  
+  // Action effectuée
+  action        String   // Ex: "VALIDATE_USER", "REJECT_DOCUMENT", "BAN_USER", "ADD_NOTE"
+  
+  // Cible de l'action (optionnel)
+  targetUserId  String?
+  targetUser    User?    @relation("AuditTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  
+  // ID de ressource secondaire (ex: documentId)
+  resourceId    String?
+  resourceType  String?  // Ex: "UserDocument", "AdminNote"
+  
+  // Détails supplémentaires
+  metadata      Json?    // Données contextuelles
+  ipAddress     String?
+  userAgent     String?
+  
+  // Timestamps
+  createdAt     DateTime @default(now())
+  
+  @@index([adminId])
+  @@index([targetUserId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([resourceType, resourceId])
 }
