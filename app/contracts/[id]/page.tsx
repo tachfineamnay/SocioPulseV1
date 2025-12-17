@@ -444,16 +444,34 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
                                 <p className="text-xs text-slate-500">{contract.title}</p>
                             </div>
                         </div>
-                        {contract.pdfUrl && (
-                            <a
-                                href={contract.pdfUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        {(contract.pdfUrl || contract.status === 'SIGNED') && (
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const token = getToken();
+                                        const response = await fetch(`${getApiBase()}/contracts/${contract.id}/download`, {
+                                            headers: token ? { Authorization: `Bearer ${token}` } : {},
+                                        });
+                                        if (!response.ok) throw new Error('Téléchargement échoué');
+                                        const blob = await response.blob();
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `contrat-${contract.reference || contract.id.slice(0, 8)}.pdf`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        window.URL.revokeObjectURL(url);
+                                        document.body.removeChild(a);
+                                    } catch (err) {
+                                        console.error('Download error:', err);
+                                        alert('Erreur lors du téléchargement du PDF');
+                                    }
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-sm hover:shadow-md active:scale-95 transition-all"
                             >
                                 <Download className="w-4 h-4" />
                                 PDF
-                            </a>
+                            </button>
                         )}
                     </div>
                 </div>
