@@ -303,8 +303,12 @@ export default function ContractsAdminPage() {
             if (statusFilter !== 'ALL') params.append('status', statusFilter);
             if (typeFilter !== 'ALL') params.append('type', typeFilter);
 
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/contracts?${params}`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers,
             });
 
             if (res.ok) {

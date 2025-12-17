@@ -60,12 +60,15 @@ function CheckoutForm({ bookingId, onSuccess }: { bookingId: string; onSuccess: 
         if (paymentIntent?.status === 'succeeded') {
             try {
                 const token = getToken();
+                const confirmHeaders: Record<string, string> = {
+                    'Content-Type': 'application/json',
+                };
+                if (token) {
+                    confirmHeaders['Authorization'] = `Bearer ${token}`;
+                }
                 await fetch(`${getApiBase()}/payments/confirm-mock/${bookingId}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                    },
+                    headers: confirmHeaders,
                 });
                 onSuccess();
             } catch (err) {

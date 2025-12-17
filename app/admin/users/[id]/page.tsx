@@ -251,8 +251,12 @@ export default function AdminUserDetailPage() {
             setIsLoading(true);
             try {
                 const token = getToken();
+                const headers: Record<string, string> = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
                 const res = await fetch(`${getApiBase()}/admin/users/${userId}`, {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                    headers,
                 });
 
                 if (!res.ok) throw new Error('Utilisateur non trouvé');
@@ -277,12 +281,15 @@ export default function AdminUserDetailPage() {
         try {
             const token = getToken();
             const endpoint = user.isVerified ? 'unverify' : 'verify';
+            const verifyHeaders: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                verifyHeaders['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/users/${userId}/${endpoint}`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: verifyHeaders,
             });
 
             if (res.ok) {
@@ -308,12 +315,15 @@ export default function AdminUserDetailPage() {
         setActionLoading('suspend');
         try {
             const token = getToken();
+            const suspendHeaders: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                suspendHeaders['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/users/${userId}/suspend`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: suspendHeaders,
                 body: JSON.stringify({ reason }),
             });
 
@@ -334,9 +344,13 @@ export default function AdminUserDetailPage() {
         setActionLoading('password');
         try {
             const token = getToken();
+            const resetHeaders: Record<string, string> = {};
+            if (token) {
+                resetHeaders['Authorization'] = `Bearer ${token}`;
+            }
             await fetch(`${getApiBase()}/admin/users/${userId}/reset-password`, {
                 method: 'POST',
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers: resetHeaders,
             });
             alert('Email de réinitialisation envoyé !');
         } catch (err) {
@@ -352,12 +366,15 @@ export default function AdminUserDetailPage() {
 
         try {
             const token = getToken();
+            const docHeaders: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                docHeaders['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/documents/${docId}/status`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: docHeaders,
                 body: JSON.stringify({ status, comment }),
             });
 
@@ -386,12 +403,15 @@ export default function AdminUserDetailPage() {
 
         try {
             const token = getToken();
+            const noteHeaders: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                noteHeaders['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/users/${userId}/notes`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: noteHeaders,
                 body: JSON.stringify({ content: newNote }),
             });
 

@@ -287,8 +287,12 @@ export default function ModerationPage() {
         setIsLoading(true);
         try {
             const token = getToken();
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/documents?status=${activeTab.toUpperCase()}`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers,
             });
 
             if (res.ok) {
@@ -352,12 +356,15 @@ export default function ModerationPage() {
         setActionLoading(docId);
         try {
             const token = getToken();
+            const approveHeaders: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                approveHeaders['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/documents/${docId}/status`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: approveHeaders,
                 body: JSON.stringify({ status: 'APPROVED' }),
             });
 
@@ -379,12 +386,15 @@ export default function ModerationPage() {
         setActionLoading(docId);
         try {
             const token = getToken();
+            const rejectHeaders: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                rejectHeaders['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/documents/${docId}/status`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: rejectHeaders,
                 body: JSON.stringify({ status: 'REJECTED', comment: reason }),
             });
 

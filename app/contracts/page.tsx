@@ -354,7 +354,10 @@ export default function ContractsPage() {
         setIsLoading(true);
         try {
             const token = getToken();
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
 
             // Fetch user to get role
             const meRes = await fetch(`${getApiBase()}/auth/me`, { headers });

@@ -55,8 +55,12 @@ export default function BookingsPage() {
             setIsLoading(true);
             try {
                 const token = localStorage.getItem('token');
+                const headers: Record<string, string> = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
                 const res = await fetch(`${getApiBase()}/wall/bookings`, {
-                    headers: token ? { Authorization: `Bearer ${token}` } : {},
+                    headers,
                     cache: 'no-store',
                 });
 

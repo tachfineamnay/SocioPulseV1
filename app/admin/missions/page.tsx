@@ -318,8 +318,12 @@ export default function MissionsPage() {
             if (statusFilter !== 'ALL') params.append('status', statusFilter);
             if (urgencyFilter !== 'ALL') params.append('urgency', urgencyFilter);
 
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/admin/missions?${params}`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
+                headers,
             });
 
             if (res.ok) {

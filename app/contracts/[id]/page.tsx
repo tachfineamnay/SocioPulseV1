@@ -278,7 +278,10 @@ export default function ContractDetailPage() {
         setIsLoading(true);
         try {
             const token = getToken();
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            const headers: Record<string, string> = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
 
             // Get user info
             const meRes = await fetch(`${getApiBase()}/auth/me`, { headers });
@@ -360,12 +363,15 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
         setIsSigning(true);
         try {
             const token = getToken();
+            const signHeaders: Record<string, string> = {
+                'Content-Type': 'application/json',
+            };
+            if (token) {
+                signHeaders['Authorization'] = `Bearer ${token}`;
+            }
             const res = await fetch(`${getApiBase()}/contracts/${contractId}/sign`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
+                headers: signHeaders,
                 body: JSON.stringify({ signature: signatureDataUrl }),
             });
 
