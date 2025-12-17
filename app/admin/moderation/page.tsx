@@ -309,7 +309,7 @@ export default function ModerationPage() {
                     user: {
                         id: 'user1',
                         email: 'marie.dupont@email.com',
-                        role: 'EXTRA',
+                        role: 'EXTRA' as const,
                         profile: { firstName: 'Marie', lastName: 'Dupont' },
                     },
                 },
@@ -323,7 +323,7 @@ export default function ModerationPage() {
                     user: {
                         id: 'user2',
                         email: 'jean.martin@email.com',
-                        role: 'EXTRA',
+                        role: 'EXTRA' as const,
                         profile: { firstName: 'Jean', lastName: 'Martin' },
                     },
                 },
@@ -337,7 +337,7 @@ export default function ModerationPage() {
                     user: {
                         id: 'user3',
                         email: 'contact@ehpad-soleil.fr',
-                        role: 'CLIENT',
+                        role: 'CLIENT' as const,
                         establishment: { name: 'EHPAD Le Soleil' },
                     },
                 },
