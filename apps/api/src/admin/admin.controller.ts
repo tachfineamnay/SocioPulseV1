@@ -29,6 +29,25 @@ export class AdminController {
     constructor(private readonly adminService: AdminService) {}
 
     // =========================================================================
+    // DASHBOARD
+    // =========================================================================
+
+    @Get('dashboard/stats')
+    @ApiOperation({ summary: 'Statistiques du dashboard admin' })
+    @ApiResponse({ status: 200, description: 'Stats utilisateurs, documents, missions, finance' })
+    async getDashboardStats() {
+        return this.adminService.getDashboardStats();
+    }
+
+    @Get('dashboard/activity')
+    @ApiOperation({ summary: 'Activité récente' })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiResponse({ status: 200, description: 'Liste des dernières activités' })
+    async getRecentActivity(@Query('limit') limit?: string) {
+        return this.adminService.getRecentActivity(limit ? parseInt(limit, 10) : 10);
+    }
+
+    // =========================================================================
     // USERS MANAGEMENT
     // =========================================================================
 
@@ -145,8 +164,29 @@ export class AdminController {
     }
 
     // =========================================================================
-    // DOCUMENTS
+    // DOCUMENTS (MODERATION)
     // =========================================================================
+
+    @Get('documents')
+    @ApiOperation({ summary: 'Liste des documents avec filtres' })
+    @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'APPROVED', 'REJECTED'] })
+    @ApiQuery({ name: 'userId', required: false })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiResponse({ status: 200, description: 'Liste paginée des documents' })
+    async getDocuments(
+        @Query('status') status?: string,
+        @Query('userId') userId?: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+    ) {
+        return this.adminService.getDocuments({
+            status,
+            userId,
+            page: page ? parseInt(page, 10) : 1,
+            limit: limit ? parseInt(limit, 10) : 20,
+        });
+    }
 
     @Patch('documents/:id/status')
     @ApiOperation({ summary: 'Valider ou rejeter un document' })
@@ -157,6 +197,38 @@ export class AdminController {
         @CurrentUser() admin: CurrentUserPayload,
     ) {
         return this.adminService.updateDocumentStatus(admin.id, documentId, body.status, body.comment);
+    }
+
+    // =========================================================================
+    // MISSIONS
+    // =========================================================================
+
+    @Get('missions')
+    @ApiOperation({ summary: 'Liste des missions SOS avec filtres' })
+    @ApiQuery({ name: 'status', required: false, enum: ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] })
+    @ApiQuery({ name: 'urgency', required: false, enum: ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiResponse({ status: 200, description: 'Liste paginée des missions' })
+    async getMissions(
+        @Query('status') status?: string,
+        @Query('urgency') urgency?: string,
+        @Query('page') page?: string,
+        @Query('limit') limit?: string,
+    ) {
+        return this.adminService.getMissions({
+            status,
+            urgency,
+            page: page ? parseInt(page, 10) : 1,
+            limit: limit ? parseInt(limit, 10) : 20,
+        });
+    }
+
+    @Get('missions/:id')
+    @ApiOperation({ summary: 'Détails d\'une mission' })
+    @ApiResponse({ status: 200, description: 'Détails complets de la mission' })
+    async getMissionDetails(@Param('id') missionId: string) {
+        return this.adminService.getMissionDetails(missionId);
     }
 
     // =========================================================================

@@ -469,4 +469,261 @@ export class AdminService {
 
         return user;
     }
+
+    // ===========================================
+    // DASHBOARD STATS
+    // ===========================================
+
+    /**
+     * Récupère les statistiques pour le dashboard admin
+     */
+    async getDashboardStats() {
+        const now = new Date();
+        const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const [userStats, documentStats, missionStats, financeStats] = await Promise.all([
+            // User stats
+            this.prisma.user.groupBy({
+                by: ['role', 'status'],
+                _count: true,
+            }),
+            // Document stats
+            Promise.all([
+                this.prisma.userDocument.count({ where: { status: 'PENDING' } }),
+                this.prisma.userDocument.count({ where: { status: 'APPROVED', validatedAt: { gte: startOfWeek } } }),
+                this.prisma.userDocument.count({ where: { status: 'REJECTED', validatedAt: { gte: startOfWeek } } }),
+            ]),
+            // Mission stats
+            Promise.all([
+                this.prisma.reliefMission.count({ where: { status: { in: ['OPEN', 'ASSIGNED', 'IN_PROGRESS'] } } }),
+                this.prisma.reliefMission.count({ where: { status: 'COMPLETED', completedAt: { gte: startOfMonth } } }),
+                this.prisma.contract.count({ where: { status: 'PENDING' } }), // Litiges = contrats non signés
+            ]),
+            // Finance stats
+            Promise.all([
+                this.prisma.transaction.aggregate({
+                    where: { status: 'COMPLETED', createdAt: { gte: startOfMonth } },
+                    _sum: { amount: true },
+                }),
+                this.prisma.transaction.aggregate({
+                    where: { type: 'PLATFORM_FEE', status: 'COMPLETED', createdAt: { gte: startOfMonth } },
+                    _sum: { amount: true },
+                }),
+            ]),
+        ]);
+
+        // Process user stats
+        let total = 0, extras = 0, clients = 0, pendingVerification = 0;
+        userStats.forEach((stat: any) => {
+            total += stat._count;
+            if (stat.role === 'EXTRA') extras += stat._count;
+            if (stat.role === 'CLIENT') clients += stat._count;
+            if (stat.status === 'PENDING') pendingVerification += stat._count;
+        });
+
+        // New users this week
+        const newThisWeek = await this.prisma.user.count({
+            where: { createdAt: { gte: startOfWeek } },
+        });
+
+        return {
+            users: {
+                total,
+                extras,
+                clients,
+                pendingVerification,
+                newThisWeek,
+            },
+            documents: {
+                pending: documentStats[0],
+                approvedThisWeek: documentStats[1],
+                rejectedThisWeek: documentStats[2],
+            },
+            missions: {
+                active: missionStats[0],
+                completedThisMonth: missionStats[1],
+                inDispute: missionStats[2],
+            },
+            finance: {
+                revenueThisMonth: financeStats[0]._sum.amount || 0,
+                commissionsThisMonth: financeStats[1]._sum.amount || 0,
+                pendingPayouts: 0,
+            },
+        };
+    }
+
+    /**
+     * Récupère l'activité récente
+     */
+    async getRecentActivity(limit = 10) {
+        const activities: any[] = [];
+
+        // Recent users
+        const recentUsers = await this.prisma.user.findMany({
+            take: 5,
+            orderBy: { createdAt: 'desc' },
+            include: { profile: { select: { firstName: true, lastName: true } } },
+        });
+
+        recentUsers.forEach(user => {
+            const name = user.profile ? `${user.profile.firstName} ${user.profile.lastName}` : user.email;
+            activities.push({
+                id: `user-${user.id}`,
+                type: 'USER_REGISTERED',
+                message: `Nouvel inscrit : ${name}`,
+                timestamp: user.createdAt.toISOString(),
+                userId: user.id,
+            });
+        });
+
+        // Recent documents
+        const recentDocs = await this.prisma.userDocument.findMany({
+            take: 5,
+            orderBy: { createdAt: 'desc' },
+            include: { user: { include: { profile: { select: { firstName: true, lastName: true } } } } },
+        });
+
+        recentDocs.forEach(doc => {
+            const name = doc.user.profile ? `${doc.user.profile.firstName} ${doc.user.profile.lastName}` : doc.user.email;
+            activities.push({
+                id: `doc-${doc.id}`,
+                type: 'DOCUMENT_UPLOADED',
+                message: `Document uploadé par ${name}`,
+                timestamp: doc.createdAt.toISOString(),
+                userId: doc.userId,
+            });
+        });
+
+        // Sort by timestamp and return top N
+        return activities
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .slice(0, limit);
+    }
+
+    // ===========================================
+    // DOCUMENTS (MODERATION)
+    // ===========================================
+
+    /**
+     * Liste les documents avec filtres
+     */
+    async getDocuments(filters: { status?: string; userId?: string; page?: number; limit?: number } = {}) {
+        const { status, userId, page = 1, limit = 20 } = filters;
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+        if (status) where.status = status;
+        if (userId) where.userId = userId;
+
+        const [documents, total] = await Promise.all([
+            this.prisma.userDocument.findMany({
+                where,
+                skip,
+                take: limit,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            role: true,
+                            profile: { select: { firstName: true, lastName: true, avatarUrl: true } },
+                            establishment: { select: { name: true } },
+                        },
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.userDocument.count({ where }),
+        ]);
+
+        return {
+            documents,
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+        };
+    }
+
+    // ===========================================
+    // MISSIONS
+    // ===========================================
+
+    /**
+     * Liste les missions avec filtres
+     */
+    async getMissions(filters: { status?: string; urgency?: string; page?: number; limit?: number } = {}) {
+        const { status, urgency, page = 1, limit = 20 } = filters;
+        const skip = (page - 1) * limit;
+
+        const where: any = {};
+        if (status) where.status = status;
+        if (urgency) where.urgencyLevel = urgency;
+
+        const [missions, total] = await Promise.all([
+            this.prisma.reliefMission.findMany({
+                where,
+                skip,
+                take: limit,
+                include: {
+                    client: {
+                        select: {
+                            id: true,
+                            email: true,
+                            establishment: { select: { name: true, logoUrl: true } },
+                        },
+                    },
+                    assignedExtra: {
+                        select: {
+                            id: true,
+                            email: true,
+                            profile: { select: { firstName: true, lastName: true, avatarUrl: true } },
+                        },
+                    },
+                    contract: { select: { id: true, status: true } },
+                    _count: { select: { applications: true } },
+                },
+                orderBy: [{ urgencyLevel: 'desc' }, { createdAt: 'desc' }],
+            }),
+            this.prisma.reliefMission.count({ where }),
+        ]);
+
+        return {
+            missions,
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+        };
+    }
+
+    /**
+     * Détails d'une mission
+     */
+    async getMissionDetails(missionId: string) {
+        const mission = await this.prisma.reliefMission.findUnique({
+            where: { id: missionId },
+            include: {
+                client: {
+                    include: {
+                        establishment: true,
+                        profile: true,
+                    },
+                },
+                assignedExtra: {
+                    include: { profile: true },
+                },
+                applications: {
+                    include: {
+                        extra: {
+                            include: { profile: true },
+                        },
+                    },
+                },
+                contract: true,
+                bookings: true,
+            },
+        });
+
+        if (!mission) {
+            throw new NotFoundException(`Mission ${missionId} non trouvée`);
+        }
+
+        return mission;
+    }
 }

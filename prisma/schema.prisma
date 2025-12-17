@@ -88,6 +88,29 @@ enum TransactionStatus {
 enum ContractStatus {
   PENDING
   SIGNED
+  DRAFT           // Brouillon
+  PENDING_CLIENT  // En attente signature client
+  PENDING_EXTRA   // En attente signature extra
+  IN_PROGRESS     // En cours d'exécution
+  COMPLETED       // Terminé
+  DISPUTED        // Litige en cours
+  CANCELLED       // Annulé
+}
+
+enum QuoteStatus {
+  DRAFT          // Brouillon
+  SENT           // Envoyé au client
+  VIEWED         // Lu par le client
+  ACCEPTED       // Accepté → génère un contrat
+  REJECTED       // Refusé
+  EXPIRED        // Expiré
+  REVISED        // Révisé (nouvelle version)
+}
+
+enum ContractType {
+  MISSION_SOS     // Mission ponctuelle urgente
+  SERVICE_BOOKING // Réservation de service/atelier
+  FRAMEWORK       // Contrat cadre (missions récurrentes)
 }
 
 // =============================================================================
@@ -137,7 +160,10 @@ model User {
   notifications       Notification[]
   sentMessages        Message[]         @relation("SentMessages")
   receivedMessages    Message[]         @relation("ReceivedMessages")
-  contracts           Contract[]
+  contractsAsExtra    Contract[]        @relation("ContractExtra")
+  contractsAsClient   Contract[]        @relation("ContractClient")
+  quotesAsExtra       Quote[]           @relation("QuoteExtra")
+  quotesAsClient      Quote[]           @relation("QuoteClient")
   documents           UserDocument[]
   adminNotesWritten   AdminNote[]       @relation("AdminAuthor")
   adminNotesReceived  AdminNote[]       @relation("AdminTarget")
@@ -452,6 +478,7 @@ model ReliefMission {
   applications    MissionApplication[]
   bookings        Booking[]
   contract        Contract?
+  quotes          Quote[]
   
   // Timestamps
   createdAt       DateTime      @default(now())
@@ -475,29 +502,142 @@ model ReliefMission {
 }
 
 // =============================================================================
-// CONTRACT - Signature mission SOS
+// QUOTE (DEVIS) - Propositions commerciales
+// =============================================================================
+
+model Quote {
+  id              String      @id @default(cuid())
+  reference       String      @unique  // Ex: "DEV-2024-001"
+  version         Int         @default(1)
+  
+  // Émetteur (Extra)
+  extraId         String
+  extra           User        @relation("QuoteExtra", fields: [extraId], references: [id])
+  
+  // Destinataire (Client)
+  clientId        String
+  client          User        @relation("QuoteClient", fields: [clientId], references: [id])
+  
+  // Lié à une mission (optionnel)
+  reliefMissionId String?
+  reliefMission   ReliefMission? @relation(fields: [reliefMissionId], references: [id])
+  
+  // Contenu du devis
+  title           String
+  description     String?     @db.Text
+  
+  // Lignes de devis (JSON array)
+  lines           Json        @default("[]")
+  
+  // Totaux (en centimes)
+  subtotal        Int         // Sous-total HT
+  taxRate         Float       @default(0)
+  taxAmount       Int         @default(0)
+  discount        Int         @default(0)
+  total           Int         // Total TTC
+  
+  // Conditions
+  validUntil      DateTime    // Date de validité
+  paymentTerms    String?     // Ex: "Paiement à réception"
+  conditions      String?     @db.Text
+  
+  // Statut
+  status          QuoteStatus @default(DRAFT)
+  
+  // Historique
+  sentAt          DateTime?
+  viewedAt        DateTime?
+  respondedAt     DateTime?
+  rejectionReason String?
+  
+  // Relation avec contrat généré
+  contract        Contract?   @relation("QuoteContract")
+  
+  // Révisions
+  previousVersionId String?
+  previousVersion   Quote?    @relation("QuoteRevisions", fields: [previousVersionId], references: [id])
+  revisions         Quote[]   @relation("QuoteRevisions")
+  
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  
+  @@index([extraId])
+  @@index([clientId])
+  @@index([status])
+  @@index([validUntil])
+  @@index([reference])
+}
+
+// =============================================================================
+// CONTRACT - Contrats (enrichi)
 // =============================================================================
 
 model Contract {
-  id           String          @id @default(cuid())
-
-  missionId    String          @unique
-  mission      ReliefMission   @relation(fields: [missionId], references: [id], onDelete: Cascade)
-
-  extraId      String
-  extra        User            @relation(fields: [extraId], references: [id], onDelete: Cascade)
-
-  content      String
-  signatureUrl String?
-  status       ContractStatus  @default(PENDING)
-  signedAt     DateTime?
-
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-
+  id              String          @id @default(cuid())
+  reference       String?         @unique  // Ex: "CTR-2024-001"
+  
+  // Type de contrat
+  type            ContractType    @default(MISSION_SOS)
+  
+  // Parties
+  extraId         String
+  extra           User            @relation("ContractExtra", fields: [extraId], references: [id], onDelete: Cascade)
+  clientId        String?
+  client          User?           @relation("ContractClient", fields: [clientId], references: [id])
+  
+  // Lié à un devis (optionnel)
+  quoteId         String?         @unique
+  quote           Quote?          @relation("QuoteContract", fields: [quoteId], references: [id])
+  
+  // Lié à une mission
+  missionId       String?         @unique
+  mission         ReliefMission?  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  // Contenu
+  title           String?
+  content         String          @db.Text
+  
+  // Montants
+  totalAmount     Int?            // Montant total en centimes
+  platformFee     Int?            // Commission plateforme
+  
+  // Délais & Dates
+  startDate       DateTime?
+  endDate         DateTime?
+  deadlines       Json            @default("[]")
+  
+  // Signatures Extra
+  signatureUrl        String?     // Data URL de la signature
+  extraSignedAt       DateTime?
+  extraSignedIp       String?
+  
+  // Signatures Client
+  clientSignature     String?
+  clientSignedAt      DateTime?
+  clientSignedIp      String?
+  
+  // Statut
+  status          ContractStatus  @default(PENDING)
+  signedAt        DateTime?       // Compat ancien code
+  
+  // Litige
+  disputeReason   String?         @db.Text
+  disputeOpenedAt DateTime?
+  disputeResolvedAt DateTime?
+  
+  // PDF généré
+  pdfUrl          String?
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  completedAt     DateTime?
+  
   @@index([missionId])
   @@index([extraId])
+  @@index([clientId])
   @@index([status])
+  @@index([type])
+  @@index([reference])
 }
 
 // =============================================================================
