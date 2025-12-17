@@ -303,7 +303,7 @@ export default function ContractsAdminPage() {
             if (statusFilter !== 'ALL') params.append('status', statusFilter);
             if (typeFilter !== 'ALL') params.append('type', typeFilter);
 
-            const headers: Record<string, string> = {};
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }

@@ -251,7 +251,7 @@ export default function AdminUserDetailPage() {
             setIsLoading(true);
             try {
                 const token = getToken();
-                const headers: Record<string, string> = {};
+                const headers: Record<string, string> = { 'Content-Type': 'application/json' };
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
@@ -344,7 +344,7 @@ export default function AdminUserDetailPage() {
         setActionLoading('password');
         try {
             const token = getToken();
-            const resetHeaders: Record<string, string> = {};
+            const resetHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
             if (token) {
                 resetHeaders['Authorization'] = `Bearer ${token}`;
             }

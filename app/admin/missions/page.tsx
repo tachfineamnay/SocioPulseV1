@@ -318,7 +318,7 @@ export default function MissionsPage() {
             if (statusFilter !== 'ALL') params.append('status', statusFilter);
             if (urgencyFilter !== 'ALL') params.append('urgency', urgencyFilter);
 
-            const headers: Record<string, string> = {};
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }

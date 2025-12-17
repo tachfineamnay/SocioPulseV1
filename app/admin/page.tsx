@@ -256,7 +256,7 @@ export default function AdminDashboardPage() {
         const fetchDashboard = async () => {
             try {
                 const token = Cookies.get('accessToken');
-                const headers: Record<string, string> = {};
+                const headers: Record<string, string> = { 'Content-Type': 'application/json' };
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
                 }

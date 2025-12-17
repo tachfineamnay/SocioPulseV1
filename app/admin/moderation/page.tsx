@@ -287,7 +287,7 @@ export default function ModerationPage() {
         setIsLoading(true);
         try {
             const token = getToken();
-            const headers: Record<string, string> = {};
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }

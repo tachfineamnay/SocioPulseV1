@@ -55,7 +55,7 @@ export default function BookingsPage() {
             setIsLoading(true);
             try {
                 const token = localStorage.getItem('token');
-                const headers: Record<string, string> = {};
+                const headers: Record<string, string> = { 'Content-Type': 'application/json' };
                 if (token) {
                     headers['Authorization'] = `Bearer ${token}`;
                 }

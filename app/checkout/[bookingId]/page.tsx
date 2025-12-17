@@ -176,7 +176,7 @@ export default function BookingCheckoutPage() {
                 const headers: Record<string, string> = {
                     'Content-Type': 'application/json',
                 };
-                if (token) headers.Authorization = `Bearer ${token}`;
+                if (token) headers['Authorization'] = `Bearer ${token}`;
 
                 const [bookingRes, intentRes] = await Promise.all([
                     fetch(`${getApiBase()}/payments/booking/${bookingId}`, { headers }),
