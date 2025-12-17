@@ -164,9 +164,12 @@ function QuoteStatusBadge({ status }: { status: Quote['status'] }) {
 
 function ContractCard({ contract, userRole }: { contract: Contract; userRole: 'EXTRA' | 'CLIENT' }) {
     const otherParty = userRole === 'EXTRA' ? contract.client : contract.extra;
+    const establishmentName = otherParty && 'establishment' in otherParty
+        ? (otherParty as any).establishment?.name
+        : null;
     const otherName = otherParty
-        ? otherParty.establishment?.name ||
-          (otherParty.profile ? `${otherParty.profile.firstName} ${otherParty.profile.lastName}` : otherParty.email)
+        ? establishmentName ||
+          (otherParty.profile ? `${otherParty.profile.firstName} ${otherParty.profile.lastName}` : (otherParty as any).email)
         : 'N/A';
 
     const needsAction =
@@ -269,8 +272,11 @@ function ContractCard({ contract, userRole }: { contract: Contract; userRole: 'E
 
 function QuoteCard({ quote, userRole }: { quote: Quote; userRole: 'EXTRA' | 'CLIENT' }) {
     const otherParty = userRole === 'EXTRA' ? quote.client : quote.extra;
+    const establishmentName = otherParty && 'establishment' in otherParty
+        ? (otherParty as any).establishment?.name
+        : null;
     const otherName = otherParty
-        ? otherParty.establishment?.name ||
+        ? establishmentName ||
           (otherParty.profile ? `${otherParty.profile.firstName} ${otherParty.profile.lastName}` : '')
         : '';
 
