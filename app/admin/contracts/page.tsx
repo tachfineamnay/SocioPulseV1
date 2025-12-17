@@ -198,7 +198,7 @@ function ContractRow({ contract }: { contract: Contract }) {
                             <p className="text-xs text-slate-500">Extra</p>
                         </div>
                         {contract.extraSignedAt && (
-                            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" title="Signé" />
+                            <span title="Signé"><CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" /></span>
                         )}
                     </div>
 
@@ -212,7 +212,7 @@ function ContractRow({ contract }: { contract: Contract }) {
                             <p className="text-xs text-slate-500">Client</p>
                         </div>
                         {contract.clientSignedAt && (
-                            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" title="Signé" />
+                            <span title="Signé"><CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" /></span>
                         )}
                     </div>
                 </div>
