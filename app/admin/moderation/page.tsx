@@ -304,7 +304,7 @@ export default function ModerationPage() {
                     name: 'carte-identite-recto.jpg',
                     type: 'ID_CARD',
                     fileUrl: 'https://picsum.photos/400/300?random=1',
-                    status: 'PENDING',
+                    status: 'PENDING' as const,
                     createdAt: new Date(Date.now() - 3600000).toISOString(),
                     user: {
                         id: 'user1',
@@ -318,7 +318,7 @@ export default function ModerationPage() {
                     name: 'diplome-dees-2020.pdf',
                     type: 'DIPLOMA',
                     fileUrl: '/documents/diplome.pdf',
-                    status: 'PENDING',
+                    status: 'PENDING' as const,
                     createdAt: new Date(Date.now() - 7200000).toISOString(),
                     user: {
                         id: 'user2',
@@ -332,7 +332,7 @@ export default function ModerationPage() {
                     name: 'assurance-rc-pro.pdf',
                     type: 'INSURANCE',
                     fileUrl: '/documents/assurance.pdf',
-                    status: 'PENDING',
+                    status: 'PENDING' as const,
                     createdAt: new Date(Date.now() - 10800000).toISOString(),
                     user: {
                         id: 'user3',
