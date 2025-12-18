@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ToastContainer, useToasts } from '@/components/ui/Toast';
-import { createReliefMission, type CreateReliefMissionInput } from '@/app/services/matching.service';
+import { createReliefMission, type CreateReliefMissionInput } from '@/app/(platform)/services/matching.service';
 
 const JOB_TITLES = [
     'Aide-soignant(e)',

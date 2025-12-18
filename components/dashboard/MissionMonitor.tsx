@@ -15,7 +15,7 @@ import {
     Users
 } from 'lucide-react';
 import { ToastContainer, useToasts } from '@/components/ui/Toast';
-import { getActiveMissions } from '@/app/services/matching.service';
+import { getActiveMissions } from '@/app/(platform)/services/matching.service';
 
 type MissionStatus = 'SEARCHING' | 'ASSIGNED' | 'CANCELLED';
 

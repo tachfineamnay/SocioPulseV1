@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Calendar, ChevronLeft, ChevronRight as ChevronRightIcon, MapPin, MessageCircle, Search, Siren, Sparkles, Video } from 'lucide-react';
-import { getFeed } from '@/app/services/wall.service';
+import { getFeed } from '@/app/(platform)/services/wall.service';
 import Link from 'next/link';
 import { BentoFeed } from './BentoFeed';
 import { SmartSearchBar, type FloatingAvatar } from './SmartSearchBar';

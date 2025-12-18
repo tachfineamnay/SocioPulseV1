@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Users, MapPin, Send, Award, AlertCircle, CheckCircle2, Shield } from 'lucide-react';
 import { ToastContainer, useToasts } from '@/components/ui/Toast';
-import { getMissionCandidates, getMissionById } from '@/app/services/matching.service';
+import { getMissionCandidates, getMissionById } from '@/app/(platform)/services/matching.service';
 
 type Candidate = {
     id: string;

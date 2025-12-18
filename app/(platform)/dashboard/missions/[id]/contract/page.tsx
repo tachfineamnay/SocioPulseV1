@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { SignaturePad } from '@/components/ui/SignaturePad';
 import { ToastContainer, useToasts } from '@/components/ui/Toast';
-import { getMissionById } from '@/app/services/matching.service';
-import { signContract } from '@/app/services/contract.service';
+import { getMissionById } from '@/app/(platform)/services/matching.service';
+import { signContract } from '@/app/(platform)/services/contract.service';
 import { CheckCircle2, ShieldAlert, MapPin, Calendar, Coins } from 'lucide-react';
 
 type ContractStatus = 'PENDING' | 'SIGNED';

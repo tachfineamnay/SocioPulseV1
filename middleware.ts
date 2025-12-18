@@ -2,52 +2,107 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const protectedRoutes = ['/dashboard', '/bookings', '/messages', '/finance', '/admin', '/profile', '/settings', '/notifications'];
-const authRoutes = ['/auth/login', '/auth/register'];
+type TokenCheckResult = {
+    valid: boolean;
+    role?: string;
+};
+
+const ADMIN_PREFIX = '/admin';
+const DASH_SUBDOMAIN_PREFIX = 'dash.';
+const AUTH_PATH_PREFIXES = ['/auth', '/onboarding'];
+const PLATFORM_PROTECTED_PATHS = [
+    '/dashboard',
+    '/wall',
+    '/bookings',
+    '/messages',
+    '/finance',
+    '/profile',
+    '/settings',
+    '/notifications',
+];
+
+function isAuthPath(pathname: string) {
+    return AUTH_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+async function verifyToken(token?: string): Promise<TokenCheckResult> {
+    if (!token) return { valid: false };
+
+    try {
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_dev_secret');
+        const { payload } = await jwtVerify(token, secret);
+        return {
+            valid: true,
+            role: typeof payload.role === 'string' ? payload.role : undefined,
+        };
+    } catch {
+        return { valid: false };
+    }
+}
 
 export async function middleware(request: NextRequest) {
-    const token = request.cookies.get('accessToken')?.value;
     const { pathname } = request.nextUrl;
+    const hostname = request.nextUrl.hostname;
+    const token = request.cookies.get('accessToken')?.value;
 
-    // Debug logging (remove in production)
-    console.log(`[Middleware] Path: ${pathname}, Token exists: ${!!token}`);
+    const tokenCheck = await verifyToken(token);
+    const role = tokenCheck.role?.toUpperCase();
+    const isAdmin = role === 'ADMIN';
+    const isClientOrExtra = role === 'CLIENT' || role === 'EXTRA';
 
-    const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
-    const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+    const loginUrl = new URL('/auth/login', request.url);
 
-    // 1. Gestion des routes protégées
-    if (isProtectedRoute) {
-        if (!token) {
-            console.log('[Middleware] No token, redirecting to login');
-            return NextResponse.redirect(new URL('/auth/login', request.url));
+    // === Mode Production: dash.lesextras.com ===
+    if (hostname.startsWith(DASH_SUBDOMAIN_PREFIX)) {
+        if (isAuthPath(pathname)) {
+            if (tokenCheck.valid && isAdmin) {
+                return NextResponse.redirect(new URL('/admin', request.url));
+            }
+            return NextResponse.next();
         }
 
-        try {
-            // Vérification cryptographique du token (Edge runtime compatible)
-            const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_dev_secret');
-            await jwtVerify(token, secret);
-            console.log('[Middleware] Token valid, proceeding');
-            return NextResponse.next();
-        } catch (error) {
-            // Token invalide ou expiré
-            console.log('[Middleware] Token invalid, clearing and redirecting');
-            const response = NextResponse.redirect(new URL('/auth/login', request.url));
-            response.cookies.delete('accessToken');
+        if (!tokenCheck.valid || !isAdmin) {
+            const response = NextResponse.redirect(loginUrl);
+            if (token) response.cookies.delete('accessToken');
             return response;
         }
+
+        const adminPath = pathname.startsWith(ADMIN_PREFIX)
+            ? pathname
+            : `${ADMIN_PREFIX}${pathname === '/' ? '' : pathname}`;
+
+        if (adminPath !== pathname) {
+            const url = request.nextUrl.clone();
+            url.pathname = adminPath;
+            return NextResponse.rewrite(url);
+        }
+
+        return NextResponse.next();
     }
 
-    // 2. Redirection si déjà connecté
-    if (isAuthRoute && token) {
-        try {
-            const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_dev_secret');
-            await jwtVerify(token, secret);
-            console.log('[Middleware] Already authenticated, redirecting to profile');
-            return NextResponse.redirect(new URL('/profile', request.url));
-        } catch (error) {
-            // Si token invalide sur page login, on laisse passer
-            console.log('[Middleware] Invalid token on auth page, allowing access');
-            return NextResponse.next();
+    // === Mode Temporaire: URL unique / coolify ===
+    if (isAuthPath(pathname)) {
+        if (tokenCheck.valid) {
+            const target = isAdmin ? '/admin' : '/wall';
+            return NextResponse.redirect(new URL(target, request.url));
+        }
+        return NextResponse.next();
+    }
+
+    if (pathname.startsWith(ADMIN_PREFIX)) {
+        if (!tokenCheck.valid || !isAdmin) {
+            const response = NextResponse.redirect(loginUrl);
+            if (token) response.cookies.delete('accessToken');
+            return response;
+        }
+        return NextResponse.next();
+    }
+
+    if (PLATFORM_PROTECTED_PATHS.some((route) => pathname.startsWith(route))) {
+        if (!tokenCheck.valid || (!isClientOrExtra && !isAdmin)) {
+            const response = NextResponse.redirect(loginUrl);
+            if (token) response.cookies.delete('accessToken');
+            return response;
         }
     }
 

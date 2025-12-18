@@ -1,14 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
-import { DesktopTopNav, MobileBottomNav } from "@/components/layout";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Les Extras | Plateforme Médico-Sociale",
-    description: "La plateforme B2B2C pour le secteur médico-social. Trouvez des renforts, réservez des ateliers, connectez-vous avec des professionnels qualifiés.",
-    keywords: ["médico-social", "EHPAD", "renforts", "ateliers", "professionnels de santé"],
+    title: "Les Extras | Plateforme M‚dico-Sociale",
+    description: "La plateforme B2B2C pour le secteur m‚dico-social. Trouvez des renforts, r‚servez des ateliers, connectez-vous avec des professionnels qualifi‚s.",
+    keywords: ["m‚dico-social", "EHPAD", "renforts", "ateliers", "professionnels de sant‚"],
 };
 
 export const viewport: Viewport = {
@@ -26,11 +25,7 @@ export default function RootLayout({
 }) {
     return (
         <html lang="fr" className="smooth-scroll">
-            <body className={`${outfit.className} has-bottom-nav lg:pb-0`}>
-                <DesktopTopNav />
-                {children}
-                <MobileBottomNav />
-            </body>
+            <body className={outfit.className}>{children}</body>
         </html>
     );
 }
