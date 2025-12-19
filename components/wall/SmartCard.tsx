@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowUpRight, Clock, MapPin, Video } from 'lucide-react';
+import { ArrowUpRight, Clock, MapPin, Video, Siren } from 'lucide-react';
 import { ImmersiveCard } from './ImmersiveCard';
 import { SocialPostCard, type SocialPostCardItem } from '@/components/feed/SocialPostCard';
 
@@ -67,14 +67,19 @@ export function SmartCard({ item, mode }: SmartCardProps) {
                 badge={
                     showVisioBadge ? (
                         <motion.span
-                            className="inline-flex items-center gap-2 rounded-full bg-white/12 border border-white/20 px-3 py-1.5 text-xs font-semibold text-white"
-                            animate={{ opacity: [0.75, 1, 0.75], scale: [1, 1.03, 1] }}
+                            className="inline-flex items-center gap-2 rounded-full bg-teal-50 border border-teal-200 px-3 py-1.5 text-xs font-semibold text-teal-700"
+                            animate={{ opacity: [0.85, 1, 0.85], scale: [1, 1.02, 1] }}
                             transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
                         >
-                            <Video className="h-4 w-4 text-indigo-200" />
-                            Dispo Visio
+                            <Video className="h-4 w-4 text-teal-600" />
+                            SocioLive
                         </motion.span>
-                    ) : null
+                    ) : (
+                        <span className="inline-flex items-center gap-2 rounded-full bg-teal-50 border border-teal-100 px-3 py-1.5 text-xs font-semibold text-teal-700">
+                            <Video className="h-4 w-4 text-teal-600" />
+                            Service
+                        </span>
+                    )
                 }
             />
         );
@@ -100,18 +105,26 @@ export function SmartCard({ item, mode }: SmartCardProps) {
                 whileTap={{ scale: 0.99 }}
                 transition={{ type: 'spring' as const, stiffness: 220, damping: 18 }}
                 className={`group relative h-full overflow-hidden rounded-3xl p-6 shadow-soft border border-white/60 backdrop-blur-md ${
-                    isUrgent ? 'bg-[#FF6B6B]/10' : 'bg-white/70'
+                    isUrgent ? 'bg-rose-50/50' : 'bg-white/70'
                 }`}
             >
                 <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#FF6B6B]/15 blur-3xl" />
+                    <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-rose-500/15 blur-3xl" />
                     <div className="absolute bottom-[-120px] left-[-140px] h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+                </div>
+
+                {/* Badge Type Mission */}
+                <div className="relative mb-4">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700">
+                        <Siren className="h-3.5 w-3.5" />
+                        Renfort
+                    </span>
                 </div>
 
                 <div className="relative flex items-center justify-between gap-3">
                     <span
                         className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                            isUrgent ? 'bg-white/60 text-[#FF6B6B]' : 'bg-slate-900/5 text-slate-700'
+                            isUrgent ? 'bg-rose-100 text-rose-700' : 'bg-slate-900/5 text-slate-700'
                         }`}
                     >
                         <Clock className="h-4 w-4" />
@@ -135,7 +148,7 @@ export function SmartCard({ item, mode }: SmartCardProps) {
                 <div className="relative mt-6 flex flex-wrap items-center gap-3 text-xs text-slate-600">
                     {city ? (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-white/60 px-3 py-1">
-                            <MapPin className="h-4 w-4 text-[#FF6B6B]" />
+                            <MapPin className="h-4 w-4 text-rose-500" />
                             {city}
                         </span>
                     ) : null}
@@ -151,7 +164,7 @@ export function SmartCard({ item, mode }: SmartCardProps) {
                 </div>
 
                 <div className="relative mt-auto pt-6 flex items-center justify-end">
-                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 group-hover:text-[#FF6B6B] transition-colors">
+                    <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
                         Voir
                         <ArrowUpRight className="h-4 w-4" />
                     </span>
