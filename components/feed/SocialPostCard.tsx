@@ -110,11 +110,11 @@ export function SocialPostCard({ item }: { item: SocialPostCardItem }) {
             <div className="p-6 space-y-4">
                 <header className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-coral-100 to-rose-100 flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm flex-shrink-0">
+                        <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-brand-100 to-indigo-100 flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm flex-shrink-0">
                             {item.authorAvatar ? (
                                 <img src={item.authorAvatar} alt={item.authorName || 'Auteur'} className="h-full w-full object-cover" loading="lazy" decoding="async" />
                             ) : (
-                                <span className="text-sm font-semibold text-coral-700">
+                                <span className="text-sm font-semibold text-brand-700">
                                     {getInitials(item.authorName)}
                                 </span>
                             )}
@@ -127,7 +127,7 @@ export function SocialPostCard({ item }: { item: SocialPostCardItem }) {
                             <p className="text-xs text-slate-500">
                                 {categoryLabel ? (
                                     <span className="inline-flex items-center gap-2">
-                                        <span className="px-2 py-0.5 rounded-full bg-coral-50 text-coral-700 font-medium">
+                                        <span className="px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 font-medium">
                                             {categoryLabel}
                                         </span>
                                         {dateLabel ? <span>{dateLabel}</span> : null}

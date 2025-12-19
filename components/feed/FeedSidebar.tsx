@@ -43,7 +43,7 @@ export function FeedSidebar({ talentPool, activity }: FeedSidebarProps) {
             <div className="card-surface p-5">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="font-semibold text-slate-900 flex items-center gap-2">
-                        <Users className="w-4 h-4 text-coral-500" />
+                        <Users className="w-4 h-4 text-brand-600" />
                         Mon Vivier
                     </h2>
                     <Link

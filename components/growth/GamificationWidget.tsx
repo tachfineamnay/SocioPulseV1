@@ -37,7 +37,7 @@ export function GamificationWidget({ summary, isLoading }: GamificationWidgetPro
                 <div className="space-y-1">
                     <p className="label-sm">Growth</p>
                     <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-coral-500" />
+                        <Sparkles className="w-5 h-5 text-brand-600" />
                         Profil complété à {completion}%
                     </h3>
                     <p className="text-sm text-slate-600">
@@ -52,7 +52,7 @@ export function GamificationWidget({ summary, isLoading }: GamificationWidgetPro
             <div className="space-y-2">
                 <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                     <motion.div
-                        className="h-full bg-gradient-to-r from-coral-500 to-orange-500 rounded-full"
+                        className="h-full bg-gradient-to-r from-brand-600 to-teal-500 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${completion}%` }}
                         transition={{ type: 'spring', stiffness: 120, damping: 20 }}

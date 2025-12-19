@@ -52,7 +52,7 @@ export function ReferralCard({ referralCode, pendingCount, confirmedCount, pendi
                         +200 points quand votre filleul est vérifié (anti-fraude).
                     </p>
                 </div>
-                <div className="shrink-0 px-3 py-2 rounded-2xl bg-coral-50 text-coral-700 text-sm font-semibold">
+                <div className="shrink-0 px-3 py-2 rounded-2xl bg-brand-50 text-brand-700 text-sm font-semibold">
                     +200 pts
                 </div>
             </div>

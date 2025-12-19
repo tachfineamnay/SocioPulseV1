@@ -97,7 +97,7 @@ export function TagSelector({ tags, selectedIds, onChange, maxSelected = 10 }: T
                             whileTap={{ scale: 0.97 }}
                             className={`px-4 py-2 rounded-full border text-sm font-semibold transition-colors ${
                                 isSelected
-                                    ? 'bg-coral-500 border-coral-500 text-white'
+                                    ? 'bg-brand-600 border-brand-600 text-white'
                                     : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                             }`}
                         >

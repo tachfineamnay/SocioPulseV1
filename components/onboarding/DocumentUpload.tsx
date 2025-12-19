@@ -174,7 +174,7 @@ export function DocumentUpload({
                 className={`
           relative border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer
           ${isDragging
-                        ? 'border-coral-500 bg-coral-50'
+                        ? 'border-brand-500 bg-brand-50'
                         : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
                     }
         `}
@@ -191,11 +191,11 @@ export function DocumentUpload({
                     <div
                         className={`
               w-12 h-12 mx-auto rounded-xl flex items-center justify-center
-              ${isDragging ? 'bg-coral-100' : 'bg-slate-100'}
+              ${isDragging ? 'bg-brand-100' : 'bg-slate-100'}
             `}
                     >
                         <Upload
-                            className={`w-6 h-6 ${isDragging ? 'text-coral-500' : 'text-slate-400'}`}
+                            className={`w-6 h-6 ${isDragging ? 'text-brand-500' : 'text-slate-400'}`}
                         />
                     </div>
                     <div>
@@ -203,7 +203,7 @@ export function DocumentUpload({
                             Glissez-déposez vos fichiers ici
                         </p>
                         <p className="text-xs text-slate-500 mt-1">
-                            ou <span className="text-coral-600 font-medium">parcourir</span> •{' '}
+                            ou <span className="text-brand-600 font-medium">parcourir</span> •{' '}
                             {accept.replace(/\./g, '').toUpperCase()} • Max {maxSize}MB
                         </p>
                     </div>
@@ -262,7 +262,7 @@ export function DocumentUpload({
                                         {file.status === 'uploading' && (
                                             <div className="flex-1 max-w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                                 <div
-                                                    className="h-full bg-coral-500 transition-all duration-300 rounded-full"
+                                                    className="h-full bg-brand-600 transition-all duration-300 rounded-full"
                                                     style={{ width: `${file.progress}%` }}
                                                 />
                                             </div>

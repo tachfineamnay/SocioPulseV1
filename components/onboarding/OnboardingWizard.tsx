@@ -228,7 +228,7 @@ export function OnboardingWizard() {
                 <div className="max-w-2xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between mb-3">
                         <h1 className="text-xl font-bold text-slate-900">
-                            Les <span className="text-coral-500">Extras</span>
+                            Socio<span className="text-brand-600">pulse</span>
                         </h1>
                         <span className="text-sm text-slate-500">
                             Étape {Math.min(step, totalSteps)} sur {totalSteps}
@@ -237,7 +237,7 @@ export function OnboardingWizard() {
 
                     <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
                         <motion.div
-                            className="h-full bg-coral-500"
+                            className="h-full bg-brand-600"
                             initial={{ width: 0 }}
                             animate={{ width: `${progressPercentage}%` }}
                             transition={{ duration: 0.3 }}
@@ -276,7 +276,7 @@ export function OnboardingWizard() {
                                         className={`
                                             relative p-6 rounded-2xl bg-white border-2 text-left transition-all
                                             ${userType === 'TALENT'
-                                                ? 'border-coral-500 ring-2 ring-coral-200'
+                                                ? 'border-brand-500 ring-2 ring-brand-200'
                                                 : 'border-slate-200 hover:border-slate-300'
                                             }
                                         `}
@@ -285,11 +285,11 @@ export function OnboardingWizard() {
                                             <div
                                                 className={`
                                                     w-14 h-14 rounded-xl flex items-center justify-center
-                                                    ${userType === 'TALENT' ? 'bg-coral-50' : 'bg-slate-100'}
+                                                    ${userType === 'TALENT' ? 'bg-brand-50' : 'bg-slate-100'}
                                                 `}
                                             >
                                                 <UserCheck
-                                                    className={`w-7 h-7 ${userType === 'TALENT' ? 'text-coral-500' : 'text-slate-600'}`}
+                                                    className={`w-7 h-7 ${userType === 'TALENT' ? 'text-brand-500' : 'text-slate-600'}`}
                                                 />
                                             </div>
                                             <div>
@@ -298,7 +298,7 @@ export function OnboardingWizard() {
                                             </div>
                                         </div>
                                         {userType === 'TALENT' ? (
-                                            <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-coral-500 flex items-center justify-center">
+                                            <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center">
                                                 <Check className="w-4 h-4 text-white" />
                                             </div>
                                         ) : null}
@@ -313,7 +313,7 @@ export function OnboardingWizard() {
                                         className={`
                                             relative p-6 rounded-2xl bg-white border-2 text-left transition-all
                                             ${userType === 'SEEKER'
-                                                ? 'border-coral-500 ring-2 ring-coral-200'
+                                                ? 'border-brand-500 ring-2 ring-brand-200'
                                                 : 'border-slate-200 hover:border-slate-300'
                                             }
                                         `}
@@ -322,11 +322,11 @@ export function OnboardingWizard() {
                                             <div
                                                 className={`
                                                     w-14 h-14 rounded-xl flex items-center justify-center
-                                                    ${userType === 'SEEKER' ? 'bg-coral-50' : 'bg-slate-100'}
+                                                    ${userType === 'SEEKER' ? 'bg-brand-50' : 'bg-slate-100'}
                                                 `}
                                             >
                                                 <Search
-                                                    className={`w-7 h-7 ${userType === 'SEEKER' ? 'text-coral-500' : 'text-slate-600'}`}
+                                                    className={`w-7 h-7 ${userType === 'SEEKER' ? 'text-brand-500' : 'text-slate-600'}`}
                                                 />
                                             </div>
                                             <div>
@@ -335,7 +335,7 @@ export function OnboardingWizard() {
                                             </div>
                                         </div>
                                         {userType === 'SEEKER' ? (
-                                            <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-coral-500 flex items-center justify-center">
+                                            <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center">
                                                 <Check className="w-4 h-4 text-white" />
                                             </div>
                                         ) : null}
@@ -464,8 +464,8 @@ export function OnboardingWizard() {
                                 className="space-y-6"
                             >
                                 <div className="text-center space-y-2">
-                                    <div className="mx-auto h-12 w-12 rounded-2xl bg-coral-500/10 flex items-center justify-center">
-                                        <Sparkles className="h-6 w-6 text-coral-600" />
+                                    <div className="mx-auto h-12 w-12 rounded-2xl bg-brand-500/10 flex items-center justify-center">
+                                        <Sparkles className="h-6 w-6 text-brand-600" />
                                     </div>
                                     <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
                                         Qui êtes-vous ?
