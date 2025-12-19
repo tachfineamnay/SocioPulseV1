@@ -97,7 +97,7 @@ export default function BookingWidget() {
 
                             {/* Live Badge */}
                             {selectedFormule?.popular && (
-                                <span className="px-3 py-1 bg-coral-50 text-coral-600 text-[10px] font-semibold tracking-wider uppercase rounded-full">
+                                <span className="px-3 py-1 bg-brand-50 text-brand-600 text-[10px] font-semibold tracking-wider uppercase rounded-full">
                                     Populaire
                                 </span>
                             )}
@@ -108,8 +108,8 @@ export default function BookingWidget() {
                             onClick={() => setIsQuoteOpen(true)}
                             className="w-full mt-6 py-3.5 px-5 border border-gray-200 rounded-2xl text-sm font-medium text-gray-600 
                          transition-all duration-300 ease-out
-                         hover:border-coral-300 hover:text-coral-600 hover:bg-coral-50/50
-                         focus:outline-none focus:ring-2 focus:ring-coral-200 focus:ring-offset-2"
+                         hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/50
+                         focus:outline-none focus:ring-2 focus:ring-brand-200 focus:ring-offset-2"
                         >
                             Demander un devis personnalisé
                         </button>
@@ -134,7 +134,7 @@ export default function BookingWidget() {
                       relative flex flex-col items-center py-3 px-2 rounded-xl cursor-pointer
                       border-2 transition-all duration-200
                       ${watchedFormule === formule.id
-                                                ? "border-coral-500 bg-coral-50/80"
+                                                ? "border-brand-500 bg-brand-50/80"
                                                 : "border-gray-100 hover:border-gray-200 bg-gray-50/50"
                                             }
                     `}
@@ -145,11 +145,11 @@ export default function BookingWidget() {
                                             {...register("formule")}
                                             className="sr-only"
                                         />
-                                        <span className={`text-xs font-medium ${watchedFormule === formule.id ? "text-coral-600" : "text-gray-600"
+                                        <span className={`text-xs font-medium ${watchedFormule === formule.id ? "text-brand-600" : "text-gray-600"
                                             }`}>
                                             {formule.label}
                                         </span>
-                                        <span className={`text-[10px] mt-0.5 ${watchedFormule === formule.id ? "text-coral-500" : "text-gray-400"
+                                        <span className={`text-[10px] mt-0.5 ${watchedFormule === formule.id ? "text-brand-500" : "text-gray-400"
                                             }`}>
                                             {formule.price}€
                                         </span>
@@ -176,7 +176,7 @@ export default function BookingWidget() {
                         px-4 py-2 rounded-full text-xs font-medium cursor-pointer
                         border transition-all duration-200
                         ${isSelected
-                                                    ? "border-coral-500 bg-coral-500 text-white"
+                                                    ? "border-brand-500 bg-brand-600 text-white"
                                                     : "border-gray-200 text-gray-600 hover:border-gray-300"
                                                 }
                       `}
@@ -211,7 +211,7 @@ export default function BookingWidget() {
                                     className="w-full h-12 px-4 bg-gray-50/80 border border-gray-100 rounded-xl
                            text-gray-900 font-medium
                            transition-all duration-200
-                           focus:outline-none focus:bg-white focus:border-coral-300 focus:ring-4 focus:ring-coral-100
+                           focus:outline-none focus:bg-white focus:border-brand-300 focus:ring-4 focus:ring-brand-100
                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="12"
                                 />
@@ -236,7 +236,7 @@ export default function BookingWidget() {
                                     className="w-full h-12 px-4 bg-gray-50/80 border border-gray-100 rounded-xl
                            text-gray-900 text-sm
                            transition-all duration-200
-                           focus:outline-none focus:bg-white focus:border-coral-300 focus:ring-4 focus:ring-coral-100"
+                           focus:outline-none focus:bg-white focus:border-brand-300 focus:ring-4 focus:ring-brand-100
                                 />
                                 {errors.sessionDate && (
                                     <p className="text-xs text-red-500">{errors.sessionDate.message}</p>
@@ -251,7 +251,7 @@ export default function BookingWidget() {
                                     className="w-full h-12 px-4 bg-gray-50/80 border border-gray-100 rounded-xl
                            text-gray-900 text-sm appearance-none cursor-pointer
                            transition-all duration-200
-                           focus:outline-none focus:bg-white focus:border-coral-300 focus:ring-4 focus:ring-coral-100"
+                           focus:outline-none focus:bg-white focus:border-brand-300 focus:ring-4 focus:ring-brand-100
                                     style={{
                                         backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
                                         backgroundPosition: "right 12px center",
@@ -282,7 +282,7 @@ export default function BookingWidget() {
                                 className="w-full px-4 py-3 bg-gray-50/80 border border-gray-100 rounded-xl
                          text-gray-900 text-sm resize-none
                          transition-all duration-200
-                         focus:outline-none focus:bg-white focus:border-coral-300 focus:ring-4 focus:ring-coral-100
+                         focus:outline-none focus:bg-white focus:border-brand-300 focus:ring-4 focus:ring-brand-100
                          placeholder:text-gray-400"
                             />
                             {errors.objectives && (
@@ -296,13 +296,13 @@ export default function BookingWidget() {
                             disabled={isSubmitting}
                             className="
                 w-full h-14 mt-2
-                bg-coral-500 hover:bg-coral-600
+                bg-brand-600 hover:bg-brand-700
                 text-white text-sm font-semibold tracking-wide uppercase
                 rounded-2xl
                 transition-all duration-300 ease-out
-                hover:shadow-lg hover:shadow-coral-500/25 hover:-translate-y-0.5
+                hover:shadow-lg hover:shadow-brand-600/25 hover:-translate-y-0.5
                 active:translate-y-0 active:shadow-md
-                focus:outline-none focus:ring-4 focus:ring-coral-200
+                focus:outline-none focus:ring-4 focus:ring-brand-200
                 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0
               "
                         >
@@ -369,24 +369,24 @@ export default function BookingWidget() {
                                 type="email"
                                 placeholder="Email"
                                 className="w-full h-12 px-4 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder:text-gray-400
-                         focus:outline-none focus:border-coral-300 focus:ring-4 focus:ring-coral-100"
+                         focus:outline-none focus:border-brand-300 focus:ring-4 focus:ring-brand-100
                             />
                             <input
                                 type="tel"
                                 placeholder="Téléphone"
                                 className="w-full h-12 px-4 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder:text-gray-400
-                         focus:outline-none focus:border-coral-300 focus:ring-4 focus:ring-coral-100"
+                         focus:outline-none focus:border-brand-300 focus:ring-4 focus:ring-brand-100
                             />
                             <textarea
                                 rows={3}
                                 placeholder="Votre message..."
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-gray-900 placeholder:text-gray-400 resize-none
-                         focus:outline-none focus:border-coral-300 focus:ring-4 focus:ring-coral-100"
+                         focus:outline-none focus:border-brand-300 focus:ring-4 focus:ring-brand-100
                             />
                             <button
                                 type="submit"
-                                className="w-full h-12 bg-coral-500 hover:bg-coral-600 text-white font-medium rounded-xl
-                         transition-all duration-200 hover:shadow-lg hover:shadow-coral-500/20"
+                                className="w-full h-12 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-xl
+                         transition-all duration-200 hover:shadow-lg hover:shadow-brand-600/20"
                             >
                                 Envoyer
                             </button>
