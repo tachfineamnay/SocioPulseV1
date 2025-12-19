@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <div className="flex min-h-screen">
                 <aside className="hidden lg:flex w-72 flex-col gap-8 bg-slate-950 border-r border-slate-800 px-5 py-6">
                     <Link href="/admin" className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#FF6B6B] to-indigo-500 flex items-center justify-center text-white font-semibold shadow-soft">
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 to-teal-500 flex items-center justify-center text-white font-semibold shadow-soft">
                             LX
                         </div>
                         <div className="leading-tight">

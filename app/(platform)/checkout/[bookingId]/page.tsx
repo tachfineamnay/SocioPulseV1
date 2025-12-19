@@ -106,7 +106,7 @@ function CheckoutForm({ bookingId, onSuccess }: { bookingId: string; onSuccess: 
                 className={`w-full h-12 rounded-xl font-semibold text-white text-sm transition-all flex items-center justify-center gap-2 ${
                     !stripe || isSubmitting
                         ? 'bg-slate-400 cursor-not-allowed'
-                        : 'bg-[#FF6B6B] hover:bg-[#e55555] shadow-lg hover:shadow-xl'
+                        : 'bg-brand-600 hover:bg-brand-700 shadow-lg hover:shadow-xl'
                 }`}
             >
                 {isSubmitting ? (
@@ -151,7 +151,7 @@ function SuccessView() {
             </p>
             <Link
                 href="/bookings"
-                className="inline-flex items-center gap-2 text-[#FF6B6B] font-medium hover:underline"
+                className="inline-flex items-center gap-2 text-brand-600 font-medium hover:underline"
             >
                 Voir mes reservations
             </Link>
@@ -216,7 +216,7 @@ export default function BookingCheckoutPage() {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="h-8 w-8 text-[#FF6B6B] animate-spin" />
+                    <Loader2 className="h-8 w-8 text-brand-600 animate-spin" />
                     <p className="text-slate-600">Chargement du paiement...</p>
                 </div>
             </div>
@@ -231,7 +231,7 @@ export default function BookingCheckoutPage() {
                         <p className="text-red-700 mb-4">{error}</p>
                         <Link
                             href="/bookings"
-                            className="inline-flex items-center gap-2 text-[#FF6B6B] font-medium hover:underline"
+                            className="inline-flex items-center gap-2 text-brand-600 font-medium hover:underline"
                         >
                             <ArrowLeft className="h-4 w-4" />
                             Retour aux reservations
@@ -309,7 +309,7 @@ export default function BookingCheckoutPage() {
                                     appearance: {
                                         theme: 'stripe',
                                         variables: {
-                                            colorPrimary: '#FF6B6B',
+                                            colorPrimary: '#4F46E5',
                                             borderRadius: '12px',
                                         },
                                     },

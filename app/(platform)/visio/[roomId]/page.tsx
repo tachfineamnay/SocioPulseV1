@@ -86,7 +86,7 @@ export default function VisioPage() {
         return (
             <div className="min-h-screen bg-slate-900 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="h-10 w-10 text-[#FF6B6B] animate-spin" />
+                    <Loader2 className="h-10 w-10 text-teal-500 animate-spin" />
                     <p className="text-white text-lg">Connexion \u00e0 la session...</p>
                 </div>
             </div>
@@ -104,7 +104,7 @@ export default function VisioPage() {
                     <p className="text-slate-400 mb-6">{error}</p>
                     <Link
                         href="/bookings"
-                        className="inline-flex items-center gap-2 text-[#FF6B6B] font-medium hover:underline"
+                        className="inline-flex items-center gap-2 text-teal-500 font-medium hover:underline"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Retour aux r\u00e9servations

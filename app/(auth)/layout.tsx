@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <div className="w-full max-w-6xl grid gap-10 lg:grid-cols-[1.05fr_0.95fr] items-center">
                 <div className="hidden lg:flex flex-col gap-6 rounded-3xl bg-slate-900 text-white p-10 shadow-2xl shadow-brand-500/10">
                     <Link href="/" className="inline-flex items-center gap-3">
-                        <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-[#FF6B6B] to-orange-500 flex items-center justify-center font-semibold">
+                        <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-teal-500 flex items-center justify-center font-semibold">
                             LX
                         </div>
                         <div className="flex flex-col leading-tight">
