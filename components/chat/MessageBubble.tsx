@@ -77,7 +77,7 @@ export function MessageBubble({
                     className={`
                         absolute bottom-0 w-3 h-3
                         ${isOwn
-                            ? 'right-[-6px] bg-coral-500'
+                            ? 'right-[-6px] bg-brand-600'
                             : 'left-[-6px] bg-slate-100'
                         }
                     `}

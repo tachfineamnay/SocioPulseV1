@@ -48,7 +48,7 @@ export function ConversationList({
                         placeholder="Rechercher une conversation..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-coral-500 focus:border-coral-500 transition-all outline-none"
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all outline-none"
                     />
                     <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -91,14 +91,14 @@ export function ConversationList({
                                         className={`
                                             flex items-center gap-3 p-4 transition-all relative
                                             ${isActive
-                                                ? 'bg-coral-50 border-l-4 border-coral-500 pl-[12px]' // Compensate padding
+                                                ? 'bg-brand-50 border-l-4 border-brand-500 pl-[12px]' // Compensate padding
                                                 : 'hover:bg-slate-50 border-l-4 border-transparent'
                                             }
                                         `}
                                     >
                                         {/* Avatar */}
                                         <div className="relative flex-shrink-0">
-                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center overflow-hidden">
+                                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center overflow-hidden">
                                                 {otherUser.avatar ? (
                                                     <img
                                                         src={otherUser.avatar}
@@ -106,7 +106,7 @@ export function ConversationList({
                                                         className="w-full h-full object-cover"
                                                     />
                                                 ) : (
-                                                    <span className="text-lg font-semibold text-coral-600">
+                                                    <span className="text-lg font-semibold text-brand-600">
                                                         {(otherUser.name || '?').charAt(0)}
                                                     </span>
                                                 )}
@@ -150,7 +150,7 @@ export function ConversationList({
 
                                                 {/* Unread Badge */}
                                                 {hasUnread && (
-                                                    <span className="flex-shrink-0 w-5 h-5 bg-coral-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                                                    <span className="flex-shrink-0 w-5 h-5 bg-brand-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                                                         {conversation.unreadCount}
                                                     </span>
                                                 )}

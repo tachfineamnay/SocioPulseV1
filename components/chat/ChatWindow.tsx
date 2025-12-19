@@ -85,7 +85,7 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
 
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center overflow-hidden">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center overflow-hidden">
                             {otherUser.avatar ? (
                                 <img
                                     src={otherUser.avatar}
@@ -93,7 +93,7 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <span className="text-sm font-semibold text-coral-600">
+                                <span className="text-sm font-semibold text-brand-600">
                                     {(otherUser.name || '?').charAt(0)}
                                 </span>
                             )}
@@ -118,7 +118,7 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="p-2.5 rounded-xl text-slate-500 hover:text-coral-600 hover:bg-coral-50 transition-colors"
+                            className="p-2.5 rounded-xl text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
                             aria-label="Appel vidéo"
                         >
                             <Video className="w-5 h-5" />
@@ -126,7 +126,7 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="p-2.5 rounded-xl text-slate-500 hover:text-coral-600 hover:bg-coral-50 transition-colors"
+                            className="p-2.5 rounded-xl text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition-colors"
                             aria-label="Appel téléphonique"
                         >
                             <Phone className="w-5 h-5" />
@@ -145,7 +145,7 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
                 {/* Context Banner */}
                 {conversation.bookingContext && (
                     <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center gap-2">
-                        <div className="w-1 h-8 bg-coral-500 rounded-full" />
+                        <div className="w-1 h-8 bg-brand-600 rounded-full" />
                         <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
                                 Concernant
@@ -156,7 +156,7 @@ export function ChatWindow({ conversation, onBack }: ChatWindowProps) {
                         </div>
                         <Link
                             href={`/bookings`} // In real app, link to specific booking ID
-                            className="text-xs font-semibold text-coral-600 hover:underline"
+                            className="text-xs font-semibold text-brand-600 hover:underline"
                         >
                             Voir détails
                         </Link>
