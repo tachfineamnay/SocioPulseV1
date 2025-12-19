@@ -19,7 +19,7 @@ export default function MobileBookingDrawer() {
             <div className="fixed bottom-6 left-4 right-4 z-40 lg:hidden">
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="w-full h-14 bg-coral-500 text-white text-sm font-semibold tracking-wide uppercase rounded-2xl shadow-xl shadow-coral-500/30 flex items-center justify-center gap-2 transition-transform active:scale-95"
+                    className="w-full h-14 bg-brand-600 text-white text-sm font-semibold tracking-wide uppercase rounded-2xl shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 transition-transform active:scale-95"
                 >
                     <span>Réserver maintenant</span>
                     <svg

@@ -90,11 +90,11 @@ export function BookingCard({ booking, onCancel }: BookingCardProps) {
 
                     <div className="mt-4 flex items-center justify-between pt-4 border-t border-slate-50">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center overflow-hidden">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center overflow-hidden">
                                 {booking.partnerAvatar ? (
                                     <img src={booking.partnerAvatar} alt={booking.partnerName} className="w-full h-full object-cover" />
                                 ) : (
-                                    <User className="w-3 h-3 text-coral-600" />
+                                    <User className="w-3 h-3 text-brand-600" />
                                 )}
                             </div>
                             <span className="text-sm font-medium text-slate-700">
@@ -105,7 +105,7 @@ export function BookingCard({ booking, onCancel }: BookingCardProps) {
                         <div className="flex items-center gap-2">
                             <Link
                                 href={`/messages/conv-${booking.id}`} // Mock link
-                                className="p-2 rounded-lg text-slate-400 hover:text-coral-600 hover:bg-coral-50 transition-colors"
+                                className="p-2 rounded-lg text-slate-400 hover:text-brand-600 hover:bg-brand-50 transition-colors"
                             >
                                 <MessageCircle className="w-5 h-5" />
                             </Link>
