@@ -438,7 +438,7 @@ export default function AdminUserDetailPage() {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 className="w-10 h-10 animate-spin text-coral-500 mx-auto mb-4" />
+                    <Loader2 className="w-10 h-10 animate-spin text-brand-600 mx-auto mb-4" />
                     <p className="text-slate-500">Chargement du profil...</p>
                 </div>
             </div>
@@ -453,7 +453,7 @@ export default function AdminUserDetailPage() {
                     <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                     <h2 className="text-xl font-semibold text-slate-900 mb-2">Erreur</h2>
                     <p className="text-slate-500 mb-4">{error || 'Utilisateur non trouvé'}</p>
-                    <Link href="/admin/users" className="text-coral-500 font-medium hover:underline">
+                    <Link href="/admin/users" className="text-brand-600 font-medium hover:underline">
                         Retour à l'annuaire
                     </Link>
                 </div>
@@ -511,7 +511,7 @@ export default function AdminUserDetailPage() {
                         {/* CARTE IDENTITÉ */}
                         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                             {/* Header avec gradient */}
-                            <div className="h-28 bg-gradient-to-r from-coral-100 via-slate-50 to-indigo-100 relative">
+                            <div className="h-28 bg-gradient-to-r from-brand-100 via-slate-50 to-indigo-100 relative">
                                 {/* SWITCH VÉRIFIÉ en haut à droite */}
                                 <div className="absolute top-4 right-4">
                                     <button
@@ -548,7 +548,7 @@ export default function AdminUserDetailPage() {
                                                 className="w-28 h-28 rounded-2xl border-4 border-white shadow-lg object-cover"
                                             />
                                         ) : (
-                                            <div className="w-28 h-28 rounded-2xl border-4 border-white shadow-lg bg-gradient-to-br from-coral-500 to-orange-400 flex items-center justify-center">
+                                            <div className="w-28 h-28 rounded-2xl border-4 border-white shadow-lg bg-gradient-to-br from-brand-600 to-brand-500 flex items-center justify-center">
                                                 <span className="text-3xl font-bold text-white">{initials}</span>
                                             </div>
                                         )}
@@ -583,7 +583,7 @@ export default function AdminUserDetailPage() {
                                 {/* Grille d'infos */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                                     <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                        <Mail className="w-5 h-5 text-coral-500" />
+                                        <Mail className="w-5 h-5 text-brand-600" />
                                         <div>
                                             <p className="text-xs text-slate-500">Email</p>
                                             <p className="text-sm font-medium text-slate-900">{user.email}</p>
@@ -591,7 +591,7 @@ export default function AdminUserDetailPage() {
                                     </div>
                                     {user.phone && (
                                         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                            <Phone className="w-5 h-5 text-coral-500" />
+                                            <Phone className="w-5 h-5 text-brand-600" />
                                             <div>
                                                 <p className="text-xs text-slate-500">Téléphone</p>
                                                 <p className="text-sm font-medium text-slate-900">{user.phone}</p>
@@ -600,7 +600,7 @@ export default function AdminUserDetailPage() {
                                     )}
                                     {(user.profile?.address || user.establishment?.address || user.profile?.city || user.establishment?.city) && (
                                         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                            <MapPin className="w-5 h-5 text-coral-500" />
+                                            <MapPin className="w-5 h-5 text-brand-600" />
                                             <div>
                                                 <p className="text-xs text-slate-500">Adresse</p>
                                                 <p className="text-sm font-medium text-slate-900">
@@ -611,7 +611,7 @@ export default function AdminUserDetailPage() {
                                     )}
                                     {user.establishment?.siret && (
                                         <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                            <Building2 className="w-5 h-5 text-coral-500" />
+                                            <Building2 className="w-5 h-5 text-brand-600" />
                                             <div>
                                                 <p className="text-xs text-slate-500">SIRET</p>
                                                 <p className="text-sm font-medium text-slate-900">{user.establishment.siret}</p>
@@ -619,7 +619,7 @@ export default function AdminUserDetailPage() {
                                         </div>
                                     )}
                                     <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                                        <Calendar className="w-5 h-5 text-coral-500" />
+                                        <Calendar className="w-5 h-5 text-brand-600" />
                                         <div>
                                             <p className="text-xs text-slate-500">Inscription</p>
                                             <p className="text-sm font-medium text-slate-900">{formatDate(user.createdAt)}</p>
@@ -630,8 +630,8 @@ export default function AdminUserDetailPage() {
                                 {/* Stats */}
                                 {user._count && (
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
-                                        <div className="text-center p-4 bg-gradient-to-br from-coral-50 to-orange-50 rounded-xl border border-coral-100">
-                                            <p className="text-2xl font-bold text-coral-600">
+                                        <div className="text-center p-4 bg-gradient-to-br from-brand-50 to-brand-100 rounded-xl border border-brand-100">
+                                            <p className="text-2xl font-bold text-brand-600">
                                                 {user._count.bookingsAsClient + user._count.bookingsAsProvider}
                                             </p>
                                             <p className="text-xs text-slate-500">Réservations</p>
@@ -762,12 +762,12 @@ export default function AdminUserDetailPage() {
                                         onChange={(e) => setNewNote(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAddNote()}
                                         placeholder="Ajouter une note..."
-                                        className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-transparent"
+                                        className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                                     />
                                     <button
                                         onClick={handleAddNote}
                                         disabled={!newNote.trim() || isSendingNote}
-                                        className="px-4 py-2.5 rounded-xl bg-coral-500 text-white font-medium hover:bg-coral-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="px-4 py-2.5 rounded-xl bg-brand-600 text-white font-medium hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isSendingNote ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />

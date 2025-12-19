@@ -3,9 +3,9 @@ import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-coral-50/40 flex items-center justify-center px-4 py-12">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-brand-50/40 flex items-center justify-center px-4 py-12">
             <div className="w-full max-w-6xl grid gap-10 lg:grid-cols-[1.05fr_0.95fr] items-center">
-                <div className="hidden lg:flex flex-col gap-6 rounded-3xl bg-slate-900 text-white p-10 shadow-2xl shadow-coral-500/10">
+                <div className="hidden lg:flex flex-col gap-6 rounded-3xl bg-slate-900 text-white p-10 shadow-2xl shadow-brand-500/10">
                     <Link href="/" className="inline-flex items-center gap-3">
                         <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-[#FF6B6B] to-orange-500 flex items-center justify-center font-semibold">
                             LX

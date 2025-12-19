@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
                     </div>
                     <Link 
                         href="/auth/login"
-                        className="inline-flex items-center gap-2 text-coral-600 font-semibold hover:text-coral-700"
+                        className="inline-flex items-center gap-2 text-brand-600 font-semibold hover:text-brand-700"
                     >
                         <ChevronLeft className="w-4 h-4" />
                         Retour à la connexion
@@ -80,8 +80,8 @@ export default function ForgotPasswordPage() {
                                 {...register('email')}
                                 type="email"
                                 placeholder="vous@exemple.com"
-                                className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-slate-50 focus:bg-white transition-all outline-none focus:ring-2 focus:ring-coral-500/20 ${
-                                    errors.email ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-coral-500'
+                                className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-slate-50 focus:bg-white transition-all outline-none focus:ring-2 focus:ring-brand-500/20 ${
+                                    errors.email ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-brand-500'
                                 }`}
                             />
                         </div>
@@ -93,7 +93,7 @@ export default function ForgotPasswordPage() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-coral-500 hover:bg-coral-600 text-white font-semibold py-3 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-3 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {isLoading ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
