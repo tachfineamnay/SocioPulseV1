@@ -186,14 +186,14 @@ function DocumentCard({
                             className="w-10 h-10 rounded-full object-cover"
                         />
                     ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-coral-500 to-orange-400 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-600 to-brand-500 flex items-center justify-center">
                             <span className="text-sm font-bold text-white">{userInitials}</span>
                         </div>
                     )}
                     <div className="flex-1 min-w-0">
                         <Link
                             href={`/admin/users/${doc.user.id}`}
-                            className="font-medium text-slate-900 hover:text-coral-600 truncate block"
+                            className="font-medium text-slate-900 hover:text-brand-600 truncate block"
                         >
                             {userName}
                         </Link>
@@ -476,7 +476,7 @@ export default function ModerationPage() {
                                     onClick={() => setActiveTab(tab.key as TabType)}
                                     className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                                         activeTab === tab.key
-                                            ? 'bg-coral-500 text-white'
+                                            ? 'bg-brand-600 text-white'
                                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                     }`}
                                 >
@@ -484,7 +484,7 @@ export default function ModerationPage() {
                                     {tab.label}
                                     {tab.key === 'pending' && tabCounts.pending > 0 && (
                                         <span className={`px-1.5 py-0.5 rounded-full text-xs ${
-                                            activeTab === tab.key ? 'bg-white/20' : 'bg-coral-500 text-white'
+                                            activeTab === tab.key ? 'bg-white/20' : 'bg-brand-600 text-white'
                                         }`}>
                                             {tabCounts.pending}
                                         </span>
@@ -501,7 +501,7 @@ export default function ModerationPage() {
                                 placeholder="Rechercher un utilisateur..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-coral-500 focus:border-transparent w-full sm:w-64"
+                                className="pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent w-full sm:w-64"
                             />
                         </div>
                     </div>
@@ -513,7 +513,7 @@ export default function ModerationPage() {
                 {isLoading ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
-                            <Loader2 className="w-10 h-10 animate-spin text-coral-500 mx-auto mb-4" />
+                            <Loader2 className="w-10 h-10 animate-spin text-brand-600 mx-auto mb-4" />
                             <p className="text-slate-500">Chargement des documents...</p>
                         </div>
                     </div>

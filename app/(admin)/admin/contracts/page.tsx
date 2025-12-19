@@ -139,7 +139,7 @@ function StatusBadge({ status }: { status: Contract['status'] }) {
 
 function TypeBadge({ type }: { type: Contract['type'] }) {
     const config: Record<string, { bg: string; text: string; label: string }> = {
-        MISSION_SOS: { bg: 'bg-coral-100', text: 'text-coral-700', label: 'Mission SOS' },
+        MISSION_SOS: { bg: 'bg-rose-100', text: 'text-rose-700', label: 'Mission SOS' },
         SERVICE_BOOKING: { bg: 'bg-indigo-100', text: 'text-indigo-700', label: 'Service' },
         FRAMEWORK: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Contrat Cadre' },
     };
@@ -251,7 +251,7 @@ function ContractRow({ contract }: { contract: Contract }) {
                     )}
                     <Link
                         href={`/admin/contracts/${contract.id}`}
-                        className="p-2 rounded-lg hover:bg-coral-50 text-coral-600 transition-colors"
+                        className="p-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors"
                         title="Voir détails"
                     >
                         <Eye className="w-4 h-4" />
@@ -466,14 +466,14 @@ export default function ContractsAdminPage() {
                                 placeholder="Rechercher par référence, extra, client..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-coral-500"
+                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                             />
                         </div>
 
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-coral-500"
+                            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                         >
                             <option value="ALL">Tous les statuts</option>
                             <option value="PENDING">En attente</option>
@@ -486,7 +486,7 @@ export default function ContractsAdminPage() {
                         <select
                             value={typeFilter}
                             onChange={(e) => setTypeFilter(e.target.value as TypeFilter)}
-                            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-coral-500"
+                            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                         >
                             <option value="ALL">Tous les types</option>
                             <option value="MISSION_SOS">Mission SOS</option>
@@ -502,7 +502,7 @@ export default function ContractsAdminPage() {
                 {isLoading ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
-                            <Loader2 className="w-10 h-10 animate-spin text-coral-500 mx-auto mb-4" />
+                            <Loader2 className="w-10 h-10 animate-spin text-brand-600 mx-auto mb-4" />
                             <p className="text-slate-500">Chargement des contrats...</p>
                         </div>
                     </div>

@@ -242,8 +242,8 @@ export default function AdminProfilesPage() {
                                         {/* Candidate */}
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center">
-                                                    <span className="text-sm font-semibold text-coral-600">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center">
+                                                    <span className="text-sm font-semibold text-brand-600">
                                                         {(profile.firstName || '?').charAt(0)}{(profile.lastName || '?').charAt(0)}
                                                     </span>
                                                 </div>

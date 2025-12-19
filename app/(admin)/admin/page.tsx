@@ -116,7 +116,7 @@ function StatCard({
     href?: string;
 }) {
     const colorMap = {
-        coral: 'from-coral-500 to-orange-400',
+        coral: 'from-rose-500 to-rose-600',
         indigo: 'from-indigo-500 to-purple-500',
         green: 'from-green-500 to-emerald-400',
         amber: 'from-amber-500 to-yellow-400',
@@ -201,7 +201,7 @@ function ActivityIcon({ type }: { type: RecentActivity['type'] }) {
     const config = {
         USER_REGISTERED: { icon: Users, bg: 'bg-indigo-100', color: 'text-indigo-600' },
         DOCUMENT_UPLOADED: { icon: FileText, bg: 'bg-amber-100', color: 'text-amber-600' },
-        MISSION_CREATED: { icon: Briefcase, bg: 'bg-coral-100', color: 'text-coral-600' },
+        MISSION_CREATED: { icon: Briefcase, bg: 'bg-rose-100', color: 'text-rose-600' },
         CONTRACT_SIGNED: { icon: FileCheck, bg: 'bg-green-100', color: 'text-green-600' },
         MISSION_COMPLETED: { icon: Calendar, bg: 'bg-purple-100', color: 'text-purple-600' },
     };
@@ -315,7 +315,7 @@ export default function AdminDashboardPage() {
                             <Link href="/admin/moderation" className="relative p-2 rounded-xl hover:bg-slate-100 transition-colors">
                                 <Bell className="w-5 h-5 text-slate-600" />
                                 {mockStats.documents.pending > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-coral-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                                         {mockStats.documents.pending}
                                     </span>
                                 )}
@@ -347,7 +347,7 @@ export default function AdminDashboardPage() {
                             >
                                 {tab.label}
                                 {tab.badge && tab.badge > 0 && (
-                                    <span className="ml-2 px-1.5 py-0.5 bg-coral-500 text-white text-xs rounded-full">
+                                    <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-xs rounded-full">
                                         {tab.badge}
                                     </span>
                                 )}
