@@ -55,14 +55,14 @@ function SelectorCard({
         amber: 'border-amber-400 bg-amber-50 ring-amber-200',
         orange: 'border-orange-400 bg-orange-50 ring-orange-200',
         red: 'border-red-500 bg-red-50 ring-red-200',
-        coral: 'border-coral-500 bg-coral-50 ring-coral-200',
+        coral: 'border-rose-500 bg-rose-50 ring-rose-200',
     };
 
     const iconColorMap = {
         amber: 'text-amber-600',
         orange: 'text-orange-600',
         red: 'text-red-600',
-        coral: 'text-coral-600',
+        coral: 'text-rose-600',
     };
 
     return (
@@ -86,7 +86,7 @@ function SelectorCard({
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
-                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-coral-500 text-white flex items-center justify-center"
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center"
                     >
                         <CheckCircle className="w-4 h-4" />
                     </motion.div>
@@ -125,7 +125,7 @@ function PulsingSosIcon() {
         >
             {/* Outer Pulse Ring */}
             <motion.div
-                className="absolute inset-0 rounded-full bg-coral-200"
+                className="absolute inset-0 rounded-full bg-rose-200"
                 animate={{
                     scale: [1, 1.5, 1],
                     opacity: [0.6, 0, 0.6],
@@ -138,7 +138,7 @@ function PulsingSosIcon() {
             />
             {/* Middle Pulse Ring */}
             <motion.div
-                className="absolute inset-2 rounded-full bg-coral-300"
+                className="absolute inset-2 rounded-full bg-rose-300"
                 animate={{
                     scale: [1, 1.3, 1],
                     opacity: [0.7, 0.2, 0.7],
@@ -151,7 +151,7 @@ function PulsingSosIcon() {
                 }}
             />
             {/* Core Icon */}
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-coral-500 to-coral-600 rounded-full shadow-lg">
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-rose-500 to-rose-600 rounded-full shadow-lg">
                 <Zap className="w-10 h-10 text-white" />
             </div>
         </motion.div>
@@ -243,11 +243,11 @@ export default function SOSPage() {
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Header */}
-            <div className="bg-gradient-to-br from-coral-500 to-coral-600 text-white pt-12 pb-16 px-4">
+            <div className="bg-gradient-to-br from-rose-500 to-rose-600 text-white pt-12 pb-16 px-4">
                 <div className="max-w-2xl mx-auto text-center">
                     <PulsingSosIcon />
                     <h1 className="text-3xl font-bold mb-2">SOS Renfort</h1>
-                    <p className="text-coral-100 text-lg">
+                    <p className="text-rose-100 text-lg">
                         Trouvez un professionnel en urgence
                     </p>
                 </div>
@@ -261,7 +261,7 @@ export default function SOSPage() {
                         {[1, 2, 3, 4].map((s) => (
                             <div
                                 key={s}
-                                className={`h-1.5 rounded-full flex-1 transition-colors ${s <= step ? 'bg-coral-500' : 'bg-slate-200'
+                                className={`h-1.5 rounded-full flex-1 transition-colors ${s <= step ? 'bg-rose-500' : 'bg-slate-200'
                                     }`}
                             />
                         ))}

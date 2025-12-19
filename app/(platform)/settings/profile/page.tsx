@@ -62,7 +62,7 @@ function CharacterCounter({ current, max }: { current: number; max: number }) {
         <div className="flex items-center gap-2 text-xs">
             <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
                 <motion.div
-                    className={`h-full rounded-full ${isAtLimit ? 'bg-red-500' : isNearLimit ? 'bg-amber-500' : 'bg-coral-500'
+                    className={`h-full rounded-full ${isAtLimit ? 'bg-red-500' : isNearLimit ? 'bg-amber-500' : 'bg-brand-600'
                         }`}
                     initial={false}
                     animate={{ width: `${Math.min(percentage, 100)}%` }}
@@ -223,7 +223,7 @@ export default function EditProfilePage() {
                 {/* Avatar Section */}
                 <section className="card-surface p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
-                        <User className="w-5 h-5 text-coral-500" />
+                        <User className="w-5 h-5 text-brand-600" />
                         Photo de profil
                     </h3>
                     <div className="flex justify-center pb-8">
@@ -239,7 +239,7 @@ export default function EditProfilePage() {
                 {/* Identity Section */}
                 <section className="card-surface p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
-                        <Briefcase className="w-5 h-5 text-coral-500" />
+                        <Briefcase className="w-5 h-5 text-brand-600" />
                         Identité
                     </h3>
 
@@ -323,7 +323,7 @@ export default function EditProfilePage() {
                 {/* Bio Section */}
                 <section className="card-surface p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-coral-500" />
+                        <FileText className="w-5 h-5 text-brand-600" />
                         Présentation
                     </h3>
 

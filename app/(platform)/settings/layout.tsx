@@ -57,7 +57,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                             className="relative p-2 rounded-xl hover:bg-slate-100 transition-colors"
                         >
                             <Bell className="w-5 h-5 text-slate-600" />
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-coral-500 rounded-full" />
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-600 rounded-full" />
                         </button>
                     </div>
 
@@ -76,7 +76,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                                             flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
                                             whitespace-nowrap transition-colors flex-shrink-0
                                             ${isActive
-                                                ? 'bg-coral-50 text-coral-600'
+                                                ? 'bg-brand-50 text-brand-600'
                                                 : 'text-slate-600 hover:bg-slate-100'
                                             }
                                         `}
@@ -110,7 +110,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                                                 relative flex items-center gap-3 px-4 py-3 rounded-xl
                                                 text-sm font-medium transition-all
                                                 ${isActive
-                                                    ? 'bg-coral-50 text-coral-600'
+                                                    ? 'bg-brand-50 text-brand-600'
                                                     : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                                                 }
                                             `}
@@ -119,7 +119,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                                             {isActive && (
                                                 <motion.div
                                                     layoutId="activeTab"
-                                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-coral-500 rounded-r-full"
+                                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-brand-600 rounded-r-full"
                                                     transition={{
                                                         type: 'spring',
                                                         stiffness: 300,
@@ -127,7 +127,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
                                                     }}
                                                 />
                                             )}
-                                            <Icon className={`w-5 h-5 ${isActive ? 'text-coral-500' : ''}`} />
+                                            <Icon className={`w-5 h-5 ${isActive ? 'text-brand-600' : ''}`} />
                                             {tab.label}
                                         </Link>
                                     );

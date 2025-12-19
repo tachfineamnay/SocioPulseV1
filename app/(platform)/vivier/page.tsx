@@ -81,7 +81,7 @@ export default function VivierPage() {
                             placeholder="Rechercher par nom, rôle ou ville..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-100 border-none focus:ring-2 focus:ring-coral-500 transition-shadow"
+                            className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-100 border-none focus:ring-2 focus:ring-brand-500 transition-shadow"
                         />
                         <button className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-white/50 text-slate-500">
                             <Filter className="w-5 h-5" />
@@ -100,16 +100,16 @@ export default function VivierPage() {
                             className="group block bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
                         >
                             <div className="flex items-start gap-4">
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center flex-shrink-0">
-                                    <span className="text-xl font-bold text-coral-600">
+                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center flex-shrink-0">
+                                    <span className="text-xl font-bold text-brand-600">
                                         {talent.name.charAt(0)}
                                     </span>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-semibold text-slate-900 group-hover:text-coral-600 transition-colors">
+                                    <h3 className="font-semibold text-slate-900 group-hover:text-brand-600 transition-colors">
                                         {talent.name}
                                     </h3>
-                                    <p className="text-sm text-coral-600 font-medium mb-1">{talent.role}</p>
+                                    <p className="text-sm text-brand-600 font-medium mb-1">{talent.role}</p>
                                     <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
                                         <span className="flex items-center gap-1">
                                             <MapPin className="w-3 h-3" />

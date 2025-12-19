@@ -32,7 +32,7 @@ export default function ServicePage({ params }: { params: { id: string } }) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                    <span className="px-2 py-1 bg-coral-500 text-xs font-bold uppercase tracking-wider rounded-md mb-2 inline-block">
+                    <span className="px-2 py-1 bg-brand-600 text-xs font-bold uppercase tracking-wider rounded-md mb-2 inline-block">
                         {service.category}
                     </span>
                     <h1 className="text-2xl font-bold leading-tight">{service.title}</h1>
@@ -49,7 +49,7 @@ export default function ServicePage({ params }: { params: { id: string } }) {
 
                         {/* Desktop Header */}
                         <div className="hidden lg:block space-y-4">
-                            <span className="px-3 py-1 bg-coral-50 text-coral-600 text-xs font-bold uppercase tracking-wider rounded-full">
+                            <span className="px-3 py-1 bg-brand-50 text-brand-600 text-xs font-bold uppercase tracking-wider rounded-full">
                                 {service.category}
                             </span>
                             <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
@@ -57,7 +57,7 @@ export default function ServicePage({ params }: { params: { id: string } }) {
                             </h1>
                             <div className="flex items-center gap-4 text-sm text-gray-500">
                                 <span className="flex items-center gap-1">
-                                    <svg className="w-4 h-4 text-coral-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                    <svg className="w-4 h-4 text-brand-600" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                                     4.9 (128 avis)
                                 </span>
                                 <span>•</span>
@@ -117,7 +117,7 @@ export default function ServicePage({ params }: { params: { id: string } }) {
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="font-bold text-gray-900">Sophie M.</span>
-                                                <div className="flex text-coral-500 text-xs">★★★★★</div>
+                                                <div className="flex text-brand-600 text-xs">★★★★★</div>
                                             </div>
                                             <p className="text-gray-600 text-sm">
                                                 "Superbe expérience ! L'animateur était très pédagogue et l'ambiance géniale. Je recommande vivement pour un team building."
