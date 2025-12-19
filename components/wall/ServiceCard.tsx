@@ -117,6 +117,8 @@ export function ServiceCard({
                         src={imageUrl}
                         alt={title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                        decoding="async"
                     />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-teal-500 to-indigo-600" />
@@ -162,7 +164,13 @@ export function ServiceCard({
                         {/* Mini Avatar */}
                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-indigo-500 flex items-center justify-center overflow-hidden ring-2 ring-white/50 shadow-sm">
                             {providerAvatar ? (
-                                <img src={providerAvatar} alt={providerName} className="w-full h-full object-cover" />
+                                <img
+                                    src={providerAvatar}
+                                    alt={providerName}
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                             ) : (
                                 <span className="text-xs font-semibold text-white">
                                     {getInitials(providerName)}

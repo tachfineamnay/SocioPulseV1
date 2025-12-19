@@ -101,6 +101,8 @@ export function MissionCard({ data, onClick }: MissionCardProps) {
                         src={bgImage}
                         alt=""
                         className="w-full h-full object-cover opacity-5"
+                        loading="lazy"
+                        decoding="async"
                     />
                     <div className="absolute inset-0 bg-white/90" />
                 </div>
@@ -113,7 +115,13 @@ export function MissionCard({ data, onClick }: MissionCardProps) {
                     {/* Avatar Recruteur */}
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm">
                         {establishmentLogo ? (
-                            <img src={establishmentLogo} alt={establishment} className="w-full h-full object-cover" />
+                            <img
+                                src={establishmentLogo}
+                                alt={establishment}
+                                className="w-full h-full object-cover"
+                                loading="lazy"
+                                decoding="async"
+                            />
                         ) : (
                             <Building2 className="w-5 h-5 text-slate-500" />
                         )}

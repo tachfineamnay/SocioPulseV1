@@ -43,6 +43,8 @@ export function ImmersiveCard({
                         src={imageUrl}
                         alt={subtitle || title}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                        loading="lazy"
+                        decoding="async"
                     />
                 ) : (
                     <div className="h-full w-full bg-gradient-to-br from-indigo-500/20 via-white/5 to-teal-500/20" />
@@ -80,6 +82,8 @@ export function ImmersiveCard({
                                 src={avatarUrl}
                                 alt={title}
                                 className="h-8 w-8 rounded-full object-cover ring-1 ring-white/30"
+                                loading="lazy"
+                                decoding="async"
                             />
                             <span className="text-xs text-white/70">Voir le profil</span>
                         </div>
@@ -99,4 +103,3 @@ export function ImmersiveCard({
         card
     );
 }
-

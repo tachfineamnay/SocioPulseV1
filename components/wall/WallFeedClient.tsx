@@ -1,13 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Calendar, ChevronLeft, ChevronRight as ChevronRightIcon, MapPin, MessageCircle, Search, Siren, Sparkles, Video } from 'lucide-react';
-import { getFeed } from '@/app/(platform)/services/wall.service';
+import type { ReactNode } from 'react';
+import { useMemo, useRef } from 'react';
 import Link from 'next/link';
-import { BentoFeed } from './BentoFeed';
+import type { LucideIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Flame, Loader2, MessageCircle, Plus, Sparkles } from 'lucide-react';
+import { useAuth } from '@/lib/useAuth';
+import { CreateActionModal, type CreateActionModalUser } from '@/components/create/CreateActionModal';
+import { SocialPostCard, type SocialPostCardItem } from '@/components/feed/SocialPostCard';
+import { Logo } from '@/components/ui/Logo';
+import { MissionCard } from './MissionCard';
+import { ServiceCard } from './ServiceCard';
 import { SmartSearchBar, type FloatingAvatar } from './SmartSearchBar';
-import { SmartCard, type DiscoveryMode } from './SmartCard';
+import { useWallFeed } from './useWallFeed';
 
 export interface TalentPoolItem {
     id: string;
@@ -31,79 +36,6 @@ interface WallFeedClientProps {
     talentPool?: TalentPoolItem[];
     activity?: ActivityItem[];
 }
-
-const MODE_OPTIONS = [
-    {
-        id: 'FIELD' as const,
-        label: 'Renfort Terrain',
-        icon: MapPin,
-        accentClass: 'text-rose-500',
-    },
-    {
-        id: 'VISIO' as const,
-        label: "Eduat'heure / Visio",
-        icon: Video,
-        accentClass: 'text-indigo-500',
-    },
-];
-
-const QUICK_ACTIONS = [
-    {
-        href: '/dashboard/relief',
-        label: 'SOS Renfort',
-        description: 'Créer une mission urgente en 30 sec',
-        icon: Siren,
-        iconClass: 'text-rose-500',
-        bgClass: 'from-rose-500/18 via-rose-400/12 to-white/40',
-    },
-    {
-        href: '/bookings',
-        label: 'Agenda',
-        description: 'Vos réservations et prochains créneaux',
-        icon: Calendar,
-        iconClass: 'text-slate-800',
-        bgClass: 'from-slate-900/5 via-white/40 to-white/60',
-    },
-    {
-        href: '/messages',
-        label: 'Messages',
-        description: 'Reprendre une conversation',
-        icon: MessageCircle,
-        iconClass: 'text-indigo-500',
-        bgClass: 'from-indigo-500/14 via-indigo-500/8 to-white/55',
-    },
-] as const;
-
-const isMissionItem = (item: any) =>
-    String(item?.type || '').toUpperCase() === 'MISSION' || Boolean(item?.urgencyLevel);
-
-const isPostItem = (item: any) => String(item?.type || '').toUpperCase() === 'POST';
-
-const isServiceItem = (item: any) => {
-    const type = String(item?.type || '').toUpperCase();
-    return type === 'SERVICE' || Boolean(item?.serviceType) || Boolean(item?.profile);
-};
-
-const isVisioServiceItem = (item: any) => {
-    if (!isServiceItem(item)) return false;
-
-    const serviceType = String(item?.serviceType || '').toUpperCase();
-    return serviceType === 'COACHING_VIDEO';
-};
-
-const filterItemsForMode = (items: any[], mode: DiscoveryMode) => {
-    if (!Array.isArray(items)) return [];
-    if (mode === 'FIELD') {
-        return items.filter((item) => {
-            if (isMissionItem(item)) return true;
-            if (isPostItem(item)) return true;
-            if (isServiceItem(item) && !isVisioServiceItem(item)) return true;
-            return false;
-        });
-    }
-
-    return items.filter((item) => isPostItem(item) || isVisioServiceItem(item));
-};
 
 const extractHeroAvatars = (items: any[]): FloatingAvatar[] => {
     const result: FloatingAvatar[] = [];
@@ -130,6 +62,64 @@ const extractHeroAvatars = (items: any[]): FloatingAvatar[] => {
     return result;
 };
 
+const toSocialPostCardItem = (item: any): SocialPostCardItem | null => {
+    const id = String(item?.id || '');
+    const content = String(item?.content || '').trim();
+    if (!id || !content) return null;
+
+    return {
+        id,
+        type: 'POST',
+        postType: typeof item?.postType === 'string' ? item.postType : undefined,
+        title: typeof item?.title === 'string' ? item.title : undefined,
+        content,
+        category: typeof item?.category === 'string' ? item.category : null,
+        mediaUrls: Array.isArray(item?.mediaUrls)
+            ? item.mediaUrls.filter((url: unknown): url is string => typeof url === 'string' && url.trim().length > 0)
+            : [],
+        createdAt: item?.createdAt,
+        authorName: typeof item?.authorName === 'string' ? item.authorName : undefined,
+        authorAvatar: typeof item?.authorAvatar === 'string' ? item.authorAvatar : null,
+        isOptimistic: Boolean(item?.isOptimistic),
+    };
+};
+
+const isType = (item: any, type: string) => String(item?.type || '').toUpperCase() === type;
+
+const isUrgentMission = (mission: any) => {
+    const urgency = String(mission?.urgencyLevel || '').toUpperCase();
+    return urgency === 'HIGH' || urgency === 'CRITICAL';
+};
+
+const getServiceSpanClass = (_service: any, index: number) => {
+    if (index % 7 === 0) return 'sm:col-span-2 xl:row-span-2';
+    if (index % 11 === 5) return 'xl:col-span-2';
+    return '';
+};
+
+function SectionEmptyState({
+    icon: Icon,
+    title,
+    description,
+    action,
+}: {
+    icon: LucideIcon;
+    title: string;
+    description: string;
+    action?: ReactNode;
+}) {
+    return (
+        <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white/60 backdrop-blur-md p-10 text-center">
+            <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-white shadow-soft">
+                <Icon className="h-7 w-7 text-slate-300" />
+            </div>
+            <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+            <p className="mt-1 text-sm text-slate-600">{description}</p>
+            {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
+        </div>
+    );
+}
+
 export function WallFeedClient({
     initialData,
     initialFeed,
@@ -142,481 +132,270 @@ export function WallFeedClient({
             ? initialFeed
             : [];
 
-    const [mode, setMode] = useState<DiscoveryMode>('FIELD');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [allItems, setAllItems] = useState<any[]>(resolvedInitialData);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
-    const [hasMore, setHasMore] = useState<boolean>(Boolean(initialHasNextPage && initialNextCursor));
-    const didInitFetchRef = useRef(false);
+    const { user } = useAuth();
+    const canPublish = Boolean(user && (user.role === 'CLIENT' || user.role === 'EXTRA'));
 
-    const heroAvatars = useMemo(() => extractHeroAvatars(resolvedInitialData), [resolvedInitialData]);
-    const visibleItems = useMemo(() => {
-        const filtered = filterItemsForMode(allItems, mode);
-        return filtered.length > 0 ? filtered : allItems;
-    }, [allItems, mode]);
+    const { feed, isLoading, isLoadingMore, hasMore, loadMore, searchTerm, setSearchTerm } = useWallFeed({
+        initialItems: resolvedInitialData,
+        initialNextCursor,
+        initialHasNextPage,
+    });
 
-    const offers = useMemo(
-        () =>
-            visibleItems.filter(
-                (item) =>
-                    isServiceItem(item) ||
-                    (isPostItem(item) && String(item?.postType || item?.type).toUpperCase() === 'OFFER'),
-            ),
-        [visibleItems],
-    );
+    const heroAvatars = useMemo(() => extractHeroAvatars(feed), [feed]);
 
-    const needs = useMemo(
-        () =>
-            visibleItems.filter(
-                (item) =>
-                    isMissionItem(item) ||
-                    (isPostItem(item) && String(item?.postType || item?.type).toUpperCase() === 'NEED'),
-            ),
-        [visibleItems],
-    );
+    const missions = useMemo(() => feed.filter((item) => isType(item, 'MISSION')), [feed]);
+    const services = useMemo(() => feed.filter((item) => isType(item, 'SERVICE')), [feed]);
+    const posts = useMemo(() => {
+        const socialItems = feed
+            .filter((item) => isType(item, 'POST'))
+            .map(toSocialPostCardItem)
+            .filter(Boolean) as SocialPostCardItem[];
 
-    useEffect(() => {
-        if (searchTerm.trim()) return;
-        setAllItems(resolvedInitialData);
-        setNextCursor(initialNextCursor);
-        setHasMore(Boolean(initialHasNextPage && initialNextCursor));
-    }, [initialHasNextPage, initialNextCursor, resolvedInitialData, searchTerm]);
+        return socialItems;
+    }, [feed]);
 
-    useEffect(() => {
-        const handler = (event: Event) => {
-            const customEvent = event as CustomEvent<unknown>;
-            const detail = customEvent.detail;
+    const urgentMissions = useMemo(() => missions.filter(isUrgentMission).slice(0, 12), [missions]);
 
-            if (!detail || typeof detail !== 'object') return;
-            const record = detail as Record<string, unknown>;
-            const status = record.status;
-            const optimisticId = record.optimisticId;
+    const urgentRailRef = useRef<HTMLDivElement>(null);
 
-            if (typeof status !== 'string' || typeof optimisticId !== 'string') return;
-
-            if (status === 'optimistic') {
-                const item = record.item;
-                if (!item) return;
-                setAllItems((prev) => [item as any, ...prev]);
-                return;
-            }
-
-            if (status === 'confirmed') {
-                const item = record.item;
-                if (!item) return;
-
-                setAllItems((prev) => {
-                    const index = prev.findIndex((existing) => String((existing as any)?.id) === optimisticId);
-                    if (index === -1) return [item as any, ...prev];
-                    const next = [...prev];
-                    next[index] = item as any;
-                    return next;
-                });
-                return;
-            }
-
-            if (status === 'failed') {
-                setAllItems((prev) => prev.filter((existing) => String((existing as any)?.id) !== optimisticId));
-            }
-        };
-
-        window.addEventListener('lesextras:wall:feed-item', handler as EventListener);
-        return () => window.removeEventListener('lesextras:wall:feed-item', handler as EventListener);
-    }, []);
-
-    const fetchFeed = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const params: Record<string, any> = {};
-            const normalizedSearch = searchTerm.trim();
-
-            if (normalizedSearch) params.search = normalizedSearch;
-
-            const response = await getFeed(params);
-            const data = response as any;
-            const rawItems =
-                (Array.isArray(data?.items) && data.items) ||
-                (Array.isArray(data?.data?.items) && data.data.items) ||
-                (Array.isArray(data?.feed?.items) && data.feed.items) ||
-                (Array.isArray(data?.feed) && data.feed) ||
-                (Array.isArray(data) && data) ||
-                [];
-
-            setAllItems(Array.isArray(rawItems) ? rawItems : []);
-
-            const pageInfo =
-                (data?.pageInfo && data.pageInfo) ||
-                (data?.data?.pageInfo && data.data.pageInfo) ||
-                (data?.feed?.pageInfo && data.feed.pageInfo) ||
-                null;
-
-            const next =
-                pageInfo && typeof pageInfo?.nextCursor === 'string' ? pageInfo.nextCursor : null;
-            const hasNext = Boolean(pageInfo?.hasNextPage);
-
-            setNextCursor(next);
-            setHasMore(Boolean(hasNext && next));
-        } catch (error) {
-            console.error('Erreur lors du chargement du wall', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [searchTerm]);
-
-    const fetchMore = useCallback(async () => {
-        if (!hasMore || !nextCursor || isLoadingMore) return;
-
-        setIsLoadingMore(true);
-        try {
-            const params: Record<string, any> = { cursor: nextCursor };
-            const normalizedSearch = searchTerm.trim();
-            if (normalizedSearch) params.search = normalizedSearch;
-
-            const response = await getFeed(params);
-            const data = response as any;
-
-            const rawItems =
-                (Array.isArray(data?.items) && data.items) ||
-                (Array.isArray(data?.data?.items) && data.data.items) ||
-                (Array.isArray(data?.feed?.items) && data.feed.items) ||
-                (Array.isArray(data?.feed) && data.feed) ||
-                (Array.isArray(data) && data) ||
-                [];
-
-            const pageInfo =
-                (data?.pageInfo && data.pageInfo) ||
-                (data?.data?.pageInfo && data.data.pageInfo) ||
-                (data?.feed?.pageInfo && data.feed.pageInfo) ||
-                null;
-
-            const next =
-                pageInfo && typeof pageInfo?.nextCursor === 'string' ? pageInfo.nextCursor : null;
-            const hasNext = Boolean(pageInfo?.hasNextPage);
-
-            setNextCursor(next);
-            setHasMore(Boolean(hasNext && next));
-
-            if (Array.isArray(rawItems) && rawItems.length > 0) {
-                setAllItems((prev) => {
-                    const seen = new Set(prev.map((item) => String((item as any)?.id)));
-                    const merged = [...prev];
-                    for (const item of rawItems) {
-                        const id = String((item as any)?.id || '');
-                        if (!id || seen.has(id)) continue;
-                        seen.add(id);
-                        merged.push(item);
-                    }
-                    return merged;
-                });
-            }
-        } catch (error) {
-            console.error('Erreur lors du chargement du wall (pagination)', error);
-        } finally {
-            setIsLoadingMore(false);
-        }
-    }, [hasMore, isLoadingMore, nextCursor, searchTerm]);
-
-    useEffect(() => {
-        const hasInitialData = resolvedInitialData.length > 0;
-        const hasQuery = Boolean(searchTerm.trim());
-
-        if (!didInitFetchRef.current) {
-            didInitFetchRef.current = true;
-
-            if (hasInitialData && !hasQuery) {
-                return;
-            }
-        }
-
-        const timeout = setTimeout(() => {
-            fetchFeed();
-        }, 320);
-
-        return () => clearTimeout(timeout);
-    }, [fetchFeed, resolvedInitialData.length, searchTerm]);
-
-    const emptyState = !isLoading && visibleItems.length === 0;
-    const modeCopy =
-        mode === 'FIELD'
-            ? 'Renfort terrain en établissement | Missions urgentes'
-            : "Visio 1:1 | Eduat'heure et accompagnement";
+    const scrollUrgentRail = (direction: 'prev' | 'next') => {
+        const node = urgentRailRef.current;
+        if (!node) return;
+        const delta = direction === 'prev' ? -360 : 360;
+        node.scrollBy({ left: delta, behavior: 'smooth' });
+    };
 
     return (
         <div className="relative min-h-screen bg-canvas overflow-hidden">
-            {/* Aurora background */}
             <div aria-hidden className="absolute inset-0 -z-10">
-                <div className="absolute -top-48 left-1/2 h-[520px] w-[760px] -translate-x-1/2 rounded-full bg-gradient-to-r from-indigo-500/18 via-teal-500/12 to-emerald-400/10 blur-3xl" />
-                <div className="absolute top-[22%] -left-40 h-[460px] w-[460px] rounded-full bg-indigo-500/12 blur-3xl" />
-                <div className="absolute bottom-[-220px] right-[-140px] h-[560px] w-[560px] rounded-full bg-indigo-500/14 blur-3xl" />
+                <div className="absolute -top-56 left-1/2 h-[520px] w-[760px] -translate-x-1/2 rounded-full bg-gradient-to-r from-indigo-500/12 via-teal-400/10 to-rose-400/10 blur-3xl" />
+                <div className="absolute top-[24%] -left-44 h-[460px] w-[460px] rounded-full bg-teal-400/10 blur-3xl" />
+                <div className="absolute bottom-[-220px] right-[-140px] h-[560px] w-[560px] rounded-full bg-indigo-500/12 blur-3xl" />
             </div>
 
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-safe pb-safe">
-                {/* Badge Principal - Zone marquante */}
-                <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, ease: 'easeOut' }}
-                    className="flex justify-center pt-6 pb-4"
-                >
-                    <div className="relative group">
-                        {/* Glow effect */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-brand-400 via-brand-500 to-brand-400 rounded-full opacity-30 blur-md group-hover:opacity-50 transition-opacity" />
-                        <div className="relative inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-brand-600 to-brand-700 px-6 py-3 text-base font-bold text-white shadow-lg">
-                            <Sparkles className="h-5 w-5 text-white animate-pulse" />
-                            <span className="tracking-wide">LES EXTRAS • Le hub du social</span>
-                            <Sparkles className="h-5 w-5 text-white animate-pulse" />
-                        </div>
-                    </div>
-                </motion.div>
+            <header className="sticky top-0 lg:top-[72px] z-40">
+                <div className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 pt-safe">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-[auto,1fr,auto] sm:items-center">
+                            <div className="flex items-center gap-3">
+                                <Logo size="sm" showBaseline={false} href="/wall" className="items-start" />
+                            </div>
 
-                {/* Segmented control */}
-                <div className="sticky top-5 lg:top-24 z-30 flex justify-center">
-                    <div className="relative inline-flex rounded-2xl bg-white/70 backdrop-blur-md border border-white/60 p-1 shadow-soft">
-                        {MODE_OPTIONS.map((option) => {
-                            const Icon = option.icon;
-                            const isActive = mode === option.id;
-                            return (
-                                <motion.button
-                                    key={option.id}
-                                    type="button"
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => setMode(option.id)}
-                                    className={`relative flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold tracking-tight transition-colors ${
-                                        isActive ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'
-                                    }`}
-                                >
-                                    {isActive ? (
-                                        <motion.span
-                                            layoutId="discovery-mode"
-                                            className="absolute inset-0 rounded-xl bg-white/85 shadow-soft"
-                                            transition={{ type: 'spring' as const, stiffness: 280, damping: 24 }}
-                                        />
-                                    ) : null}
-                                    <span className="relative z-10 inline-flex items-center gap-2">
-                                        <Icon className={`h-4 w-4 ${isActive ? option.accentClass : 'text-slate-400'}`} />
-                                        {option.label}
-                                    </span>
-                                </motion.button>
-                            );
-                        })}
+                            <div className="w-full sm:max-w-3xl sm:justify-self-center">
+                                <SmartSearchBar value={searchTerm} onChange={setSearchTerm} avatars={heroAvatars} />
+                            </div>
+
+                            <div className="flex justify-end">
+                                {canPublish && user ? (
+                                    <CreateActionModal
+                                        user={user as unknown as CreateActionModalUser}
+                                        trigger={
+                                            <button
+                                                type="button"
+                                                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-teal-500 px-4 py-3 text-sm font-semibold text-white shadow-soft hover:shadow-soft-lg active:scale-[0.99] transition-all whitespace-nowrap"
+                                                aria-label="Publier"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                                Publier
+                                            </button>
+                                        }
+                                    />
+                                ) : (
+                                    <Link href="/auth/login" className="btn-secondary whitespace-nowrap">
+                                        Se connecter
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </header>
 
-                {/* Hero */}
-                <section className="pt-10 sm:pt-14 pb-10 sm:pb-14 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 14 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.55, ease: 'easeOut' }}
-                        className="mx-auto max-w-3xl"
-                    >
-                        <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-slate-900">
-                            Un renfort demain.
-                            <span className="block text-gradient">Une visio maintenant.</span>
-                        </h1>
+            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-safe">
+                {urgentMissions.length > 0 ? (
+                    <section className="pt-8">
+                        <div className="flex items-center justify-between gap-4 mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-2xl bg-rose-50 border border-rose-100 grid place-items-center">
+                                    <Flame className="h-5 w-5 text-rose-500" />
+                                </div>
+                                <div>
+                                    <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">
+                                        🔥 Urgences à pourvoir
+                                    </p>
+                                    <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+                                        Missions de renfort
+                                    </h2>
+                                </div>
+                            </div>
 
-                        <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed">{modeCopy}</p>
-                    </motion.div>
+                            <div className="hidden md:flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => scrollUrgentRail('prev')}
+                                    className="h-10 w-10 rounded-2xl bg-white/80 border border-slate-200 hover:bg-slate-50 transition-colors shadow-soft grid place-items-center"
+                                    aria-label="Précédent"
+                                >
+                                    <ChevronLeft className="h-5 w-5 text-slate-700" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => scrollUrgentRail('next')}
+                                    className="h-10 w-10 rounded-2xl bg-white/80 border border-slate-200 hover:bg-slate-50 transition-colors shadow-soft grid place-items-center"
+                                    aria-label="Suivant"
+                                >
+                                    <ChevronRight className="h-5 w-5 text-slate-700" />
+                                </button>
+                            </div>
+                        </div>
 
-                    <div className="mx-auto mt-10 w-full max-w-3xl">
-                        <SmartSearchBar value={searchTerm} onChange={setSearchTerm} avatars={heroAvatars} />
-                    </div>
+                        <div
+                            ref={urgentRailRef}
+                            className="flex gap-4 overflow-x-auto pb-4 scrollbar-none snap-x scroll-smooth"
+                        >
+                            {urgentMissions.map((mission, index) => (
+                                <div
+                                    key={String(mission?.id ?? index)}
+                                    className="flex-shrink-0 w-[280px] sm:w-[320px] snap-start"
+                                >
+                                    <MissionCard data={mission} />
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                ) : null}
 
-                    <div className="mx-auto mt-8 w-full max-w-5xl">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-                            {QUICK_ACTIONS.map((action) => {
-                                const Icon = action.icon;
-                                return (
-                                    <motion.div
-                                        key={action.href}
-                                        whileHover={{ y: -2, scale: 1.01 }}
-                                        whileTap={{ scale: 0.99 }}
-                                        transition={{ type: 'spring' as const, stiffness: 220, damping: 18 }}
-                                    >
-                                        <Link
-                                            href={action.href}
-                                            className="group block rounded-3xl bg-white/70 backdrop-blur-md border border-white/60 shadow-soft hover:shadow-soft-lg transition-shadow p-5"
+                <section className="pt-10 pb-16">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="lg:col-span-8 space-y-6">
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-2xl bg-teal-50 border border-teal-100 grid place-items-center">
+                                        <Sparkles className="h-5 w-5 text-teal-600" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">
+                                            💎 Experts & Ateliers
+                                        </p>
+                                        <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+                                            Catalogue
+                                        </h2>
+                                    </div>
+                                </div>
+
+                                {services.length > 0 ? (
+                                    <span className="text-sm text-slate-500">{services.length} services</span>
+                                ) : null}
+                            </div>
+
+                            {isLoading && services.length === 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-[18rem] gap-6 [grid-auto-flow:dense]">
+                                    {Array.from({ length: 9 }).map((_, index) => (
+                                        <div
+                                            key={index}
+                                            className={`rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse ${
+                                                index % 7 === 0 ? 'sm:col-span-2 xl:row-span-2' : ''
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                            ) : services.length > 0 ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-[18rem] gap-6 [grid-auto-flow:dense]">
+                                    {services.map((service, index) => (
+                                        <div
+                                            key={String(service?.id ?? index)}
+                                            className={`h-full ${getServiceSpanClass(service, index)}`}
                                         >
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div>
-                                                    <div className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${action.bgClass} flex items-center justify-center`}>
-                                                        <Icon className={`h-5 w-5 ${action.iconClass}`} />
-                                                    </div>
-                                                    <p className="mt-4 text-sm font-semibold text-slate-900 tracking-tight">
-                                                        {action.label}
-                                                    </p>
-                                                    <p className="mt-1 text-sm text-slate-600 leading-snug">
-                                                        {action.description}
-                                                    </p>
-                                                </div>
+                                            <ServiceCard data={service} currentUserId={user?.id ?? undefined} />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <SectionEmptyState
+                                    icon={Sparkles}
+                                    title="Aucun expert disponible"
+                                    description="Affinez votre recherche ou revenez un peu plus tard."
+                                />
+                            )}
 
-                                                <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-slate-600 transition-colors" />
-                                            </div>
-                                        </Link>
-                                    </motion.div>
-                                );
-                            })}
+                            {hasMore ? (
+                                <div className="flex justify-center pt-6">
+                                    <button
+                                        type="button"
+                                        onClick={loadMore}
+                                        className="btn-secondary"
+                                        disabled={isLoadingMore}
+                                    >
+                                        {isLoadingMore ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                Chargement…
+                                            </>
+                                        ) : (
+                                            'Charger plus'
+                                        )}
+                                    </button>
+                                </div>
+                            ) : null}
                         </div>
+
+                        <aside className="lg:col-span-4 space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="h-10 w-10 rounded-2xl bg-indigo-50 border border-indigo-100 grid place-items-center">
+                                    <MessageCircle className="h-5 w-5 text-indigo-600" />
+                                </div>
+                                <div>
+                                    <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">
+                                        💬 L'actu du réseau
+                                    </p>
+                                    <h2 className="text-lg font-semibold tracking-tight text-slate-900">
+                                        Communauté
+                                    </h2>
+                                </div>
+                            </div>
+
+                            {isLoading && posts.length === 0 ? (
+                                <div className="space-y-4">
+                                    {Array.from({ length: 3 }).map((_, index) => (
+                                        <div
+                                            key={index}
+                                            className="h-52 rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse"
+                                        />
+                                    ))}
+                                </div>
+                            ) : posts.length > 0 ? (
+                                <div className="space-y-4">
+                                    {posts.slice(0, 8).map((post) => (
+                                        <SocialPostCard key={post.id} item={post} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <SectionEmptyState
+                                    icon={MessageCircle}
+                                    title="Aucune actu pour l’instant"
+                                    description="Partagez une expérience ou une info utile pour lancer la discussion."
+                                    action={
+                                        canPublish && user ? (
+                                            <CreateActionModal
+                                                user={user as unknown as CreateActionModalUser}
+                                                trigger={
+                                                    <button
+                                                        type="button"
+                                                        className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-teal-500 px-4 py-2.5 text-sm font-semibold text-white shadow-soft hover:shadow-soft-lg active:scale-[0.99] transition-all"
+                                                    >
+                                                        <Plus className="h-4 w-4" />
+                                                        Publier
+                                                    </button>
+                                                }
+                                            />
+                                        ) : undefined
+                                    }
+                                />
+                            )}
+                        </aside>
                     </div>
                 </section>
-
-                {/* Feed */}
-                <section className="pb-16">
-                    <div className="flex items-end justify-between gap-4 mb-6">
-                        <div>
-                            <p className="label-sm">Découverte</p>
-                            <h2 className="mt-2 text-xl font-semibold text-slate-900 tracking-tight">
-                                {mode === 'FIELD'
-                                    ? 'Renfort terrain - Offres & demandes'
-                                    : "Eduat'heure / Visio - Offres & demandes"}
-                            </h2>
-                        </div>
-                        {isLoading ? <span className="text-sm text-slate-500">Mise à jour…</span> : null}
-                    </div>
-
-                    {/* Offres - Slider pleine largeur */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Offres</p>
-                                <p className="text-lg font-semibold text-slate-900">Dernières offres</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm font-medium text-indigo-500">{offers.length} offres</span>
-                                <div className="flex gap-1.5">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const container = document.getElementById('offers-slider');
-                                            if (container) container.scrollBy({ left: -320, behavior: 'smooth' });
-                                        }}
-                                        className="p-2 rounded-xl bg-white/80 border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm"
-                                        aria-label="Précédent"
-                                    >
-                                        <ChevronLeft className="w-5 h-5 text-slate-600" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const container = document.getElementById('offers-slider');
-                                            if (container) container.scrollBy({ left: 320, behavior: 'smooth' });
-                                        }}
-                                        className="p-2 rounded-xl bg-white/80 border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm"
-                                        aria-label="Suivant"
-                                    >
-                                        <ChevronRightIcon className="w-5 h-5 text-slate-600" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            id="offers-slider"
-                            className="flex gap-4 overflow-x-auto pb-4 scrollbar-none snap-x scroll-smooth"
-                        >
-                            {offers.slice(0, 12).map((item, idx) => (
-                                <motion.div 
-                                    key={`${item?.id ?? idx}-offer`} 
-                                    className="flex-shrink-0 w-[300px] snap-start"
-                                    whileHover={{ y: -4, scale: 1.01 }}
-                                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                >
-                                    <SmartCard item={item} mode={mode} />
-                                </motion.div>
-                            ))}
-                            {offers.length === 0 && (
-                                <div className="w-full text-sm text-slate-500 py-12 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200">
-                                    Aucune offre pour le moment.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Besoins - Slider pleine largeur */}
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">Besoins</p>
-                                <p className="text-lg font-semibold text-slate-900">Demandes urgentes</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm font-medium text-rose-500">{needs.length} demandes</span>
-                                <div className="flex gap-1.5">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const container = document.getElementById('needs-slider');
-                                            if (container) container.scrollBy({ left: -320, behavior: 'smooth' });
-                                        }}
-                                        className="p-2 rounded-xl bg-white/80 border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm"
-                                        aria-label="Précédent"
-                                    >
-                                        <ChevronLeft className="w-5 h-5 text-slate-600" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            const container = document.getElementById('needs-slider');
-                                            if (container) container.scrollBy({ left: 320, behavior: 'smooth' });
-                                        }}
-                                        className="p-2 rounded-xl bg-white/80 border border-slate-200 hover:bg-slate-100 transition-colors shadow-sm"
-                                        aria-label="Suivant"
-                                    >
-                                        <ChevronRightIcon className="w-5 h-5 text-slate-600" />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div
-                            id="needs-slider"
-                            className="flex gap-4 overflow-x-auto pb-4 scrollbar-none snap-x scroll-smooth"
-                        >
-                            {needs.slice(0, 12).map((item, idx) => (
-                                <motion.div 
-                                    key={`${item?.id ?? idx}-need`} 
-                                    className="flex-shrink-0 w-[300px] snap-start"
-                                    whileHover={{ y: -4, scale: 1.01 }}
-                                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                                >
-                                    <SmartCard item={item} mode={mode} />
-                                </motion.div>
-                            ))}
-                            {needs.length === 0 && (
-                                <div className="w-full text-sm text-slate-500 py-12 text-center bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-200">
-                                    Aucune demande pour le moment.
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <BentoFeed items={visibleItems} mode={mode} isLoading={isLoading} />
-
-                    {hasMore && nextCursor ? (
-                        <div className="flex justify-center pt-10">
-                            <button
-                                type="button"
-                                onClick={fetchMore}
-                                className="btn-secondary"
-                                disabled={isLoadingMore}
-                            >
-                                {isLoadingMore ? 'Chargement…' : 'Charger plus'}
-                            </button>
-                        </div>
-                    ) : null}
-
-                    {emptyState ? (
-                        <div className="col-span-full text-center py-20">
-                            <div className="bg-gray-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                                <Search className="h-7 w-7 text-slate-400" />
-                            </div>
-                            <h3 className="text-lg font-medium text-gray-900">Aucun résultat trouvé</h3>
-                            <p className="text-gray-500">Essayez de modifier vos filtres ou votre recherche.</p>
-                        </div>
-                    ) : null}
-                </section>
-            </div>
+            </main>
         </div>
     );
 }
