@@ -1,5 +1,7 @@
 export { NeedCard, type NeedCardProps } from './NeedCard';
 export { OfferCard, type OfferCardProps } from './OfferCard';
+export { MissionCard, type MissionCardProps } from './MissionCard';
+export { ServiceCard, type ServiceCardProps } from './ServiceCard';
 export { CardShell, type CardShellProps, type CardVariant } from './CardShell';
 export { WallFeedClient, type TalentPoolItem, type ActivityItem } from './WallFeedClient';
 export { SmartSearchBar, type SmartSearchBarProps, type FloatingAvatar } from './SmartSearchBar';

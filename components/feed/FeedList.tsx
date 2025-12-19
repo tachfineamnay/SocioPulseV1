@@ -4,7 +4,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
-import { NeedCard, OfferCard } from '@/components/wall';
+import { MissionCard, ServiceCard } from '@/components/wall';
 import { SocialPostCard, type SocialPostCardItem } from './SocialPostCard';
 import { FeedSkeleton } from './FeedSkeleton';
 
@@ -175,12 +175,12 @@ export function FeedList({
                         className="break-inside-avoid"
                     >
                         {item.type === 'MISSION' ? (
-                            <NeedCard
+                            <MissionCard
                                 data={item}
                                 onClick={() => router.push(`/need/${item.id}`)}
                             />
                         ) : item.type === 'SERVICE' ? (
-                            <OfferCard
+                            <ServiceCard
                                 data={item}
                                 currentUserId={currentUserId || undefined}
                                 onSelfContact={onSelfContact}
