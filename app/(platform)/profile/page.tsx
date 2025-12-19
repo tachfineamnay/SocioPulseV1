@@ -16,7 +16,7 @@ export default function ProfilePage() {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center space-y-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-coral-500 mx-auto" />
+                    <Loader2 className="w-8 h-8 animate-spin text-brand-600 mx-auto" />
                     <p className="text-slate-500">Chargement du profil...</p>
                 </div>
             </div>
@@ -145,7 +145,7 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-2 gap-3">
                             <button 
                                 onClick={() => router.push('/dashboard/relief')}
-                                className="p-4 rounded-xl bg-coral-50 text-coral-700 text-sm font-medium hover:bg-coral-100 transition-colors text-left"
+                                className="p-4 rounded-xl bg-brand-50 text-brand-700 text-sm font-medium hover:bg-brand-100 transition-colors text-left"
                             >
                                 Trouver une mission
                             </button>

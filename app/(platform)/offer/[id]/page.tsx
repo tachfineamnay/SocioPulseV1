@@ -76,7 +76,7 @@ export default async function OfferDetailPage({ params }: { params: { id: string
         <div className="min-h-screen bg-slate-50">
             <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
                 <header className="bg-white rounded-2xl shadow-soft p-6 flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
-                    <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-coral-100 flex items-center justify-center overflow-hidden ring-2 ring-white shadow">
+                    <div className="flex-shrink-0 w-16 h-16 rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center overflow-hidden ring-2 ring-white shadow">
                         {avatarUrl ? (
                             <img src={avatarUrl} alt={fullName} className="w-full h-full object-cover" />
                         ) : (
@@ -100,7 +100,7 @@ export default async function OfferDetailPage({ params }: { params: { id: string
                         <span className="text-xl font-semibold text-slate-900">{priceLabel}</span>
                         <Link
                             href={bookingHref}
-                            className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-coral-500 text-white font-semibold hover:bg-coral-600 transition-colors"
+                            className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 transition-colors"
                         >
                             Réserver ce talent
                         </Link>
@@ -150,7 +150,7 @@ export default async function OfferDetailPage({ params }: { params: { id: string
                                 </div>
                                 <Link
                                     href={bookingHref}
-                                    className="inline-flex w-full items-center justify-center px-4 py-3 rounded-xl bg-coral-500 text-white font-semibold hover:bg-coral-600 transition-colors"
+                                    className="inline-flex w-full items-center justify-center px-4 py-3 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 transition-colors"
                                 >
                                     Réserver ce talent
                                 </Link>
@@ -168,7 +168,7 @@ export default async function OfferDetailPage({ params }: { params: { id: string
                     </div>
                     <Link
                         href={bookingHref}
-                        className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-coral-500 text-white font-semibold hover:bg-coral-600 transition-colors"
+                        className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 transition-colors"
                     >
                         Réserver
                     </Link>

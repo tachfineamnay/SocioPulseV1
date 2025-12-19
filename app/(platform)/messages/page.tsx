@@ -10,8 +10,8 @@ export default function MessagesPage() {
     return (
         <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-slate-50/50">
             {/* Icon */}
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-coral-100 to-orange-100 flex items-center justify-center mb-6">
-                <MessageCircle className="w-10 h-10 text-coral-500" />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center mb-6">
+                <MessageCircle className="w-10 h-10 text-brand-600" />
             </div>
 
             {/* Title */}
@@ -26,9 +26,9 @@ export default function MessagesPage() {
 
             {/* Decorative Elements */}
             <div className="mt-8 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-coral-300 animate-pulse" />
-                <div className="w-2 h-2 rounded-full bg-coral-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                <div className="w-2 h-2 rounded-full bg-coral-500 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                <div className="w-2 h-2 rounded-full bg-brand-300 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-brand-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                <div className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" style={{ animationDelay: '0.4s' }} />
             </div>
         </div>
     );

@@ -11,7 +11,7 @@ export default function SearchPage() {
                         <input
                             type="text"
                             placeholder="Ex: Infirmier de nuit, Kinésithérapeute..."
-                            className="w-full h-14 pl-12 pr-4 rounded-2xl border-gray-200 shadow-sm focus:ring-4 focus:ring-coral-100 focus:border-coral-400 text-lg transition-shadow"
+                            className="w-full h-14 pl-12 pr-4 rounded-2xl border-gray-200 shadow-sm focus:ring-4 focus:ring-brand-100 focus:border-brand-400 text-lg transition-shadow"
                         />
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-6 h-6" />
                     </div>
@@ -20,7 +20,7 @@ export default function SearchPage() {
                 {/* Filters */}
                 <div className="flex flex-wrap gap-2 justify-center mb-8">
                     {['Tous', 'Infirmier', 'Aide-Soignant', 'Educateur', 'Cuisinier', 'ASH'].map((filter) => (
-                        <button key={filter} className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:border-coral-200 hover:text-coral-600 transition-colors">
+                        <button key={filter} className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium hover:border-brand-200 hover:text-brand-600 transition-colors">
                             {filter}
                         </button>
                     ))}
