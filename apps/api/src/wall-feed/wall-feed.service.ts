@@ -69,6 +69,74 @@ export class WallFeedService {
     constructor(private readonly prisma: PrismaService) { }
 
     /**
+     * Get sidebar data: External news + Recent successful missions
+     */
+    async getSidebarData(): Promise<{ news: any[]; recentSuccess: any[] }> {
+        try {
+            const [news, recentMissions] = await Promise.all([
+                // Veille Sectorielle - 5 derniers articles
+                this.prisma.externalNews.findMany({
+                    where: { isActive: true },
+                    orderBy: { publishedAt: 'desc' },
+                    take: 5,
+                    select: {
+                        id: true,
+                        title: true,
+                        source: true,
+                        url: true,
+                        excerpt: true,
+                        publishedAt: true,
+                    },
+                }),
+                // Dernières missions complétées avec succès - 5 dernières
+                this.prisma.reliefMission.findMany({
+                    where: {
+                        status: 'COMPLETED',
+                        completedAt: { not: null },
+                    },
+                    orderBy: { completedAt: 'desc' },
+                    take: 5,
+                    include: {
+                        client: {
+                            include: {
+                                establishment: { select: { name: true, type: true } },
+                            },
+                        },
+                        assignedExtra: {
+                            include: {
+                                profile: { select: { firstName: true, lastName: true } },
+                            },
+                        },
+                    },
+                }),
+            ]);
+
+            // Format recent success for frontend
+            const recentSuccess = recentMissions.map((mission) => {
+                const establishmentName = mission.client?.establishment?.name || 'Établissement';
+                const extraName = mission.assignedExtra?.profile
+                    ? `${mission.assignedExtra.profile.firstName} ${mission.assignedExtra.profile.lastName}`.trim()
+                    : 'Extra';
+                const completedAt = mission.completedAt || mission.endDate;
+
+                return {
+                    id: mission.id,
+                    establishmentName,
+                    jobTitle: mission.jobTitle,
+                    extraName,
+                    completedAt,
+                };
+            });
+
+            return { news, recentSuccess };
+        } catch (error) {
+            this.logger.error(`getSidebarData failed: ${error.message}`, error.stack);
+            // Return empty data instead of throwing to avoid breaking the sidebar
+            return { news: [], recentSuccess: [] };
+        }
+    }
+
+    /**
      * Get mixed feed of Posts, Services and ReliefMissions
      * Returns chronologically sorted items based on filters
      */

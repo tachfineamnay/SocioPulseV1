@@ -36,6 +36,7 @@ async function main() {
   console.log('🌱 Seeding database (Wall MVP)...');
 
   console.log('🧹 Cleaning database...');
+  await prisma.externalNews.deleteMany();
   await prisma.transaction.deleteMany();
   await prisma.message.deleteMany();
   await prisma.review.deleteMany();
@@ -927,6 +928,151 @@ async function main() {
       description: 'Commission plateforme (seed)',
     },
   });
+
+  console.log('📰 Creating external news (Veille Sectorielle)...');
+  const newsArticles = [
+    {
+      title: 'Revalorisation Ségur : nouvelles grilles 2025',
+      source: 'ASH',
+      url: 'https://www.ash.tm.fr/segur-2025',
+      excerpt: 'Les nouvelles grilles salariales pour les personnels médico-sociaux entrent en vigueur.',
+      category: 'Réglementation',
+      publishedAt: hoursAgo(6),
+    },
+    {
+      title: 'Réforme Grand Âge : les détails du projet',
+      source: 'Ministère',
+      url: 'https://sante.gouv.fr/reforme-grand-age',
+      excerpt: 'Le gouvernement dévoile les axes majeurs de la réforme tant attendue par le secteur.',
+      category: 'Actualités',
+      publishedAt: hoursAgo(24),
+    },
+    {
+      title: 'Décret : ratio soignant-résident en EHPAD',
+      source: 'Légifrance',
+      url: 'https://www.legifrance.gouv.fr/decret-ratio-ehpad',
+      excerpt: 'Nouveau décret fixant les ratios minimaux de personnel en établissement.',
+      category: 'Réglementation',
+      publishedAt: hoursAgo(48),
+    },
+    {
+      title: 'Appel à projets : innovation médico-sociale',
+      source: 'Santé.gouv',
+      url: 'https://sante.gouv.fr/appel-projets-innovation',
+      excerpt: 'Lancement d\'un nouvel appel à projets pour financer l\'innovation dans le secteur.',
+      category: 'Financement',
+      publishedAt: hoursAgo(72),
+    },
+    {
+      title: 'Formation continue : nouvelles obligations 2025',
+      source: 'ASH',
+      url: 'https://www.ash.tm.fr/formation-continue-2025',
+      excerpt: 'Évolution des heures de formation obligatoires pour les professionnels du secteur.',
+      category: 'Formation',
+      publishedAt: hoursAgo(96),
+    },
+  ];
+
+  for (const article of newsArticles) {
+    await prisma.externalNews.create({
+      data: {
+        title: article.title,
+        source: article.source,
+        url: article.url,
+        excerpt: article.excerpt,
+        category: article.category,
+        publishedAt: article.publishedAt,
+        isActive: true,
+        isFeatured: article.source === 'Ministère',
+      },
+    });
+  }
+
+  console.log('✅ Creating COMPLETED missions (for Success Widget)...');
+  const completedMissions = [
+    {
+      clientIndex: 0,
+      extraIndex: 0,
+      title: 'Renfort IDE Nuit - EHPAD Les Jardins',
+      jobTitle: 'Infirmier',
+      completedHoursAgo: 2,
+      durationHours: 8,
+      hourlyRate: 38,
+    },
+    {
+      clientIndex: 1,
+      extraIndex: 2,
+      title: 'Éducateur TSA - IME L\'Espoir',
+      jobTitle: 'Éducateur spécialisé',
+      completedHoursAgo: 5,
+      durationHours: 7,
+      hourlyRate: 32,
+    },
+    {
+      clientIndex: 2,
+      extraIndex: 7,
+      title: 'Renfort EJE - Crèche Les Petits Pas',
+      jobTitle: 'EJE',
+      completedHoursAgo: 8,
+      durationHours: 6,
+      hourlyRate: 28,
+    },
+    {
+      clientIndex: 3,
+      extraIndex: 8,
+      title: 'Veille éducative - MECS Horizon',
+      jobTitle: 'Éducateur',
+      completedHoursAgo: 12,
+      durationHours: 10,
+      hourlyRate: 30,
+    },
+    {
+      clientIndex: 4,
+      extraIndex: 4,
+      title: 'Atelier motricité - Foyer Les Amandiers',
+      jobTitle: 'Psychomotricien',
+      completedHoursAgo: 24,
+      durationHours: 4,
+      hourlyRate: 42,
+    },
+  ];
+
+  for (const mission of completedMissions) {
+    const client = clients[mission.clientIndex];
+    const extra = extras[mission.extraIndex];
+    const est = client?.establishment;
+    if (!client || !extra || !est) continue;
+
+    const endDate = hoursAgo(mission.completedHoursAgo);
+    const startDate = hoursAgo(mission.completedHoursAgo + mission.durationHours);
+    const totalBudget = Math.round(mission.hourlyRate * mission.durationHours * 100) / 100;
+
+    await prisma.reliefMission.create({
+      data: {
+        clientId: client.id,
+        assignedExtraId: extra.id,
+        title: mission.title,
+        description: `Mission complétée avec succès par ${extra.profile?.firstName} ${extra.profile?.lastName}.`,
+        jobTitle: mission.jobTitle,
+        urgencyLevel: MissionUrgency.HIGH,
+        status: MissionStatus.COMPLETED,
+        startDate,
+        endDate,
+        hourlyRate: mission.hourlyRate,
+        estimatedHours: mission.durationHours,
+        totalBudget,
+        address: est.address || 'Adresse précisée',
+        city: est.city,
+        postalCode: est.postalCode || '',
+        latitude: est.latitude,
+        longitude: est.longitude,
+        requiredSkills: ['renfort', 'disponibilité'],
+        requiredDiplomas: ["Diplôme d'État"],
+        assignedAt: startDate,
+        completedAt: endDate,
+      },
+    });
+  }
 
   console.log('✅ Seed completed.');
 }

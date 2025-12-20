@@ -24,6 +24,13 @@ import { CurrentUser, CurrentUserPayload } from '../common/decorators';
 export class WallFeedController {
     constructor(private readonly wallService: WallFeedService) { }
 
+    @Get('sidebar')
+    @ApiOperation({ summary: 'Obtenir les données de la Sidebar (News + Succès récents)' })
+    @ApiResponse({ status: 200, description: 'Données sidebar' })
+    async getSidebar(): Promise<any> {
+        return this.wallService.getSidebarData();
+    }
+
     @Get('feed')
     @ApiOperation({ summary: 'Obtenir le fil d\'actualité unifié (Missions + Services + Posts)' })
     @ApiResponse({ status: 200, description: 'Liste paginée des éléments du fil' })

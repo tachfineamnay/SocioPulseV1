@@ -1084,6 +1084,37 @@ model AdminNote {
 }
 
 // =============================================================================
+// EXTERNAL NEWS - Veille sectorielle (ASH, Légifrance, Santé.gouv)
+// =============================================================================
+
+model ExternalNews {
+  id          String   @id @default(cuid())
+  
+  title       String
+  source      String   // Ex: "ASH", "Ministère", "Légifrance", "Santé.gouv"
+  url         String   // Lien externe
+  imageUrl    String?  // Image optionnelle
+  excerpt     String?  @db.Text  // Résumé court
+  
+  // Catégorie
+  category    String?  // Ex: "Réglementation", "Actualités", "Formation"
+  
+  // Statut
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  
+  // Timestamps
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([source])
+  @@index([isActive])
+  @@index([publishedAt])
+  @@index([category])
+}
+
+// =============================================================================
 // AUDIT LOG (CRM) - Traçabilité des actions admin
 // =============================================================================
 

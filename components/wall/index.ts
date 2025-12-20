@@ -9,3 +9,8 @@ export { BentoFeed, type BentoFeedProps } from './BentoFeed';
 export { SmartCard, type SmartCardProps, type DiscoveryMode } from './SmartCard';
 export { ImmersiveCard, type ImmersiveCardProps } from './ImmersiveCard';
 export { useWallFeed, type UseWallFeedOptions, type UseWallFeedResult } from './useWallFeed';
+
+// Sidebar Widgets
+export { FeedSidebar, type FeedSidebarProps, type SidebarData } from './FeedSidebar';
+export { NewsWidget, type NewsWidgetProps, type NewsItem } from './NewsWidget';
+export { SuccessWidget, type SuccessWidgetProps, type SuccessItem } from './SuccessWidget';

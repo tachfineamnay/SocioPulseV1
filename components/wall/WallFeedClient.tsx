@@ -12,6 +12,7 @@ import { Logo } from '@/components/ui/Logo';
 import { MissionCard } from './MissionCard';
 import { ServiceCard } from './ServiceCard';
 import { SmartSearchBar, type FloatingAvatar } from './SmartSearchBar';
+import { FeedSidebar, type SidebarData } from './FeedSidebar';
 import { useWallFeed } from './useWallFeed';
 
 export interface TalentPoolItem {
@@ -35,6 +36,7 @@ interface WallFeedClientProps {
     initialHasNextPage?: boolean;
     talentPool?: TalentPoolItem[];
     activity?: ActivityItem[];
+    sidebarData?: SidebarData;
 }
 
 const extractHeroAvatars = (items: any[]): FloatingAvatar[] => {
@@ -125,6 +127,8 @@ export function WallFeedClient({
     initialFeed,
     initialNextCursor = null,
     initialHasNextPage = false,
+    talentPool = [],
+    sidebarData,
 }: WallFeedClientProps) {
     const resolvedInitialData = Array.isArray(initialData)
         ? initialData
@@ -212,7 +216,11 @@ export function WallFeedClient({
             </header>
 
             <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-safe">
-                {urgentMissions.length > 0 ? (
+                {/* Main Grid: Feed + Sidebar */}
+                <div className="flex gap-8">
+                    {/* Main Content Area */}
+                    <div className="flex-1 min-w-0">
+                        {urgentMissions.length > 0 ? (
                     <section className="pt-8">
                         <div className="flex items-center justify-between gap-4 mb-4">
                             <div className="flex items-center gap-3">
@@ -395,6 +403,14 @@ export function WallFeedClient({
                         </aside>
                     </div>
                 </section>
+                </div>
+
+                {/* Right Sidebar - Sticky Intelligent */}
+                <FeedSidebar 
+                    talentPool={talentPool} 
+                    initialData={sidebarData} 
+                />
+            </div>
             </main>
         </div>
     );
