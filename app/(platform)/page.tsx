@@ -1,13 +1,26 @@
 import { Metadata } from 'next';
 import { WallFeedClient } from '@/components/wall/WallFeedClient';
 
+// ===========================================
+// SOCIOPULSE WALL EXPERIENCE - Homepage
+// B2B2C Platform for Medical-Social Sector
+// Design: Awwwards Level for Investor Demo
+// ===========================================
+
 export const metadata: Metadata = {
-    title: 'Les Extras - Le Wall | Offres & Besoins Médico-Social',
-    description: 'La plateforme de mise en relation médico-sociale. Trouvez votre prochaine mission ou prestataire en temps réel.',
+    title: 'Sociopulse - Le réseau du Social | Renfort & SocioLive',
+    description: 'La plateforme de mise en relation médico-sociale. Un renfort demain, une visio ou un atelier maintenant. Trouvez votre mission ou expert en temps réel.',
+    keywords: 'renfort médico-social, interim social, SocioLive, atelier, EHPAD, IDE, aide-soignant, éducateur',
     openGraph: {
-        title: 'Les Extras - Le Wall',
-        description: 'Plateforme de mise en relation médico-sociale B2B2C',
+        title: 'Sociopulse - Le réseau du Social',
+        description: 'Plateforme de mise en relation médico-sociale B2B2C. Missions de renfort et services SocioLive.',
         type: 'website',
+        siteName: 'Sociopulse',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Sociopulse - Le réseau du Social',
+        description: 'Un renfort demain. Une Visio ou un Atelier maintenant.',
     },
 };
 
@@ -25,7 +38,10 @@ type InitialFeed = {
 
 async function getInitialFeed(): Promise<InitialFeed> {
     try {
-        const response = await fetch(`${getApiBase()}/wall/feed`, { cache: 'no-store' });
+        const response = await fetch(`${getApiBase()}/wall/feed`, {
+            cache: 'no-store',
+            next: { revalidate: 0 }
+        });
         if (!response.ok) return { items: [], nextCursor: null, hasNextPage: false };
 
         const data = await response.json();
