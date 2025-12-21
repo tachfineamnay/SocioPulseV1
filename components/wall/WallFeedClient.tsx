@@ -84,24 +84,38 @@ function FeedModeToggle({ mode, onChange }: { mode: FeedMode; onChange: (mode: F
     };
 
     return (
-        <div className="inline-flex items-center p-1.5 rounded-2xl bg-white/90 backdrop-blur-md border border-white/60 shadow-xl">
-            <motion.button
+        <div className="pill-toggle">
+            {/* Sliding Indicator */}
+            <motion.div
+                className="pill-toggle-indicator"
+                initial={false}
+                animate={{
+                    left: mode === 'services' ? '4px' : mode === 'renfort' ? '50%' : '-100%',
+                    width: mode === 'all' ? '0%' : '48%',
+                    backgroundColor: mode === 'services' ? '#F0FDFA' : mode === 'renfort' ? '#FFF1F2' : 'transparent',
+                    borderColor: mode === 'services' ? '#99F6E4' : mode === 'renfort' ? '#FECDD3' : 'transparent',
+                    borderWidth: mode === 'all' ? 0 : 1,
+                }}
+                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            />
+
+            <button
                 type="button"
                 onClick={() => toggle('services')}
-                className={`relative inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-colors ${mode === 'services' ? 'text-teal-700' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`pill-toggle-item ${mode === 'services' ? 'text-teal-700' : 'text-slate-500 hover:text-slate-700'}`}
             >
-                {mode === 'services' && <motion.div layoutId="modeToggleBg" className="absolute inset-0 bg-teal-50 border border-teal-200 rounded-xl" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
-                <span className="relative flex items-center gap-2"><Video className="w-4 h-4" />SocioLive & Ateliers</span>
-            </motion.button>
+                <Video className="w-4 h-4" />
+                <span>SocioLive & Ateliers</span>
+            </button>
 
-            <motion.button
+            <button
                 type="button"
                 onClick={() => toggle('renfort')}
-                className={`relative inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold transition-colors ${mode === 'renfort' ? 'text-rose-700' : 'text-slate-600 hover:text-slate-900'}`}
+                className={`pill-toggle-item ${mode === 'renfort' ? 'text-rose-700' : 'text-slate-500 hover:text-slate-700'}`}
             >
-                {mode === 'renfort' && <motion.div layoutId="modeToggleBg" className="absolute inset-0 bg-rose-50 border border-rose-200 rounded-xl" transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }} />}
-                <span className="relative flex items-center gap-2"><MapPin className="w-4 h-4" />Renfort Terrain</span>
-            </motion.button>
+                <MapPin className="w-4 h-4" />
+                <span>Renfort Terrain</span>
+            </button>
         </div>
     );
 }
@@ -153,77 +167,83 @@ export function WallFeedClient({
 
     return (
         <div className="relative min-h-screen bg-canvas overflow-hidden">
-            {/* ========== HERO PLEIN LARGEUR ========== */}
-            <section className="relative w-full py-16 sm:py-20 lg:py-24 flex flex-col items-center px-4 sm:px-6 lg:px-8">
-                {/* AMBIENT BACKGROUND */}
-                <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-                    <div className="absolute -top-1/4 left-1/2 h-[800px] w-[1200px] -translate-x-1/2 rounded-full bg-gradient-to-r from-indigo-500/20 via-teal-400/15 to-rose-400/15 blur-3xl" />
-                    <div className="absolute top-1/3 -left-1/4 h-[600px] w-[600px] rounded-full bg-teal-400/15 blur-3xl" />
-                    <div className="absolute bottom-0 right-0 h-[700px] w-[700px] rounded-full bg-indigo-500/15 blur-3xl" />
+            {/* ========== HERO PLEIN LARGEUR - 2026 Premium Design ========== */}
+            <section className="relative w-full min-h-[90vh] flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+                {/* AMBIENT BACKGROUND - Elegant Mesh Gradient */}
+                <div aria-hidden className="hero-mesh-gradient" />
+
+                {/* FLOATING ORBS - Ultra subtle ambient glow */}
+                <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="floating-orb floating-orb-1" style={{ top: '-15%', left: '10%' }} />
+                    <div className="floating-orb floating-orb-2" style={{ top: '50%', right: '-10%' }} />
+                    <div className="floating-orb floating-orb-3" style={{ bottom: '-10%', left: '30%' }} />
                 </div>
 
-                <div className="max-w-5xl mx-auto text-center">
-                    {/* Titre H1 Major */}
+                <div className="relative max-w-5xl mx-auto text-center z-10">
+                    {/* Titre H1 Major - Statement Typography */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                        className="mb-6 relative inline-block"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                        className="mb-8"
                     >
-                        <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tighter text-slate-900 leading-[0.9]">
-                            LE RÉSEAU <br className="sm:hidden" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 relative">
+                        <h1 className="hero-title">
+                            <span className="text-reveal" style={{ animationDelay: '0.1s' }}>LE RÉSEAU</span>
+                            <br />
+                            <span className="hero-title-gradient text-reveal" style={{ animationDelay: '0.3s' }}>
                                 DU SOCIAL
                             </span>
                         </h1>
                     </motion.div>
 
-                    {/* Punchline Secondary */}
+                    {/* Punchline Secondary - Clean & Elegant */}
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-600 max-w-4xl mx-auto leading-tight"
+                        transition={{ duration: 0.8, delay: 0.4 }}
+                        className="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-600/90 max-w-3xl mx-auto leading-relaxed"
                     >
-                        Un renfort demain. <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-teal-500">Une Visio ou un Atelier maintenant.</span>
+                        Un renfort demain.{' '}
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-live-500 to-brand-500">
+                            Une Visio ou un Atelier maintenant.
+                        </span>
                     </motion.h2>
 
-                    {/* Mission Text */}
+                    {/* Mission Text - Subtle */}
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="mt-6 text-lg sm:text-xl font-medium text-slate-500 max-w-2xl mx-auto"
+                        transition={{ duration: 0.8, delay: 0.5 }}
+                        className="mt-6 text-base sm:text-lg font-medium text-slate-400 max-w-xl mx-auto"
                     >
                         Le Réseau Social des professionnels de l'éducation spécialisée et du médico-social.
                     </motion.p>
 
-                    {/* Mode Switcher */}
+                    {/* Mode Switcher - Premium Pill Design */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="mt-10"
+                        transition={{ duration: 0.8, delay: 0.6 }}
+                        className="mt-12"
                     >
                         <FeedModeToggle mode={feedMode} onChange={setFeedMode} />
                     </motion.div>
 
-                    {/* Smart Search Bar */}
+                    {/* Smart Search Bar - Glowing Effect */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="relative mt-10 max-w-2xl mx-auto"
+                        transition={{ duration: 0.8, delay: 0.7 }}
+                        className="relative mt-10 max-w-2xl mx-auto hero-search-glow"
                     >
-                        <div aria-hidden className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-r from-indigo-500/25 via-teal-500/20 to-rose-500/15 blur-2xl opacity-70" />
-                        <div className="relative glass rounded-[2rem] border border-white/60 shadow-xl overflow-hidden">
+                        <div className="relative glass rounded-full border border-white/60 shadow-soft-lg overflow-hidden">
                             <div className="relative">
-                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400" />
+                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                                 <input
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     placeholder="Rechercher un renfort, une séance SocioLive ou un atelier..."
-                                    className="w-full bg-transparent pl-16 pr-6 py-5 text-lg font-medium tracking-tight text-slate-900 placeholder:text-slate-400/90 outline-none"
+                                    className="w-full bg-transparent pl-14 pr-6 py-4 text-base font-medium tracking-tight text-slate-900 placeholder:text-slate-400/80 outline-none"
                                     autoComplete="off"
                                 />
                             </div>
@@ -232,11 +252,11 @@ export function WallFeedClient({
 
                     {/* Publish CTA */}
                     {canPublish && user && (
-                        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }} className="mt-8">
+                        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="mt-8">
                             <CreateActionModal
                                 user={user as unknown as CreateActionModalUser}
                                 trigger={
-                                    <button type="button" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-teal-500 px-7 py-4 text-base font-semibold text-white shadow-xl hover:shadow-2xl active:scale-[0.98] transition-all">
+                                    <button type="button" className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-600 via-brand-500 to-live-500 px-8 py-4 text-base font-semibold text-white shadow-soft-lg hover:shadow-xl active:scale-[0.98] transition-all duration-300">
                                         <Plus className="h-5 w-5" />
                                         Publier une offre
                                     </button>
@@ -246,17 +266,20 @@ export function WallFeedClient({
                     )}
                 </div>
 
-                {/* Scroll indicator */}
+                {/* Scroll indicator - Gentle floating */}
                 <motion.button
                     onClick={scrollToFeed}
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, y: [0, 8, 0] }}
-                    transition={{ opacity: { delay: 1 }, y: { duration: 1.5, repeat: Infinity } }}
-                    className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-500 hover:text-slate-700 transition-colors"
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2 }}
+                    className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors discover-btn"
                 >
-                    <span className="text-sm font-medium">Découvrir</span>
+                    <span className="text-sm font-medium tracking-wide">Découvrir</span>
                     <ChevronDown className="w-5 h-5" />
                 </motion.button>
+
+                {/* Subtle wave transition */}
+                <div className="wave-pattern" />
             </section>
 
             {/* ========== MAIN CONTENT ========== */}

@@ -69,54 +69,43 @@
    ======================================== */
 
 @layer components {
+
   /* Premium Input Fields */
   .input-premium {
-    @apply w-full px-4 py-3 rounded-xl border border-slate-200 
-           bg-white text-slate-900 placeholder:text-slate-400
-           focus:ring-2 focus:ring-brand-200 focus:border-brand-400
-           transition-all duration-200 outline-none;
+    @apply w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-brand-200 focus:border-brand-400 transition-all duration-200 outline-none;
   }
 
   /* Card Surface */
   .card-surface {
-    @apply bg-white rounded-2xl shadow-soft 
-           hover:shadow-soft-lg transition-shadow duration-300;
+    @apply bg-white rounded-2xl shadow-soft hover:shadow-soft-lg transition-shadow duration-300;
   }
 
   /* Primary Button - Brand (for Detail Pages) */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 
-           px-4 py-2.5 rounded-xl bg-brand-600 text-white
-           font-semibold text-sm
-           hover:bg-brand-700 active:scale-[0.98]
-           transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm hover:bg-brand-700 active:scale-[0.98] transition-all duration-200;
   }
 
   /* Secondary Button - Outline (for Feed) */
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 
-           px-4 py-2.5 rounded-xl border border-slate-200 
-           text-slate-700 font-medium text-sm
-           hover:bg-slate-50 hover:border-slate-300 
-           active:scale-[0.98] transition-all duration-200;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-medium text-sm hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] transition-all duration-200;
   }
 
   /* Social Action Button */
   .btn-social {
-    @apply inline-flex items-center justify-center 
-           w-9 h-9 rounded-full border border-slate-200 
-           text-slate-500 hover:text-brand-600 hover:border-brand-200
-           hover:bg-brand-50 active:scale-95 transition-all duration-200;
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-full border border-slate-200 text-slate-500 hover:text-brand-600 hover:border-brand-200 hover:bg-brand-50 active:scale-95 transition-all duration-200;
   }
 
   /* Pattern Hero for cards without images */
   .pattern-hero {
     @apply relative h-36 overflow-hidden rounded-t-2xl;
-    background: linear-gradient(135deg, 
-      #EEF2FF 0%,   /* brand-50 (indigo) */
-      #F8FAFC 50%,  /* slate-50 */
-      #E0E7FF 100%  /* brand-100 (indigo) */
-    );
+    background: linear-gradient(135deg,
+        #EEF2FF 0%,
+        /* brand-50 (indigo) */
+        #F8FAFC 50%,
+        /* slate-50 */
+        #E0E7FF 100%
+        /* brand-100 (indigo) */
+      );
   }
 
   .pattern-hero::before {
@@ -129,17 +118,20 @@
   /* Need Card Pattern (Blue-themed for establishments) */
   .pattern-hero-need {
     @apply relative h-36 overflow-hidden rounded-t-2xl;
-    background: linear-gradient(135deg, 
-      #EFF6FF 0%,   /* blue-50 */
-      #F8FAFC 50%,  /* slate-50 */
-      #DBEAFE 100%  /* blue-100 */
-    );
+    background: linear-gradient(135deg,
+        #EFF6FF 0%,
+        /* blue-50 */
+        #F8FAFC 50%,
+        /* slate-50 */
+        #DBEAFE 100%
+        /* blue-100 */
+      );
   }
 
   .pattern-hero-need::before {
     content: '';
     @apply absolute inset-0 opacity-20;
-    background-image: 
+    background-image:
       linear-gradient(30deg, transparent 49.5%, #93C5FD 49.5%, #93C5FD 50.5%, transparent 50.5%),
       linear-gradient(-30deg, transparent 49.5%, #93C5FD 49.5%, #93C5FD 50.5%, transparent 50.5%);
     background-size: 20px 35px;
@@ -288,5 +280,249 @@ input[type="number"] {
   select,
   textarea {
     font-size: 16px !important;
+  }
+}
+
+/* ========================================
+   2026 DESIGN SYSTEM - Premium Hero
+   Calming, Efficient, Good Vibes
+   ======================================== */
+
+/* Hero Mesh Gradient - Subtle, flowing background */
+.hero-mesh-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 100% 50%, rgba(20, 184, 166, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 0% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Calming Floating Orbs - Ultra soft ambient glow */
+.floating-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  will-change: transform;
+  opacity: 0.5;
+}
+
+.floating-orb-1 {
+  width: 600px;
+  height: 600px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05));
+  animation: floatOrb1 30s ease-in-out infinite;
+}
+
+.floating-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.06), rgba(99, 102, 241, 0.04));
+  animation: floatOrb2 35s ease-in-out infinite;
+}
+
+.floating-orb-3 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.03));
+  animation: floatOrb3 28s ease-in-out infinite;
+}
+
+/* Breathing animation - slow, calming pulse */
+@keyframes breathe {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+}
+
+/* Floating Orb Animations - Very slow, peaceful movement */
+@keyframes floatOrb1 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  25% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+
+  50% {
+    transform: translate(-20px, 30px) scale(0.95);
+  }
+
+  75% {
+    transform: translate(40px, 10px) scale(1.02);
+  }
+}
+
+@keyframes floatOrb2 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  33% {
+    transform: translate(-40px, 20px) scale(1.03);
+  }
+
+  66% {
+    transform: translate(25px, -30px) scale(0.97);
+  }
+}
+
+@keyframes floatOrb3 {
+
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate(35px, 25px) scale(1.04);
+  }
+}
+
+/* Soft Glow Effect for Search Bar */
+.hero-search-glow {
+  position: relative;
+}
+
+.hero-search-glow::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 2rem;
+  background: linear-gradient(135deg,
+      rgba(99, 102, 241, 0.15),
+      rgba(20, 184, 166, 0.10),
+      rgba(139, 92, 246, 0.12));
+  filter: blur(20px);
+  opacity: 0.6;
+  animation: searchGlow 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes searchGlow {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.98);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+}
+
+/* Premium Pill Toggle */
+.pill-toggle {
+  @apply relative inline-flex items-center p-1 rounded-full;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+  box-shadow:
+    0 4px 24px -4px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.8),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+.pill-toggle-item {
+  @apply relative z-10 flex items-center gap-2 px-6 py-3 rounded-full text-sm font-semibold transition-colors duration-300;
+}
+
+.pill-toggle-indicator {
+  @apply absolute top-1 bottom-1 rounded-full transition-all duration-500;
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
+}
+
+/* Hero Title - Statement Typography */
+.hero-title {
+  @apply text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-tight text-slate-900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+.hero-title-gradient {
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(135deg,
+      #4F46E5 0%,
+      #6366F1 25%,
+      #8B5CF6 50%,
+      #6366F1 75%,
+      #4F46E5 100%);
+  background-size: 200% 200%;
+  animation: shimmerGradient 8s ease-in-out infinite;
+}
+
+@keyframes shimmerGradient {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Subtle text reveal animation */
+.text-reveal {
+  animation: textReveal 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes textReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: blur(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* Gentle Wave Pattern */
+.wave-pattern {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to top, rgba(250, 250, 250, 0.8), transparent);
+  pointer-events: none;
+}
+
+/* Discover Button - Elegant floating */
+.discover-btn {
+  animation: gentleFloat 3s ease-in-out infinite;
+}
+
+@keyframes gentleFloat {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
   }
 }
