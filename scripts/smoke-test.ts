@@ -22,9 +22,9 @@ async function main() {
     const res = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: 'admin@lesextras.fr', password: 'password123' }),
+      body: JSON.stringify({ email: 'admin@sociopulse.fr', password: 'password123' }),
     });
-    
+
     if (!res.ok) throw new Error(`Status ${res.status}`);
     const data = await res.json();
     token = data.accessToken; // Adapter selon le retour réel (token ou accessToken)

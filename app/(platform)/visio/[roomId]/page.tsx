@@ -64,7 +64,7 @@ export default function VisioPage() {
 
                 const data: TokenResponse = await response.json();
                 setToken(data.token);
-                setServerUrl(data.meetingUrl || process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://lesextras.livekit.cloud');
+                setServerUrl(data.meetingUrl || process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://sociopulse.livekit.cloud');
             } catch (err: any) {
                 console.error('Failed to get token:', err);
                 setError(err.message || 'Erreur lors de la connexion \u00e0 la session vid\u00e9o');

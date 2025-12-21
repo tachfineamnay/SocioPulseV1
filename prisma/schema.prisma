@@ -1,6 +1,6 @@
 // =============================================================================
-// LES EXTRAS V2 - COMPLETE PRISMA SCHEMA
-// Modules: Marketplace, Wall, SOS Renfort, Eduat'heure
+// SOCIOPULSE V2 - Database Schema
+// Optimized for Scalability & B2B/B2C Social interactionsfort, Eduat'heure
 // =============================================================================
 
 generator client {
@@ -163,7 +163,7 @@ model User {
   // Wallet (solde disponible en centimes pour éviter les erreurs de float)
   walletBalance Int        @default(0)
   
-  // Stripe Connect (pour les Extras)
+  // Stripe Connect (pour les Sociopulse)
   stripeCustomerId  String?   @unique
   stripeAccountId   String?   @unique  // Stripe Connect Account
   stripeOnboarded   Boolean   @default(false)

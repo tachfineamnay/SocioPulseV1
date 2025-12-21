@@ -6,9 +6,9 @@ import { SonnerToaster } from "@/components/ui/SonnerToaster";
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Les Extras | Plateforme M‚dico-Sociale",
-    description: "La plateforme B2B2C pour le secteur m‚dico-social. Trouvez des renforts, r‚servez des ateliers, connectez-vous avec des professionnels qualifi‚s.",
-    keywords: ["m‚dico-social", "EHPAD", "renforts", "ateliers", "professionnels de sant‚"],
+    title: "Sociopulse | Plateforme Médico-Sociale",
+    description: "La plateforme B2B2C pour le secteur médico-social. Trouvez des renforts, réservez des ateliers, connectez-vous avec des professionnels qualifiés.",
+    keywords: ["médico-social", "EHPAD", "Sociopulse", "renforts", "ateliers", "professionnels de santé"],
 };
 
 export const viewport: Viewport = {

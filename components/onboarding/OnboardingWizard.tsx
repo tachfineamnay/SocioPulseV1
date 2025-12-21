@@ -544,7 +544,7 @@ export function OnboardingWizard() {
 
                                 <div>
                                     <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-                                        Bienvenue chez Les Extras !
+                                        Bienvenue chez Sociopulse !
                                     </h2>
                                     <p className="text-slate-500">Votre compte est prêt.</p>
                                 </div>

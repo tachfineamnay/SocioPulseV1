@@ -10,7 +10,7 @@ export default function DashboardHubPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Tableau de Bord</h1>
-                        <p className="text-sm text-gray-500">Bienvenue sur votre espace Les Extras</p>
+                        <p className="text-sm text-gray-500">Bienvenue sur votre espace Sociopulse</p>
                     </div>
                     <div className="h-10 w-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-semibold">
                         JD
@@ -36,6 +36,10 @@ export default function DashboardHubPage() {
                         <div className="relative z-10">
                             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg shadow-rose-500/30 mb-6">
                                 <Siren className="w-7 h-7 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="font-bold text-slate-900">Desk Admin</h1>
+                                <p className="text-xs text-slate-500">Sociopulse V2</p>
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">SOS Renfort</h2>
                             <p className="text-gray-500 max-w-md mb-8">

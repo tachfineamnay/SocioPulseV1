@@ -100,7 +100,7 @@ async function main() {
   console.log('👤 Creating admin...');
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@lesextras.fr',
+      email: 'admin@sociopulse.fr',
       passwordHash,
       role: 'ADMIN',
       status: UserStatus.VERIFIED,
@@ -1052,7 +1052,7 @@ async function main() {
         clientId: client.id,
         assignedExtraId: extra.id,
         title: mission.title,
-        description: `Mission complétée avec succès par ${extra.profile?.firstName} ${extra.profile?.lastName}.`,
+        description: `Mission complétée avec succès sur Sociopulse par ${extra.profile?.firstName} ${extra.profile?.lastName}.`,
         jobTitle: mission.jobTitle,
         urgencyLevel: MissionUrgency.HIGH,
         status: MissionStatus.COMPLETED,

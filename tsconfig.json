@@ -18,7 +18,7 @@
     "incremental": true,
     "plugins": [
       {
-        "name": "next"
+        "name": "SociopulseV2"
       }
     ],
     "paths": {
@@ -35,7 +35,6 @@
   ],
   "exclude": [
     "node_modules",
-    "apps/api",
-    "LesExtrasV2"
+    "apps/api"
   ]
 }

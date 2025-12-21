@@ -61,7 +61,7 @@ async function bootstrap() {
     // Swagger API Docs
     const config = new DocumentBuilder()
         .setTitle('Les Extras V2 API')
-        .setDescription('API pour la plateforme Les Extras - Médico-social B2B2C')
+        .setDescription('API pour la plateforme Sociopulse V2 - Médico-social B2B2C')
         .setVersion('2.0')
         .addBearerAuth()
         .addTag('auth', 'Authentification et gestion des utilisateurs')

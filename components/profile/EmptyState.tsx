@@ -1,9 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { 
-    Sprout, 
-    Handshake, 
+import {
+    Sprout,
+    Handshake,
     Sparkles,
     Star,
     Briefcase,
@@ -35,7 +35,7 @@ const emptyStateConfig: Record<EmptyStateType, {
 }> = {
     missions: {
         icon: Sprout,
-        title: 'Ce profil est nouveau sur Les Extras !',
+        title: 'Ce profil est nouveau sur Sociopulse !',
         titleOwn: 'Votre parcours commence ici',
         description: 'Soyez le premier à collaborer avec eux.',
         descriptionOwn: 'Complétez votre première mission pour construire votre réputation.',
@@ -104,14 +104,14 @@ export function EmptyState({
 
                 {/* Decorative Sparkles */}
                 <motion.div
-                    animate={{ 
+                    animate={{
                         rotate: [0, 10, -10, 0],
                         scale: [1, 1.1, 1],
                     }}
-                    transition={{ 
-                        duration: 3, 
+                    transition={{
+                        duration: 3,
                         repeat: Infinity,
-                        repeatType: 'reverse' 
+                        repeatType: 'reverse'
                     }}
                     className="absolute -top-1 -right-1"
                 >

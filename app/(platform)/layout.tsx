@@ -8,11 +8,11 @@ function PlatformFooter() {
             <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <Link href="/" className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-600 to-teal-500 shadow-soft flex items-center justify-center">
-                        <span className="text-white font-semibold tracking-tight">LX</span>
+                        <span className="text-white font-semibold tracking-tight">SP</span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-slate-900 leading-none">Les Extras</span>
-                        <span className="text-xs text-slate-500 leading-tight">Plateforme m‚dico-sociale</span>
+                        <span className="text-sm font-semibold text-slate-900 leading-none">Sociopulse</span>
+                        <span className="text-xs text-slate-500 leading-tight">Plateforme médico-sociale</span>
                     </div>
                 </Link>
                 <div className="flex flex-wrap gap-4 text-sm text-slate-600">

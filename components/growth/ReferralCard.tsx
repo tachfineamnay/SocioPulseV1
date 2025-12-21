@@ -21,12 +21,14 @@ export function ReferralCard({ referralCode, pendingCount, confirmedCount, pendi
 
     const referralLink = useMemo(() => {
         if (!referralCode) return '';
+        // The following line from the instruction is syntactically incorrect in this context:
+        // title: 'Ce profil est nouveau sur Sociopulse !',';
         return getReferralLink(referralCode);
     }, [referralCode]);
 
     const whatsappUrl = useMemo(() => {
         if (!referralLink) return '';
-        const message = `Rejoins Les Extras avec mon lien : ${referralLink}`;
+        const message = `Rejoins Sociopulse avec mon lien : ${referralLink}`;
         return `https://wa.me/?text=${encodeURIComponent(message)}`;
     }, [referralLink]);
 
@@ -47,7 +49,16 @@ export function ReferralCard({ referralCode, pendingCount, confirmedCount, pendi
             <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
                     <p className="label-sm">Parrainage</p>
+                    {/* The following lines from the instruction are syntactically incorrect (h2 inside h3) and incomplete: */}
+                    {/* <h3 className="text-lg font-semibold text-slate-900">Inviter un                                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+                                        Bienvenue chez Sociopulse !
+                                    </h2> */}
+                    {/* Assuming the intent was to change the h3 text and add a new h2 element,
+                        but without clear placement, I'm keeping the original h3 and adding the h2 after it. */}
                     <h3 className="text-lg font-semibold text-slate-900">Inviter un collègue</h3>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+                        Bienvenue chez Sociopulse !
+                    </h2>
                     <p className="text-sm text-slate-600">
                         +200 points quand votre filleul est vérifié (anti-fraude).
                     </p>
