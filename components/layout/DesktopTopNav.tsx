@@ -4,12 +4,36 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Home, MessageCircle, Siren, LogIn, UserPlus, Bell, User, LogOut, Settings, ChevronDown, Shield, Activity } from 'lucide-react';
+import {
+    Calendar,
+    Home,
+    MessageCircle,
+    Siren,
+    LogIn,
+    UserPlus,
+    Bell,
+    User,
+    LogOut,
+    Settings,
+    ChevronDown,
+    Shield,
+    Activity,
+    ClipboardList
+} from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
 import { CreateActionModal } from '@/components/create/CreateActionModal';
 
-const NAV_ITEMS = [
+interface NavItem {
+    href: string;
+    label: string;
+    icon: React.ElementType;
+    highlight?: boolean;
+    badge?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
     { href: '/wall', label: 'Wall', icon: Home },
+    { href: '/dashboard/tracking', label: 'Suivi', icon: ClipboardList, badge: true },
     { href: '/dashboard/relief', label: 'SOS', icon: Siren, highlight: true },
     { href: '/bookings', label: 'Agenda', icon: Calendar },
     { href: '/messages', label: 'Messages', icon: MessageCircle },
@@ -22,6 +46,9 @@ export function DesktopTopNav() {
     const [notificationCount] = useState(3); // TODO: connect to real notifications
     const [messageCount] = useState(2); // TODO: connect to real messages count
     const menuRef = useRef<HTMLDivElement>(null);
+
+    // TODO: Fetch from API - /missions/active/count
+    const activeMissionCount = 0;
 
     // Close menu on outside click
     useEffect(() => {
@@ -70,6 +97,8 @@ export function DesktopTopNav() {
                             const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                             const isHighlight = item.highlight;
                             const isMessages = item.href === '/messages';
+                            const isSuivi = item.href === '/dashboard/tracking';
+                            const showBadge = item.badge && activeMissionCount > 0;
 
                             if (isHighlight) {
                                 return (
@@ -90,18 +119,23 @@ export function DesktopTopNav() {
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold tracking-tight transition-colors ${
-                                        isActive
+                                    className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-semibold tracking-tight transition-colors ${isActive
                                             ? 'bg-slate-900/5 text-slate-900'
                                             : 'text-slate-600 hover:bg-slate-900/5 hover:text-slate-900'
-                                    }`}
+                                        }`}
                                 >
-                                    <Icon className={`h-4 w-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                                    <Icon className={`h-4 w-4 ${isActive ? (isSuivi ? 'text-teal-600' : 'text-indigo-600') : 'text-slate-400'}`} />
                                     {item.label}
-                                    {/* Badge messages non lus */}
+                                    {/* Badge for messages */}
                                     {isMessages && isAuthenticated && messageCount > 0 && (
                                         <span className="absolute -top-1 -right-1 h-5 w-5 bg-indigo-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
                                             {messageCount > 9 ? '9+' : messageCount}
+                                        </span>
+                                    )}
+                                    {/* Badge for active missions */}
+                                    {showBadge && (
+                                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-teal-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm">
+                                            {activeMissionCount > 9 ? '9+' : activeMissionCount}
                                         </span>
                                     )}
                                 </Link>
@@ -116,13 +150,13 @@ export function DesktopTopNav() {
                                 {user ? <CreateActionModal user={user} /> : null}
 
                                 {/* Notifications avec badge */}
-                                <button 
-                                    onClick={() => {/* TODO: implement notifications panel */}} 
+                                <button
+                                    onClick={() => {/* TODO: implement notifications panel */ }}
                                     className="relative p-2.5 rounded-xl bg-white/80 hover:bg-white border border-slate-200/50 hover:border-slate-300 transition-all hover:shadow-sm group"
                                 >
                                     <Bell className="h-5 w-5 text-slate-600 group-hover:text-slate-800 transition-colors" />
                                     {notificationCount > 0 && (
-                                        <motion.span 
+                                        <motion.span
                                             initial={{ scale: 0 }}
                                             animate={{ scale: 1 }}
                                             className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-sm"
@@ -140,9 +174,9 @@ export function DesktopTopNav() {
                                     >
                                         {/* Avatar */}
                                         {user?.profile?.avatarUrl ? (
-                                            <img 
-                                                src={user.profile.avatarUrl} 
-                                                alt="Avatar" 
+                                            <img
+                                                src={user.profile.avatarUrl}
+                                                alt="Avatar"
                                                 className="h-8 w-8 rounded-lg object-cover"
                                             />
                                         ) : (
@@ -227,8 +261,8 @@ export function DesktopTopNav() {
                         ) : (
                             <>
                                 {/* S'inscrire - Outline Indigo */}
-                                <Link 
-                                    href="/onboarding" 
+                                <Link
+                                    href="/onboarding"
                                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-indigo-700 bg-white/80 border border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 transition-all hover:shadow-sm"
                                 >
                                     <UserPlus className="h-4 w-4" />
@@ -248,4 +282,3 @@ export function DesktopTopNav() {
         </header>
     );
 }
-

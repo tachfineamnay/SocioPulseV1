@@ -19,7 +19,7 @@ datasource db {
 
 enum UserRole {
   CLIENT       // Établissement ou Particulier
-  EXTRA        // Freelance professionnel
+  TALENT       // Freelance professionnel (anciennement Extra)
   ADMIN        // Administrateur plateforme
 }
 
@@ -125,6 +125,22 @@ enum QuoteStatus {
   REVISED        // Révisé (nouvelle version)
 }
 
+// =============================================================================
+// MISSION HUB ENUMS
+// =============================================================================
+
+enum MissionMessageType {
+  TEXT    // Message utilisateur
+  SYSTEM  // Message système automatique
+}
+
+enum MissionTimelineEventType {
+  BRIEFING_READ       // Consignes lues et validées
+  MISSION_STARTED     // Mission démarrée manuellement
+  CHAT_MESSAGE        // Message envoyé dans le chat mission
+  REPORT_SUBMITTED    // Rapport de fin de mission soumis
+}
+
 enum ContractType {
   MISSION_SOS     // Mission ponctuelle urgente
   SERVICE_BOOKING // Réservation de service/atelier
@@ -178,7 +194,7 @@ model User {
   bookingsAsClient    Booking[]         @relation("ClientBookings")
   bookingsAsProvider  Booking[]         @relation("ProviderBookings")
   missionsAsClient    ReliefMission[]   @relation("ClientMissions")
-  missionsAsExtra     ReliefMission[]   @relation("ExtraMissions")
+  missionsAsTalent    ReliefMission[]   @relation("TalentMissions")
   applications        MissionApplication[]
   posts               Post[]
   transactions        Transaction[]
@@ -196,6 +212,11 @@ model User {
   adminNotesReceived  AdminNote[]       @relation("AdminTarget")
   auditLogsPerformed  AuditLog[]        @relation("AuditAdmin")
   auditLogsReceived   AuditLog[]        @relation("AuditTarget")
+  
+  // Mission Hub Relations
+  missionMessages       MissionMessage[]
+  missionReports        MissionReport[]          @relation("TalentMissionReports")
+  missionTimelineEvents MissionTimelineEvent[]
   
   // Timestamps
   createdAt     DateTime   @default(now())
@@ -510,9 +531,9 @@ model ReliefMission {
   clientId        String
   client          User          @relation("ClientMissions", fields: [clientId], references: [id], onDelete: Cascade)
   
-  // Extra assigné (null si pas encore assigné)
-  assignedExtraId String?
-  assignedExtra   User?         @relation("ExtraMissions", fields: [assignedExtraId], references: [id])
+  // Talent assigné (null si pas encore assigné)
+  assignedTalentId String?
+  assignedTalent   User?         @relation("TalentMissions", fields: [assignedTalentId], references: [id])
   
   // Informations mission
   title           String
@@ -551,6 +572,12 @@ model ReliefMission {
   contract        Contract?
   quotes          Quote[]
   
+  // Mission Hub Relations (Tracking)
+  messages          MissionMessage[]
+  instructions      MissionInstruction?
+  report            MissionReport?
+  timelineEvents    MissionTimelineEvent[]
+  
   // Timestamps
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -558,7 +585,7 @@ model ReliefMission {
   completedAt     DateTime?
   
   @@index([clientId])
-  @@index([assignedExtraId])
+  @@index([assignedTalentId])
   @@index([status])
   @@index([urgencyLevel])
   @@index([startDate])
@@ -1149,4 +1176,104 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@index([resourceType, resourceId])
+}
+
+// =============================================================================
+// MISSION HUB - Chat dédié à une mission spécifique
+// =============================================================================
+
+model MissionMessage {
+  id          String             @id @default(cuid())
+  
+  missionId   String
+  mission     ReliefMission      @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  senderId    String
+  sender      User               @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  
+  // Contenu
+  content     String             @db.Text
+  type        MissionMessageType @default(TEXT)
+  
+  // Timestamps
+  createdAt   DateTime           @default(now())
+  
+  @@index([missionId])
+  @@index([senderId])
+  @@index([createdAt])
+}
+
+// =============================================================================
+// MISSION HUB - Consignes client pour le talent
+// =============================================================================
+
+model MissionInstruction {
+  id             String        @id @default(cuid())
+  
+  missionId      String        @unique
+  mission        ReliefMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  // Contenu des consignes
+  content        String        @db.Text
+  checklist      Json          @default("[]")  // [{id, text, completed}]
+  
+  // Validation par le talent
+  isAcknowledged Boolean       @default(false)
+  acknowledgedAt DateTime?
+  
+  // Timestamps
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+// =============================================================================
+// MISSION HUB - Bilan de fin de mission
+// =============================================================================
+
+model MissionReport {
+  id          String        @id @default(cuid())
+  
+  missionId   String        @unique
+  mission     ReliefMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  talentId    String
+  talent      User          @relation("TalentMissionReports", fields: [talentId], references: [id], onDelete: Cascade)
+  
+  // Contenu du rapport
+  content     String        @db.Text
+  incidents   String?       @db.Text
+  hoursWorked Float?
+  
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  
+  @@index([talentId])
+}
+
+// =============================================================================
+// MISSION HUB - Historique détaillé de la mission (Timeline)
+// =============================================================================
+
+model MissionTimelineEvent {
+  id          String                    @id @default(cuid())
+  
+  missionId   String
+  mission     ReliefMission             @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  
+  // Utilisateur ayant déclenché l'événement (optionnel pour events système)
+  userId      String?
+  user        User?                     @relation(fields: [userId], references: [id])
+  
+  // Type d'événement
+  type        MissionTimelineEventType
+  
+  // Métadonnées additionnelles
+  metadata    Json?
+  
+  // Timestamps
+  createdAt   DateTime                  @default(now())
+  
+  @@index([missionId])
+  @@index([type])
+  @@index([createdAt])
 }

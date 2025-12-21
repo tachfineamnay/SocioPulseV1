@@ -5,21 +5,29 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
     Home,
-    Search,
     Siren,
     Calendar,
     User,
     Plus,
-    Shield
+    Shield,
+    ClipboardList
 } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
 import { CreateActionModal } from '@/components/create/CreateActionModal';
 
-const NAV_ITEMS = [
+interface NavItem {
+    href: string;
+    label: string;
+    icon: React.ElementType;
+    highlight?: boolean;
+    badge?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
     { href: '/wall', label: 'Accueil', icon: Home },
-    { href: '/search', label: 'Recherche', icon: Search },
-    { href: '/dashboard/relief', label: 'SOS', icon: Siren, highlight: true },
     { href: '/bookings', label: 'Agenda', icon: Calendar },
+    { href: '/dashboard/tracking', label: 'Suivi', icon: ClipboardList, highlight: true, badge: true },
+    { href: '/dashboard/relief', label: 'SOS', icon: Siren },
     { href: '/profile', label: 'Profil', icon: User },
 ];
 
@@ -27,20 +35,23 @@ export function MobileBottomNav() {
     const pathname = usePathname();
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
-    const canPublish = Boolean(user && (user.role === 'CLIENT' || user.role === 'EXTRA'));
+    const canPublish = Boolean(user && (user.role === 'CLIENT' || user.role === 'TALENT'));
+
+    // TODO: Fetch from API - /missions/active/count
+    const activeMissionCount = 0;
 
     // Hide on auth pages and onboarding
     if (pathname.startsWith('/auth/') || pathname.startsWith('/onboarding')) {
         return null;
     }
 
-    // Build nav items - replace Search with Admin for admin users
+    // Build nav items - replace Agenda with Admin for admin users
     const navItems = isAdmin
-        ? NAV_ITEMS.map(item => 
-            item.href === '/search' 
+        ? NAV_ITEMS.map(item =>
+            item.href === '/bookings'
                 ? { href: '/admin', label: 'Admin', icon: Shield }
                 : item
-          )
+        )
         : NAV_ITEMS;
 
     // Hide on desktop
@@ -74,7 +85,9 @@ export function MobileBottomNav() {
                         const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
                         const isHighlight = 'highlight' in item && item.highlight;
                         const isAdminItem = item.href === '/admin';
+                        const showBadge = 'badge' in item && item.badge && activeMissionCount > 0;
 
+                        // Center highlighted item (Suivi)
                         if (isHighlight) {
                             return (
                                 <Link
@@ -84,11 +97,21 @@ export function MobileBottomNav() {
                                 >
                                     <motion.div
                                         whileTap={{ scale: 0.9 }}
-                                        className="w-14 h-14 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg shadow-rose-500/30"
+                                        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg ${isActive
+                                                ? 'bg-gradient-to-br from-indigo-600 to-teal-500 shadow-indigo-500/30'
+                                                : 'bg-gradient-to-br from-indigo-500 to-teal-400 shadow-indigo-400/20'
+                                            }`}
                                     >
                                         <Icon className="w-6 h-6 text-white" />
+                                        {/* Badge for active missions */}
+                                        {showBadge && (
+                                            <span className="absolute -top-1 -right-1 h-5 w-5 bg-rose-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                                                {activeMissionCount > 9 ? '9+' : activeMissionCount}
+                                            </span>
+                                        )}
                                     </motion.div>
-                                    <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-medium text-rose-600">
+                                    <span className={`absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-medium ${isActive ? 'text-indigo-600' : 'text-indigo-500'
+                                        }`}>
                                         {item.label}
                                     </span>
                                 </Link>
@@ -104,19 +127,19 @@ export function MobileBottomNav() {
                                 <motion.div
                                     whileTap={{ scale: 0.9 }}
                                     className={`
-                    p-2 rounded-xl transition-colors
-                    ${isActive ? (isAdminItem ? 'bg-purple-100' : 'bg-brand-100') : ''}
-                  `}
+                                        p-2 rounded-xl transition-colors
+                                        ${isActive ? (isAdminItem ? 'bg-purple-100' : 'bg-brand-100') : ''}
+                                    `}
                                 >
                                     <Icon className={`
-                    w-5 h-5 transition-colors
-                    ${isActive ? (isAdminItem ? 'text-purple-600' : 'text-brand-600') : 'text-gray-400'}
-                  `} />
+                                        w-5 h-5 transition-colors
+                                        ${isActive ? (isAdminItem ? 'text-purple-600' : 'text-brand-600') : 'text-gray-400'}
+                                    `} />
                                 </motion.div>
                                 <span className={`
-                  text-[10px] font-medium transition-colors
-                  ${isActive ? (isAdminItem ? 'text-purple-600' : 'text-brand-600') : 'text-gray-400'}
-                `}>
+                                    text-[10px] font-medium transition-colors
+                                    ${isActive ? (isAdminItem ? 'text-purple-600' : 'text-brand-600') : 'text-gray-400'}
+                                `}>
                                     {item.label}
                                 </span>
                             </Link>
