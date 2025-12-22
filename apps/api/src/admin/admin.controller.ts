@@ -53,7 +53,7 @@ export class AdminController {
 
     @Get('users')
     @ApiOperation({ summary: 'Liste tous les utilisateurs avec pagination (CRM)' })
-    @ApiQuery({ name: 'role', required: false, enum: ['CLIENT', 'EXTRA', 'ADMIN'] })
+    @ApiQuery({ name: 'role', required: false, enum: ['CLIENT', 'TALENT', 'ADMIN'] })
     @ApiQuery({ name: 'status', required: false, enum: ['PENDING', 'VERIFIED', 'SUSPENDED', 'BANNED'] })
     @ApiQuery({ name: 'clientType', required: false, enum: ['PARTICULAR', 'ESTABLISHMENT'] })
     @ApiQuery({ name: 'isVerified', required: false, type: Boolean })

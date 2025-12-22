@@ -131,7 +131,7 @@ export function WallFeedClient({
     const resolvedInitialData = Array.isArray(initialData) ? initialData : Array.isArray(initialFeed) ? initialFeed : [];
 
     const { user } = useAuth();
-    const canPublish = Boolean(user && (user.role === 'CLIENT' || user.role === 'EXTRA'));
+    const canPublish = Boolean(user && (user.role === 'CLIENT' || user.role === 'TALENT'));
 
     const { feed, isLoading, isLoadingMore, hasMore, loadMore, searchTerm, setSearchTerm } = useWallFeed({
         initialItems: resolvedInitialData,

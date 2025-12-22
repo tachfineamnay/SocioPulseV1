@@ -242,8 +242,8 @@ async function main() {
     clients.push(client);
   }
 
-  console.log('🧑‍⚕️ Creating extras...');
-  const extrasData = [
+  console.log('🧑‍⚕️ Creating talents...');
+  const talentsData = [
     {
       email: 'jean.dupont@exemple.fr',
       firstName: 'Jean',
@@ -414,14 +414,14 @@ async function main() {
     },
   ];
 
-  const extras: any[] = [];
-  for (let index = 0; index < extrasData.length; index += 1) {
-    const data = extrasData[index];
-    const extra = await prisma.user.create({
+  const talents: any[] = [];
+  for (let index = 0; index < talentsData.length; index += 1) {
+    const data = talentsData[index];
+    const talent = await prisma.user.create({
       data: {
         email: data.email,
         passwordHash,
-        role: 'EXTRA',
+        role: 'TALENT',
         status: UserStatus.VERIFIED,
         stripeAccountId: `acct_seed_${index + 1}`,
         stripeOnboarded: true,
@@ -447,7 +447,7 @@ async function main() {
       },
       include: { profile: true },
     });
-    extras.push(extra);
+    talents.push(talent);
   }
 
   console.log('🛍️ Creating services (workshop + visio)...');
@@ -530,9 +530,9 @@ async function main() {
   }> = [];
 
   let serviceCounter = 1;
-  for (let index = 0; index < extras.length; index += 1) {
-    const extra = extras[index];
-    const profile = extra.profile;
+  for (let index = 0; index < talents.length; index += 1) {
+    const talent = talents[index];
+    const profile = talent.profile;
     if (!profile) continue;
 
     const workshop = workshopTemplates[index % workshopTemplates.length];
@@ -729,9 +729,9 @@ async function main() {
     },
   ];
 
-  for (let index = 0; index < extras.length; index += 1) {
-    const extra = extras[index];
-    const profile = extra.profile;
+  for (let index = 0; index < talents.length; index += 1) {
+    const talent = talents[index];
+    const profile = talent.profile;
     if (!profile) continue;
 
     const template = offerTemplates[index % offerTemplates.length];
@@ -746,7 +746,7 @@ async function main() {
 
     await prisma.post.create({
       data: {
-        authorId: extra.id,
+        authorId: talent.id,
         type: PostType.OFFER,
         title: `${template.title} · ${profile.headline || 'Profil'}`,
         content: template.content,
@@ -808,7 +808,7 @@ async function main() {
   console.log('📝 Creating a few social posts (experience/news)...');
   const socialPosts = [
     {
-      authorId: extras[0]?.id,
+      authorId: talents[0]?.id,
       category: PostCategory.EXPERIENCE,
       title: "Retour de mission : une équipe au top",
       content:
@@ -992,7 +992,7 @@ async function main() {
   const completedMissions = [
     {
       clientIndex: 0,
-      extraIndex: 0,
+      talentIndex: 0,
       title: 'Renfort IDE Nuit - EHPAD Les Jardins',
       jobTitle: 'Infirmier',
       completedHoursAgo: 2,
@@ -1001,7 +1001,7 @@ async function main() {
     },
     {
       clientIndex: 1,
-      extraIndex: 2,
+      talentIndex: 2,
       title: 'Éducateur TSA - IME L\'Espoir',
       jobTitle: 'Éducateur spécialisé',
       completedHoursAgo: 5,
@@ -1010,7 +1010,7 @@ async function main() {
     },
     {
       clientIndex: 2,
-      extraIndex: 7,
+      talentIndex: 7,
       title: 'Renfort EJE - Crèche Les Petits Pas',
       jobTitle: 'EJE',
       completedHoursAgo: 8,
@@ -1019,7 +1019,7 @@ async function main() {
     },
     {
       clientIndex: 3,
-      extraIndex: 8,
+      talentIndex: 8,
       title: 'Veille éducative - MECS Horizon',
       jobTitle: 'Éducateur',
       completedHoursAgo: 12,
@@ -1028,7 +1028,7 @@ async function main() {
     },
     {
       clientIndex: 4,
-      extraIndex: 4,
+      talentIndex: 4,
       title: 'Atelier motricité - Foyer Les Amandiers',
       jobTitle: 'Psychomotricien',
       completedHoursAgo: 24,
@@ -1039,9 +1039,9 @@ async function main() {
 
   for (const mission of completedMissions) {
     const client = clients[mission.clientIndex];
-    const extra = extras[mission.extraIndex];
+    const talent = talents[mission.talentIndex];
     const est = client?.establishment;
-    if (!client || !extra || !est) continue;
+    if (!client || !talent || !est) continue;
 
     const endDate = hoursAgo(mission.completedHoursAgo);
     const startDate = hoursAgo(mission.completedHoursAgo + mission.durationHours);
@@ -1050,9 +1050,9 @@ async function main() {
     await prisma.reliefMission.create({
       data: {
         clientId: client.id,
-        assignedExtraId: extra.id,
+        assignedTalentId: talent.id,
         title: mission.title,
-        description: `Mission complétée avec succès sur Sociopulse par ${extra.profile?.firstName} ${extra.profile?.lastName}.`,
+        description: `Mission complétée avec succès sur Sociopulse par ${talent.profile?.firstName} ${talent.profile?.lastName}.`,
         jobTitle: mission.jobTitle,
         urgencyLevel: MissionUrgency.HIGH,
         status: MissionStatus.COMPLETED,

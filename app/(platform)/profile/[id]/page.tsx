@@ -9,21 +9,21 @@ const MOCK_PROFILES: Record<string, Partial<UserProfileData>> = {
     '1': {
         firstName: 'Marie',
         lastName: 'Dupont',
-        role: 'EXTRA',
+        role: 'TALENT',
         headline: 'Éducatrice spécialisée • 10 ans d\'expérience',
         city: 'Lyon 3e'
     },
     '2': {
         firstName: 'Thomas',
         lastName: 'Martin',
-        role: 'EXTRA',
+        role: 'TALENT',
         headline: 'Coach Sportif Adapté',
         city: 'Toulouse'
     },
     '3': {
         firstName: 'Sophie',
         lastName: 'Laurent',
-        role: 'EXTRA',
+        role: 'TALENT',
         headline: 'Musicothérapeute certifiée',
         city: 'Paris 15e'
     }
@@ -38,7 +38,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
     const profileBase = MOCK_PROFILES[id] || {
         firstName: 'Utilisateur',
         lastName: 'Inconnu',
-        role: 'EXTRA',
+        role: 'TALENT',
         headline: 'Profil utilisateur',
         city: 'Non renseigné'
     };
@@ -56,7 +56,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
         city: profileBase.city,
         memberSince: new Date('2023-01-01'),
         isVerified: true,
-        role: profileBase.role as 'EXTRA' | 'CLIENT',
+        role: profileBase.role as 'TALENT' | 'CLIENT',
         stats: {
             averageRating: 4.8,
             totalReviews: 12,
@@ -67,7 +67,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
     };
 
     const aboutData: ProfileAboutData = {
-        bio: `${profileBase.firstName} est un professionnel engagé sur Les Extras.`,
+        bio: `${profileBase.firstName} est un professionnel engagé sur Les TALENTs.`,
         specialties: ['Accompagnement', 'Soin', 'Animation'],
         diplomas: [
             { name: 'Diplôme certifié', year: 2020 }
@@ -100,7 +100,7 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: `${mockProfile.firstName} ${mockProfile.lastName} - Les Extras`,
+                    title: `${mockProfile.firstName} ${mockProfile.lastName} - Les TALENTs`,
                     url: window.location.href,
                 });
             } catch (err) { }
@@ -136,3 +136,4 @@ export default function PublicProfilePage({ params }: { params: { id: string } }
         </div>
     );
 }
+

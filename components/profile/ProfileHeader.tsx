@@ -26,8 +26,8 @@ export interface ProfileHeaderProps {
     memberSince?: Date | string;
     /** Whether the user is verified */
     isVerified?: boolean;
-    /** User role: EXTRA (freelance) or CLIENT (establishment) */
-    role: 'EXTRA' | 'CLIENT' | 'ADMIN';
+    /** User role: TALENT (freelance) or CLIENT (establishment) */
+    role: 'TALENT' | 'CLIENT' | 'ADMIN';
     /** Whether this is the current user's own profile */
     isOwnProfile?: boolean;
     /** Callback when edit cover is clicked */
@@ -60,7 +60,7 @@ export function ProfileHeader({
         })
         : null;
 
-    const roleLabel = role === 'EXTRA' ? 'Professionnel' : role === 'CLIENT' ? 'Établissement' : 'Admin';
+    const roleLabel = role === 'TALENT' ? 'Professionnel' : role === 'CLIENT' ? 'Établissement' : 'Admin';
 
     return (
         <div className="relative">
@@ -212,3 +212,4 @@ export function ProfileHeader({
         </div>
     );
 }
+

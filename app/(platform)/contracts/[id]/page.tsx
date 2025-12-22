@@ -42,14 +42,14 @@ interface ContractDetail {
     endDate?: string;
     deadlines?: { label: string; date: string; completed: boolean }[];
     signatureUrl?: string;
-    extraSignedAt?: string;
-    extraSignedIp?: string;
+    TALENTSignedAt?: string;
+    TALENTSignedIp?: string;
     clientSignature?: string;
     clientSignedAt?: string;
     clientSignedIp?: string;
     pdfUrl?: string;
     createdAt: string;
-    extra: {
+    TALENT: {
         id: string;
         email: string;
         profile?: { firstName: string; lastName: string; avatarUrl?: string };
@@ -268,7 +268,7 @@ export default function ContractDetailPage() {
     const [isSigning, setIsSigning] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
-    const [userRole, setUserRole] = useState<'EXTRA' | 'CLIENT'>('CLIENT');
+    const [userRole, setUserRole] = useState<'TALENT' | 'CLIENT'>('CLIENT');
 
     useEffect(() => {
         fetchContract();
@@ -288,7 +288,7 @@ export default function ContractDetailPage() {
             if (meRes.ok) {
                 const user = await meRes.json();
                 setUserId(user.id);
-                setUserRole(user.role === 'EXTRA' ? 'EXTRA' : 'CLIENT');
+                setUserRole(user.role === 'TALENT' ? 'TALENT' : 'CLIENT');
             }
 
             // Get contract
@@ -331,9 +331,9 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
                 platformFee: 4000,
                 startDate: new Date(Date.now() + 86400000).toISOString(),
                 endDate: new Date(Date.now() + 259200000).toISOString(),
-                extraSignedAt: new Date().toISOString(),
+                TALENTSignedAt: new Date().toISOString(),
                 createdAt: new Date(Date.now() - 86400000).toISOString(),
-                extra: {
+                TALENT: {
                     id: 'e1',
                     email: 'marie.dupont@email.com',
                     profile: { firstName: 'Marie', lastName: 'Dupont' },
@@ -391,8 +391,8 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
     const needsToSign =
         contract &&
         ((userRole === 'CLIENT' && contract.status === 'PENDING_CLIENT') ||
-            (userRole === 'EXTRA' && contract.status === 'PENDING_EXTRA') ||
-            (contract.status === 'PENDING' && userRole === 'EXTRA' && !contract.extraSignedAt));
+            (userRole === 'TALENT' && contract.status === 'PENDING_TALENT') ||
+            (contract.status === 'PENDING' && userRole === 'TALENT' && !contract.TALENTSignedAt));
 
     const isSigned =
         contract &&
@@ -420,9 +420,9 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
         );
     }
 
-    const extraName = contract.extra.profile
-        ? `${contract.extra.profile.firstName} ${contract.extra.profile.lastName}`
-        : contract.extra.email;
+    const TALENTName = contract.TALENT.profile
+        ? `${contract.TALENT.profile.firstName} ${contract.TALENT.profile.lastName}`
+        : contract.TALENT.email;
 
     const clientName = contract.client?.establishment?.name ||
         (contract.client?.profile ? `${contract.client.profile.firstName} ${contract.client.profile.lastName}` : contract.client?.email);
@@ -503,7 +503,7 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
                         <div>
                             <p className="font-semibold">Contrat signé</p>
                             <p className="text-sm opacity-90">
-                                Signé le {contract.clientSignedAt ? formatDateTime(contract.clientSignedAt) : formatDateTime(contract.extraSignedAt!)}
+                                Signé le {contract.clientSignedAt ? formatDateTime(contract.clientSignedAt) : formatDateTime(contract.TALENTSignedAt!)}
                             </p>
                         </div>
                     </motion.div>
@@ -513,21 +513,21 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
                 <div className="bg-white rounded-2xl border border-slate-100 p-6">
                     <h2 className="font-semibold text-slate-900 mb-4">Parties au contrat</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Extra */}
+                        {/* TALENT */}
                         <div className="p-4 bg-purple-50 rounded-xl">
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
                                     <User className="w-5 h-5 text-purple-600" />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-slate-900">{extraName}</p>
-                                    <p className="text-xs text-slate-500">Prestataire (Extra)</p>
+                                    <p className="font-medium text-slate-900">{TALENTName}</p>
+                                    <p className="text-xs text-slate-500">Prestataire (TALENT)</p>
                                 </div>
                             </div>
-                            {contract.extraSignedAt && (
+                            {contract.TALENTSignedAt && (
                                 <div className="flex items-center gap-2 mt-3 text-sm text-green-600">
                                     <CheckCircle className="w-4 h-4" />
-                                    Signé le {formatDateTime(contract.extraSignedAt)}
+                                    Signé le {formatDateTime(contract.TALENTSignedAt)}
                                 </div>
                             )}
                         </div>
@@ -658,12 +658,12 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
                                     <p className="text-sm text-slate-500 mb-2">Signature du prestataire</p>
                                     <img
                                         src={contract.signatureUrl}
-                                        alt="Signature Extra"
+                                        alt="Signature TALENT"
                                         className="max-h-20 bg-white rounded border border-slate-200 p-2"
                                     />
-                                    {contract.extraSignedAt && (
+                                    {contract.TALENTSignedAt && (
                                         <p className="text-xs text-slate-400 mt-2">
-                                            {formatDateTime(contract.extraSignedAt)}
+                                            {formatDateTime(contract.TALENTSignedAt)}
                                         </p>
                                     )}
                                 </div>
@@ -690,3 +690,4 @@ Le Prestataire déclare être titulaire d'une assurance responsabilité civile p
         </div>
     );
 }
+

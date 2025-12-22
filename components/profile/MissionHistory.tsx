@@ -21,7 +21,7 @@ export type MissionHistoryStatus =
 export interface MissionHistoryItem {
     id: string;
     title: string;
-    /** Establishment or Extra name */
+    /** Establishment or TALENT name */
     partnerName: string;
     /** City/Location */
     city?: string;
@@ -37,7 +37,7 @@ export interface MissionHistoryProps {
     /** List of past missions */
     missions: MissionHistoryItem[];
     /** User role to determine label variations */
-    role: 'EXTRA' | 'CLIENT' | 'ADMIN';
+    role: 'TALENT' | 'CLIENT' | 'ADMIN';
     /** User's first name for personalization */
     userName?: string;
     /** Whether viewing own profile */
@@ -49,32 +49,32 @@ export interface MissionHistoryProps {
 }
 
 const statusConfig: Record<MissionHistoryStatus, {
-    label: { EXTRA: string; CLIENT: string; ADMIN: string };
+    label: { TALENT: string; CLIENT: string; ADMIN: string };
     className: string;
     icon: typeof CheckCircle2;
 }> = {
     COMPLETED: {
-        label: { EXTRA: 'Mission réussie', CLIENT: 'Terminée', ADMIN: 'Terminée' },
+        label: { TALENT: 'Mission réussie', CLIENT: 'Terminée', ADMIN: 'Terminée' },
         className: 'bg-green-100 text-green-700 border-green-200',
         icon: CheckCircle2,
     },
     IN_PROGRESS: {
-        label: { EXTRA: 'En cours', CLIENT: 'En cours', ADMIN: 'En cours' },
+        label: { TALENT: 'En cours', CLIENT: 'En cours', ADMIN: 'En cours' },
         className: 'bg-blue-100 text-blue-700 border-blue-200',
         icon: Clock,
     },
     CANCELLED: {
-        label: { EXTRA: 'Annulée', CLIENT: 'Annulée', ADMIN: 'Annulée' },
+        label: { TALENT: 'Annulée', CLIENT: 'Annulée', ADMIN: 'Annulée' },
         className: 'bg-red-100 text-red-700 border-red-200',
         icon: XCircle,
     },
     FILLED: {
-        label: { EXTRA: 'Pourvue', CLIENT: 'Mission pourvue', ADMIN: 'Pourvue' },
+        label: { TALENT: 'Pourvue', CLIENT: 'Mission pourvue', ADMIN: 'Pourvue' },
         className: 'bg-slate-100 text-slate-600 border-slate-200',
         icon: CheckCircle2,
     },
     OPEN: {
-        label: { EXTRA: 'Ouverte', CLIENT: 'Recrutement', ADMIN: 'Ouverte' },
+        label: { TALENT: 'Ouverte', CLIENT: 'Recrutement', ADMIN: 'Ouverte' },
         className: 'bg-amber-100 text-amber-700 border-amber-200',
         icon: Clock,
     },
@@ -128,7 +128,7 @@ export function MissionHistory({
                 customMessage={emptyMessage}
                 onAction={onEmptyAction}
                 actionLabel={isOwnProfile
-                    ? (role === 'EXTRA' ? 'Trouver des missions' : 'Publier une mission')
+                    ? (role === 'TALENT' ? 'Trouver des missions' : 'Publier une mission')
                     : 'Collaborer maintenant'
                 }
             />
@@ -204,7 +204,7 @@ export function MissionHistory({
 
                                     {/* Status Pill */}
                                     <div className="flex items-center gap-2">
-                                        {mission.amount && role === 'EXTRA' && (
+                                        {mission.amount && role === 'TALENT' && (
                                             <span className="text-sm font-semibold text-slate-700">
                                                 +{mission.amount}€
                                             </span>
@@ -235,3 +235,4 @@ export function MissionHistory({
         </motion.div>
     );
 }
+

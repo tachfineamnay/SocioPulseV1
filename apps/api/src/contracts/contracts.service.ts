@@ -22,12 +22,12 @@ export class ContractsService {
         const contracts = await this.prisma.contract.findMany({
             where: {
                 OR: [
-                    { extraId: userId },
+                    { talentId: userId },
                     { clientId: userId },
                 ],
             },
             include: {
-                extra: {
+                talent: {
                     select: {
                         id: true,
                         email: true,
@@ -63,7 +63,7 @@ export class ContractsService {
         const contract = await this.prisma.contract.findUnique({
             where: { id: contractId },
             include: {
-                extra: {
+                talent: {
                     select: {
                         id: true,
                         email: true,
@@ -109,7 +109,7 @@ export class ContractsService {
     /**
      * Sign contract
      */
-    async signContract(extraId: string, dto: SignContractDto) {
+    async signContract(talentId: string, dto: SignContractDto) {
         try {
             const mission = await this.prisma.reliefMission.findUnique({
                 where: { id: dto.missionId },
@@ -138,7 +138,7 @@ export class ContractsService {
             const contract = await this.prisma.contract.upsert({
                 where: { missionId: dto.missionId },
                 update: {
-                    extraId,
+                    talentId,
                     content,
                     signatureUrl,
                     status: 'SIGNED',
@@ -149,7 +149,7 @@ export class ContractsService {
                     reference,
                     missionId: dto.missionId,
                     clientId: mission.clientId,
-                    extraId,
+                    talentId,
                     title: mission.title,
                     content,
                     signatureUrl,
@@ -165,24 +165,26 @@ export class ContractsService {
             await this.prisma.reliefMission.update({
                 where: { id: dto.missionId },
                 data: {
-                    assignedExtraId: mission.assignedExtraId || extraId,
+                    assignedTalentId: mission.assignedTalentId || talentId,
                     status: 'ASSIGNED',
                 },
             });
 
-            this.logger.log(`Contract signed for mission ${dto.missionId} by ${extraId}`);
+            this.logger.log(`Contract signed for mission ${dto.missionId} by ${talentId}`);
 
             // Generate PDF after signing
             try {
                 await this.generatePdf(contract.id);
             } catch (pdfError) {
-                this.logger.error(`PDF generation failed: ${pdfError.message}`);
+                const message = pdfError instanceof Error ? pdfError.message : String(pdfError);
+                this.logger.error(`PDF generation failed: ${message}`);
                 // Don't fail the whole signing process if PDF generation fails
             }
 
             return contract;
         } catch (error) {
-            this.logger.error(`signContract failed: ${error.message}`);
+            const message = error instanceof Error ? error.message : String(error);
+            this.logger.error(`signContract failed: ${message}`);
             if (error instanceof NotFoundException || error instanceof BadRequestException) {
                 throw error;
             }
@@ -197,7 +199,7 @@ export class ContractsService {
         const contract = await this.prisma.contract.findUnique({
             where: { id: contractId },
             include: {
-                extra: {
+                talent: {
                     select: {
                         email: true,
                         profile: { select: { firstName: true, lastName: true } },
@@ -292,10 +294,10 @@ export class ContractsService {
 
         y -= 25;
 
-        // Extra (Prestataire)
-        const extraName = contract.extra?.profile
-            ? `${contract.extra.profile.firstName} ${contract.extra.profile.lastName}`
-            : contract.extra?.email || 'N/A';
+        // Talent (Prestataire)
+        const talentName = contract.talent?.profile
+            ? `${contract.talent.profile.firstName} ${contract.talent.profile.lastName}`
+            : contract.talent?.email || 'N/A';
 
         page.drawText('LE PRESTATAIRE :', {
             x: 50,
@@ -306,7 +308,7 @@ export class ContractsService {
         });
 
         y -= 15;
-        page.drawText(extraName, {
+        page.drawText(talentName, {
             x: 50,
             y,
             size: 11,
@@ -529,7 +531,8 @@ export class ContractsService {
 
                 y -= sigHeight + 10;
             } catch (sigError) {
-                this.logger.warn(`Could not embed signature image: ${sigError.message}`);
+                const message = sigError instanceof Error ? sigError.message : String(sigError);
+                this.logger.warn(`Could not embed signature image: ${message}`);
                 page.drawText('[Signature électronique enregistrée]', {
                     x: 50,
                     y,
@@ -593,7 +596,7 @@ export class ContractsService {
                 id: true,
                 reference: true,
                 pdfUrl: true,
-                extraId: true,
+                talentId: true,
                 clientId: true,
                 status: true,
             },
@@ -604,7 +607,7 @@ export class ContractsService {
         }
 
         // Check access rights
-        if (contract.extraId !== userId && contract.clientId !== userId) {
+        if (contract.talentId !== userId && contract.clientId !== userId) {
             throw new BadRequestException('Accès non autorisé à ce contrat');
         }
 

@@ -38,11 +38,11 @@ export default function NewOfferPage() {
     const [galleryCsv, setGalleryCsv] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const canAccess = useMemo(() => user?.role === 'EXTRA', [user?.role]);
+    const canAccess = useMemo(() => user?.role === 'TALENT', [user?.role]);
 
     useEffect(() => {
-        if (!isLoading && user && user.role !== 'EXTRA') {
-            addToast({ type: 'warning', message: 'Création d’offre réservée aux Extras.' });
+        if (!isLoading && user && user.role !== 'TALENT') {
+            addToast({ type: 'warning', message: 'Création d’offre réservée aux TALENTs.' });
         }
     }, [addToast, isLoading, user]);
 
@@ -122,7 +122,7 @@ export default function NewOfferPage() {
             <div className="max-w-3xl mx-auto px-4 py-10 space-y-4">
                 <div className="card-surface p-6">
                     <h1 className="text-xl font-semibold text-slate-900">Créer une offre</h1>
-                    <p className="mt-2 text-sm text-slate-600">Cette action est réservée aux profils EXTRA.</p>
+                    <p className="mt-2 text-sm text-slate-600">Cette action est réservée aux profils TALENT.</p>
                     <div className="mt-5">
                         <Link href="/wall" className="btn-secondary">Retour au Wall</Link>
                     </div>
@@ -216,4 +216,5 @@ export default function NewOfferPage() {
         </div>
     );
 }
+
 

@@ -37,7 +37,7 @@ export function MobileBottomNav() {
     const { user } = useAuth();
     const { activeMissionsCount } = useSocket();
     const isAdmin = user?.role === 'ADMIN';
-    const canPublish = Boolean(user && (user.role === 'CLIENT' || user.role === 'EXTRA'));
+    const canPublish = Boolean(user && (user.role === 'CLIENT' || user.role === 'TALENT'));
 
     // Use real-time count from socket, fallback to 0
     const activeMissionCount = activeMissionsCount;
@@ -152,3 +152,4 @@ export function MobileBottomNav() {
         </nav>
     );
 }
+

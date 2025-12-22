@@ -40,7 +40,7 @@ interface Establishment {
 interface UserData {
     id: string;
     email: string;
-    role: 'CLIENT' | 'EXTRA' | 'ADMIN';
+    role: 'CLIENT' | 'TALENT' | 'ADMIN';
     status: 'PENDING' | 'VERIFIED' | 'SUSPENDED' | 'BANNED';
     clientType?: 'PARTICULAR' | 'ESTABLISHMENT';
     isVerified: boolean;
@@ -69,7 +69,7 @@ interface PaginatedResponse {
 function RoleBadge({ role, clientType }: { role: string; clientType?: string }) {
     const config = {
         ADMIN: { label: 'Admin', bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-200' },
-        EXTRA: { label: 'Extra', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+        TALENT: { label: 'Talent', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
         CLIENT: clientType === 'ESTABLISHMENT'
             ? { label: 'Établissement', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' }
             : { label: 'Particulier', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
@@ -286,7 +286,7 @@ export default function AdminUsersPage() {
                             </div>
                             <div>
                                 <p className="text-2xl font-bold text-slate-900">—</p>
-                                <p className="text-xs text-slate-500">Extras</p>
+                                <p className="text-xs text-slate-500">Talents</p>
                             </div>
                         </div>
                     </div>
@@ -337,7 +337,7 @@ export default function AdminUsersPage() {
                                 className="appearance-none pl-4 pr-10 py-2.5 border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all text-sm min-w-[160px]"
                             >
                                 <option value="">Tous les rôles</option>
-                                <option value="EXTRA">Extras</option>
+                                <option value="TALENT">Talents</option>
                                 <option value="CLIENT">Clients</option>
                                 <option value="ADMIN">Admins</option>
                             </select>

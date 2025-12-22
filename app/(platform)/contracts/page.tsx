@@ -32,17 +32,17 @@ interface Contract {
     id: string;
     reference?: string;
     type: 'MISSION_SOS' | 'SERVICE_BOOKING' | 'FRAMEWORK';
-    status: 'DRAFT' | 'PENDING' | 'PENDING_CLIENT' | 'PENDING_EXTRA' | 'SIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'DISPUTED' | 'CANCELLED';
+    status: 'DRAFT' | 'PENDING' | 'PENDING_CLIENT' | 'PENDING_TALENT' | 'SIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'DISPUTED' | 'CANCELLED';
     title?: string;
     totalAmount?: number;
     startDate?: string;
     endDate?: string;
     signedAt?: string;
-    extraSignedAt?: string;
+    TALENTSignedAt?: string;
     clientSignedAt?: string;
     pdfUrl?: string;
     createdAt: string;
-    extra: {
+    TALENT: {
         id: string;
         email: string;
         profile?: {
@@ -72,7 +72,7 @@ interface Quote {
     total: number;
     validUntil: string;
     createdAt: string;
-    extra: {
+    TALENT: {
         id: string;
         profile?: { firstName: string; lastName: string };
     };
@@ -121,7 +121,7 @@ function ContractStatusBadge({ status }: { status: Contract['status'] }) {
         DRAFT: { bg: 'bg-slate-100', text: 'text-slate-600', icon: <FileText className="w-3.5 h-3.5" />, label: 'Brouillon' },
         PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', icon: <Clock className="w-3.5 h-3.5" />, label: 'En attente' },
         PENDING_CLIENT: { bg: 'bg-orange-100', text: 'text-orange-700', icon: <PenTool className="w-3.5 h-3.5" />, label: 'Votre signature requise' },
-        PENDING_EXTRA: { bg: 'bg-purple-100', text: 'text-purple-700', icon: <PenTool className="w-3.5 h-3.5" />, label: 'Signature Extra' },
+        PENDING_TALENT: { bg: 'bg-purple-100', text: 'text-purple-700', icon: <PenTool className="w-3.5 h-3.5" />, label: 'Signature TALENT' },
         SIGNED: { bg: 'bg-green-100', text: 'text-green-700', icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Signé' },
         IN_PROGRESS: { bg: 'bg-blue-100', text: 'text-blue-700', icon: <Clock className="w-3.5 h-3.5" />, label: 'En cours' },
         COMPLETED: { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: <FileCheck className="w-3.5 h-3.5" />, label: 'Terminé' },
@@ -162,8 +162,8 @@ function QuoteStatusBadge({ status }: { status: Quote['status'] }) {
 // CONTRACT CARD
 // ===========================================
 
-function ContractCard({ contract, userRole }: { contract: Contract; userRole: 'EXTRA' | 'CLIENT' }) {
-    const otherParty = userRole === 'EXTRA' ? contract.client : contract.extra;
+function ContractCard({ contract, userRole }: { contract: Contract; userRole: 'TALENT' | 'CLIENT' }) {
+    const otherParty = userRole === 'TALENT' ? contract.client : contract.TALENT;
     const establishmentName = otherParty && 'establishment' in otherParty
         ? (otherParty as any).establishment?.name
         : null;
@@ -174,7 +174,7 @@ function ContractCard({ contract, userRole }: { contract: Contract; userRole: 'E
 
     const needsAction =
         (userRole === 'CLIENT' && contract.status === 'PENDING_CLIENT') ||
-        (userRole === 'EXTRA' && contract.status === 'PENDING_EXTRA');
+        (userRole === 'TALENT' && contract.status === 'PENDING_TALENT');
 
     return (
         <motion.div
@@ -204,7 +204,7 @@ function ContractCard({ contract, userRole }: { contract: Contract; userRole: 'E
 
                 <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-xl">
                     <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                        {userRole === 'EXTRA' ? (
+                        {userRole === 'TALENT' ? (
                             <Building2 className="w-5 h-5 text-indigo-600" />
                         ) : (
                             <User className="w-5 h-5 text-indigo-600" />
@@ -212,7 +212,7 @@ function ContractCard({ contract, userRole }: { contract: Contract; userRole: 'E
                     </div>
                     <div>
                         <p className="font-medium text-slate-900">{otherName}</p>
-                        <p className="text-xs text-slate-500">{userRole === 'EXTRA' ? 'Client' : 'Extra'}</p>
+                        <p className="text-xs text-slate-500">{userRole === 'TALENT' ? 'Client' : 'TALENT'}</p>
                     </div>
                 </div>
 
@@ -270,8 +270,8 @@ function ContractCard({ contract, userRole }: { contract: Contract; userRole: 'E
 // QUOTE CARD
 // ===========================================
 
-function QuoteCard({ quote, userRole }: { quote: Quote; userRole: 'EXTRA' | 'CLIENT' }) {
-    const otherParty = userRole === 'EXTRA' ? quote.client : quote.extra;
+function QuoteCard({ quote, userRole }: { quote: Quote; userRole: 'TALENT' | 'CLIENT' }) {
+    const otherParty = userRole === 'TALENT' ? quote.client : quote.TALENT;
     const establishmentName = otherParty && 'establishment' in otherParty
         ? (otherParty as any).establishment?.name
         : null;
@@ -303,7 +303,7 @@ function QuoteCard({ quote, userRole }: { quote: Quote; userRole: 'EXTRA' | 'CLI
                 </div>
                 <div>
                     <p className="font-medium text-slate-900">{otherName}</p>
-                    <p className="text-xs text-slate-500">{userRole === 'EXTRA' ? 'Client' : 'Extra'}</p>
+                    <p className="text-xs text-slate-500">{userRole === 'TALENT' ? 'Client' : 'TALENT'}</p>
                 </div>
             </div>
 
@@ -350,7 +350,7 @@ export default function ContractsPage() {
     const [quotes, setQuotes] = useState<Quote[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<TabType>('contracts');
-    const [userRole, setUserRole] = useState<'EXTRA' | 'CLIENT'>('CLIENT');
+    const [userRole, setUserRole] = useState<'TALENT' | 'CLIENT'>('CLIENT');
 
     useEffect(() => {
         fetchData();
@@ -369,7 +369,7 @@ export default function ContractsPage() {
             const meRes = await fetch(`${getApiBase()}/auth/me`, { headers });
             if (meRes.ok) {
                 const user = await meRes.json();
-                setUserRole(user.role === 'EXTRA' ? 'EXTRA' : 'CLIENT');
+                setUserRole(user.role === 'TALENT' ? 'TALENT' : 'CLIENT');
             }
 
             // Fetch contracts
@@ -396,9 +396,9 @@ export default function ContractsPage() {
                     status: 'PENDING_CLIENT',
                     title: 'Remplacement aide-soignant weekend',
                     totalAmount: 32000,
-                    extraSignedAt: new Date().toISOString(),
+                    TALENTSignedAt: new Date().toISOString(),
                     createdAt: new Date(Date.now() - 86400000).toISOString(),
-                    extra: { id: 'e1', email: 'marie@email.com', profile: { firstName: 'Marie', lastName: 'Dupont' } },
+                    TALENT: { id: 'e1', email: 'marie@email.com', profile: { firstName: 'Marie', lastName: 'Dupont' } },
                     client: { id: 'c1', email: 'ehpad@email.com', establishment: { name: 'EHPAD Les Lilas' } },
                     mission: { id: 'm1', title: 'Remplacement weekend', city: 'Lyon' },
                 },
@@ -409,11 +409,11 @@ export default function ContractsPage() {
                     status: 'SIGNED',
                     title: 'Atelier art-thérapie mensuel',
                     totalAmount: 45000,
-                    extraSignedAt: new Date().toISOString(),
+                    TALENTSignedAt: new Date().toISOString(),
                     clientSignedAt: new Date().toISOString(),
                     pdfUrl: '/contracts/ctr2.pdf',
                     createdAt: new Date(Date.now() - 604800000).toISOString(),
-                    extra: { id: 'e2', email: 'jean@email.com', profile: { firstName: 'Jean', lastName: 'Martin' } },
+                    TALENT: { id: 'e2', email: 'jean@email.com', profile: { firstName: 'Jean', lastName: 'Martin' } },
                     client: { id: 'c1', email: 'ehpad@email.com', establishment: { name: 'EHPAD Les Lilas' } },
                 },
             ]);
@@ -426,7 +426,7 @@ export default function ContractsPage() {
                     total: 35000,
                     validUntil: new Date(Date.now() + 604800000).toISOString(),
                     createdAt: new Date(Date.now() - 172800000).toISOString(),
-                    extra: { id: 'e3', profile: { firstName: 'Sophie', lastName: 'Bernard' } },
+                    TALENT: { id: 'e3', profile: { firstName: 'Sophie', lastName: 'Bernard' } },
                     client: { id: 'c1', establishment: { name: 'EHPAD Les Lilas' } },
                 },
             ]);
@@ -437,7 +437,7 @@ export default function ContractsPage() {
 
     const pendingContracts = contracts.filter(c =>
         (userRole === 'CLIENT' && c.status === 'PENDING_CLIENT') ||
-        (userRole === 'EXTRA' && c.status === 'PENDING_EXTRA')
+        (userRole === 'TALENT' && c.status === 'PENDING_TALENT')
     );
 
     const pendingQuotes = quotes.filter(q =>
@@ -454,7 +454,7 @@ export default function ContractsPage() {
                             <h1 className="text-xl font-bold text-slate-900">Mes Contrats</h1>
                             <p className="text-sm text-slate-500">Gérez vos contrats et devis</p>
                         </div>
-                        {userRole === 'EXTRA' && (
+                        {userRole === 'TALENT' && (
                             <Link
                                 href="/quotes/new"
                                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 text-white font-medium hover:bg-brand-700 transition-colors"
@@ -542,7 +542,7 @@ export default function ContractsPage() {
                         <FileText className="w-16 h-16 text-slate-200 mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucun devis</h3>
                         <p className="text-slate-500">
-                            {userRole === 'EXTRA' ? 'Créez votre premier devis' : 'Vos devis apparaîtront ici'}
+                            {userRole === 'TALENT' ? 'Créez votre premier devis' : 'Vos devis apparaîtront ici'}
                         </p>
                     </div>
                 ) : (
@@ -556,3 +556,4 @@ export default function ContractsPage() {
         </div>
     );
 }
+

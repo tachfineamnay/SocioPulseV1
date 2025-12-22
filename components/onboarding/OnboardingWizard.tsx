@@ -129,7 +129,7 @@ export function OnboardingWizard() {
             const payload = {
                 email: data.email,
                 password: data.password,
-                role: userType === 'TALENT' ? 'EXTRA' : 'CLIENT',
+                role: userType === 'TALENT' ? 'TALENT' : 'CLIENT',
                 referrerCode: data.referrerCode?.trim() || undefined,
             };
 
@@ -293,7 +293,7 @@ export function OnboardingWizard() {
                                                 />
                                             </div>
                                             <div>
-                                                <h3 className="text-lg font-semibold text-slate-900">Je suis un Extra</h3>
+                                                <h3 className="text-lg font-semibold text-slate-900">Je suis un TALENT</h3>
                                                 <p className="text-sm text-slate-500">Professionnel du médico-social</p>
                                             </div>
                                         </div>
@@ -561,4 +561,5 @@ export function OnboardingWizard() {
         </div>
     );
 }
+
 

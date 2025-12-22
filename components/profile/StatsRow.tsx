@@ -13,7 +13,7 @@ export interface TrustStats {
     averageRating: number;
     /** Total number of reviews */
     totalReviews: number;
-    /** Total missions (completed for Extra, posted for Client) */
+    /** Total missions (completed for TALENT, posted for Client) */
     totalMissions: number;
     /** Reliability percentage (0-100) */
     reliabilityRate: number;
@@ -23,7 +23,7 @@ export interface TrustStats {
 
 export interface StatsRowProps extends TrustStats {
     /** User role: determines labels */
-    role: 'EXTRA' | 'CLIENT' | 'ADMIN';
+    role: 'TALENT' | 'CLIENT' | 'ADMIN';
 }
 
 const containerVariants = {
@@ -111,11 +111,11 @@ export function StatsRow({
     isAvailable,
 }: StatsRowProps) {
     // Role-specific labels
-    const missionsLabel = role === 'EXTRA' ? 'Missions' : 'Missions';
-    const missionsSubLabel = role === 'EXTRA' ? 'Réalisées' : 'Publiées';
-    const reliabilityLabel = role === 'EXTRA' ? 'Taux de présence' : 'Taux de réponse';
-    const availabilityLabel = role === 'EXTRA' ? 'Disponible' : 'Recrute';
-    const unavailabilityLabel = role === 'EXTRA' ? 'Indisponible' : 'Ne recrute pas';
+    const missionsLabel = role === 'TALENT' ? 'Missions' : 'Missions';
+    const missionsSubLabel = role === 'TALENT' ? 'Réalisées' : 'Publiées';
+    const reliabilityLabel = role === 'TALENT' ? 'Taux de présence' : 'Taux de réponse';
+    const availabilityLabel = role === 'TALENT' ? 'Disponible' : 'Recrute';
+    const unavailabilityLabel = role === 'TALENT' ? 'Indisponible' : 'Ne recrute pas';
 
     // Format rating
     const formattedRating = averageRating > 0 ? averageRating.toFixed(1) : '—';
@@ -196,7 +196,7 @@ export function StatsRow({
                         ${isAvailable ? 'text-green-600' : 'text-slate-400'}
                     `}>
                         {isAvailable 
-                            ? (role === 'EXTRA' ? 'Accepte les missions' : 'Recherche actifs')
+                            ? (role === 'TALENT' ? 'Accepte les missions' : 'Recherche actifs')
                             : 'Statut actuel'
                         }
                     </span>
@@ -205,3 +205,4 @@ export function StatsRow({
         </motion.div>
     );
 }
+

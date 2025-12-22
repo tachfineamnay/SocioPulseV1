@@ -19,7 +19,7 @@ datasource db {
 
 enum UserRole {
   CLIENT       // Établissement ou Particulier
-  TALENT       // Freelance professionnel (anciennement Extra)
+  TALENT       // Freelance professionnel
   ADMIN        // Administrateur plateforme
 }
 
@@ -108,7 +108,7 @@ enum ContractStatus {
   SIGNED
   DRAFT           // Brouillon
   PENDING_CLIENT  // En attente signature client
-  PENDING_EXTRA   // En attente signature extra
+  PENDING_TALENT  // En attente signature talent
   IN_PROGRESS     // En cours d'exécution
   COMPLETED       // Terminé
   DISPUTED        // Litige en cours
@@ -201,9 +201,9 @@ model User {
   notifications       Notification[]
   sentMessages        Message[]         @relation("SentMessages")
   receivedMessages    Message[]         @relation("ReceivedMessages")
-  contractsAsExtra    Contract[]        @relation("ContractExtra")
+  contractsAsTalent   Contract[]        @relation("ContractTalent")
   contractsAsClient   Contract[]        @relation("ContractClient")
-  quotesAsExtra       Quote[]           @relation("QuoteExtra")
+  quotesAsTalent      Quote[]           @relation("QuoteTalent")
   quotesAsClient      Quote[]           @relation("QuoteClient")
   documents           UserDocument[]
   tags                Tag[]
@@ -232,7 +232,7 @@ model User {
   @@index([referrerId])
   
   // Composite indexes for optimized queries
-  @@index([role, status])  // Find verified Extras quickly
+  @@index([role, status])  // Find verified Talents quickly
 }
 
 // =============================================================================
@@ -608,9 +608,9 @@ model Quote {
   reference       String      @unique  // Ex: "DEV-2024-001"
   version         Int         @default(1)
   
-  // Émetteur (Extra)
-  extraId         String
-  extra           User        @relation("QuoteExtra", fields: [extraId], references: [id])
+  // Émetteur (Talent)
+  talentId        String
+  talent          User        @relation("QuoteTalent", fields: [talentId], references: [id])
   
   // Destinataire (Client)
   clientId        String
@@ -659,7 +659,7 @@ model Quote {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   
-  @@index([extraId])
+  @@index([talentId])
   @@index([clientId])
   @@index([status])
   @@index([validUntil])
@@ -678,8 +678,8 @@ model Contract {
   type            ContractType    @default(MISSION_SOS)
   
   // Parties
-  extraId         String
-  extra           User            @relation("ContractExtra", fields: [extraId], references: [id], onDelete: Cascade)
+  talentId        String
+  talent          User            @relation("ContractTalent", fields: [talentId], references: [id], onDelete: Cascade)
   clientId        String?
   client          User?           @relation("ContractClient", fields: [clientId], references: [id])
   
@@ -731,7 +731,7 @@ model Contract {
   completedAt     DateTime?
   
   @@index([missionId])
-  @@index([extraId])
+  @@index([talentId])
   @@index([clientId])
   @@index([status])
   @@index([type])
@@ -748,8 +748,8 @@ model MissionApplication {
   missionId     String
   mission       ReliefMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
   
-  extraId       String
-  extra         User          @relation(fields: [extraId], references: [id], onDelete: Cascade)
+  talentId      String
+  talent        User          @relation(fields: [talentId], references: [id], onDelete: Cascade)
   
   // Candidature
   coverLetter   String?       @db.Text
@@ -762,9 +762,9 @@ model MissionApplication {
   createdAt     DateTime      @default(now())
   respondedAt   DateTime?
   
-  @@unique([missionId, extraId])
+  @@unique([missionId, talentId])
   @@index([missionId])
-  @@index([extraId])
+  @@index([talentId])
   @@index([status])
 }
 

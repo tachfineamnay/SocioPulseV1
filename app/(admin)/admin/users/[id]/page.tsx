@@ -63,7 +63,7 @@ interface UserDetail {
     id: string;
     email: string;
     phone?: string;
-    role: 'CLIENT' | 'EXTRA' | 'ADMIN';
+    role: 'CLIENT' | 'TALENT' | 'ADMIN';
     status: 'PENDING' | 'VERIFIED' | 'SUSPENDED' | 'BANNED';
     clientType?: 'PARTICULAR' | 'ESTABLISHMENT';
     isVerified: boolean;
@@ -92,7 +92,7 @@ interface UserDetail {
         bookingsAsClient: number;
         bookingsAsProvider: number;
         missionsAsClient: number;
-        missionsAsExtra: number;
+        missionsAsTalent: number;
     };
 }
 
@@ -565,11 +565,11 @@ export default function AdminUserDetailPage() {
                                         <div className="flex flex-wrap gap-2 mt-2">
                                             <span className={`
                                                 px-3 py-1 rounded-lg text-xs font-semibold
-                                                ${user.role === 'EXTRA' ? 'bg-purple-100 text-purple-700' :
+                                                ${user.role === 'TALENT' ? 'bg-purple-100 text-purple-700' :
                                                     user.role === 'CLIENT' ? 'bg-blue-100 text-blue-700' :
                                                         'bg-slate-100 text-slate-700'}
                                             `}>
-                                                {user.role === 'EXTRA' ? 'Talent Extra' : user.role === 'CLIENT' ? 'Client' : 'Admin'}
+                                                {user.role === 'TALENT' ? 'Talent Extra' : user.role === 'CLIENT' ? 'Client' : 'Admin'}
                                             </span>
                                             {user.clientType && (
                                                 <span className="px-3 py-1 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-semibold">
@@ -638,7 +638,7 @@ export default function AdminUserDetailPage() {
                                         </div>
                                         <div className="text-center p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
                                             <p className="text-2xl font-bold text-indigo-600">
-                                                {user._count.missionsAsClient + user._count.missionsAsExtra}
+                                                {user._count.missionsAsClient + user._count.missionsAsTalent}
                                             </p>
                                             <p className="text-xs text-slate-500">Missions</p>
                                         </div>
@@ -850,3 +850,4 @@ export default function AdminUserDetailPage() {
         </div>
     );
 }
+

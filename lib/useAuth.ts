@@ -10,7 +10,7 @@ export interface UserProfile {
     id: string;
     email: string;
     phone?: string;
-    role: 'CLIENT' | 'EXTRA' | 'ADMIN';
+    role: 'CLIENT' | 'TALENT' | 'ADMIN';
     status: string;
     walletBalance: number;
     createdAt: string;

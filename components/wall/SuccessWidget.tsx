@@ -10,7 +10,7 @@ export interface SuccessItem {
     id: string;
     establishmentName: string;
     jobTitle: string;
-    extraName: string;
+    talentName: string;
     completedAt: string | Date;
 }
 
@@ -84,7 +84,7 @@ export function SuccessWidget({ recentSuccess }: SuccessWidgetProps) {
                             {/* Extra name + time */}
                             <div className="flex items-center gap-2 mt-1.5">
                                 <span className="text-xs text-slate-500">
-                                    👤 {item.extraName}
+                                    👤 {item.talentName}
                                 </span>
                                 <span className="text-xs text-slate-400 flex items-center gap-1">
                                     <Clock className="w-3 h-3" />

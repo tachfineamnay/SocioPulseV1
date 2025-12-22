@@ -54,7 +54,7 @@ interface Mission {
             logoUrl?: string;
         };
     };
-    assignedExtra?: {
+    assignedTalent?: {
         id: string;
         email: string;
         profile?: {
@@ -203,29 +203,29 @@ function MissionCard({ mission }: { mission: Mission }) {
                     </div>
                 </div>
 
-                {/* Extra assigné */}
-                {mission.assignedExtra && (
+                {/* Talent assigné */}
+                {mission.assignedTalent && (
                     <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
-                        {mission.assignedExtra.profile?.avatarUrl ? (
+                        {mission.assignedTalent.profile?.avatarUrl ? (
                             <img
-                                src={mission.assignedExtra.profile.avatarUrl}
+                                src={mission.assignedTalent.profile.avatarUrl}
                                 alt=""
                                 className="w-8 h-8 rounded-full object-cover"
                             />
                         ) : (
                             <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
                                 <span className="text-xs font-bold text-white">
-                                    {mission.assignedExtra.profile?.firstName?.charAt(0) || 'E'}
+                                    {mission.assignedTalent.profile?.firstName?.charAt(0) || 'T'}
                                 </span>
                             </div>
                         )}
                         <div className="flex-1">
                             <p className="text-sm font-medium text-green-700">
-                                {mission.assignedExtra.profile
-                                    ? `${mission.assignedExtra.profile.firstName} ${mission.assignedExtra.profile.lastName}`
-                                    : mission.assignedExtra.email}
+                                {mission.assignedTalent.profile
+                                    ? `${mission.assignedTalent.profile.firstName} ${mission.assignedTalent.profile.lastName}`
+                                    : mission.assignedTalent.email}
                             </p>
-                            <p className="text-xs text-green-600">Extra assigné</p>
+                            <p className="text-xs text-green-600">Talent assigné</p>
                         </div>
                         {mission.contract && (
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
@@ -375,7 +375,7 @@ export default function MissionsPage() {
                         email: 'ime@oliviers.fr',
                         establishment: { name: 'IME Les Oliviers' },
                     },
-                    assignedExtra: {
+                    assignedTalent: {
                         id: 'e1',
                         email: 'marie@email.com',
                         profile: { firstName: 'Marie', lastName: 'Dupont' },
@@ -403,7 +403,7 @@ export default function MissionsPage() {
                         email: 'foyer@stmichel.fr',
                         establishment: { name: 'Foyer Saint-Michel' },
                     },
-                    assignedExtra: {
+                    assignedTalent: {
                         id: 'e2',
                         email: 'jean@email.com',
                         profile: { firstName: 'Jean', lastName: 'Martin' },
@@ -559,3 +559,4 @@ export default function MissionsPage() {
         </div>
     );
 }
+

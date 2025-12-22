@@ -31,7 +31,7 @@ import {
 interface DashboardStats {
     users: {
         total: number;
-        extras: number;
+        talents: number;
         clients: number;
         pendingVerification: number;
         newThisWeek: number;
@@ -282,14 +282,14 @@ export default function AdminDashboardPage() {
 
     // Mock data for demo (remplacé par l'API quand disponible)
     const mockStats: DashboardStats = stats || {
-        users: { total: 247, extras: 89, clients: 156, pendingVerification: 12, newThisWeek: 23 },
+        users: { total: 247, talents: 89, clients: 156, pendingVerification: 12, newThisWeek: 23 },
         documents: { pending: 8, approvedThisWeek: 34, rejectedThisWeek: 3 },
         missions: { active: 15, completedThisMonth: 47, inDispute: 2 },
         finance: { revenueThisMonth: 1245000, commissionsThisMonth: 124500, pendingPayouts: 89000 },
     };
 
     const mockActivities: RecentActivity[] = activities.length > 0 ? activities : [
-        { id: '1', type: 'USER_REGISTERED', message: 'Nouvel Extra inscrit : Marie Dupont', timestamp: new Date(Date.now() - 300000).toISOString() },
+        { id: '1', type: 'USER_REGISTERED', message: 'Nouveau Talent inscrit : Marie Dupont', timestamp: new Date(Date.now() - 300000).toISOString() },
         { id: '2', type: 'DOCUMENT_UPLOADED', message: 'Document uploadé par Jean-Pierre Martin', timestamp: new Date(Date.now() - 1800000).toISOString() },
         { id: '3', type: 'MISSION_CREATED', message: 'Nouvelle mission SOS créée à Lyon', timestamp: new Date(Date.now() - 3600000).toISOString() },
         { id: '4', type: 'CONTRACT_SIGNED', message: 'Contrat signé : Mission #CTR-2024-089', timestamp: new Date(Date.now() - 7200000).toISOString() },
@@ -389,7 +389,7 @@ export default function AdminDashboardPage() {
                     <StatCard
                         title="Utilisateurs"
                         value={mockStats.users.total}
-                        subtitle={`${mockStats.users.extras} Extras • ${mockStats.users.clients} Clients`}
+                        subtitle={`${mockStats.users.talents} Talents • ${mockStats.users.clients} Clients`}
                         icon={Users}
                         trend={12}
                         trendLabel="vs mois dernier"

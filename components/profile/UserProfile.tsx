@@ -141,7 +141,7 @@ export function UserProfileDemo() {
         city: 'Lyon 3e',
         memberSince: new Date('2022-03-15'),
         isVerified: true,
-        role: 'EXTRA',
+        role: 'TALENT',
         stats: {
             averageRating: 4.9,
             totalReviews: 34,
@@ -184,7 +184,7 @@ export function UserProfileDemo() {
                 {/* Freelancer Profile */}
                 <div>
                     <h2 className="text-lg font-semibold text-slate-700 mb-4">
-                        Profil Freelance (Extra)
+                        Profil Freelance (TALENT)
                     </h2>
                     <UserProfile
                         profile={mockProfile}
@@ -226,3 +226,4 @@ export function UserProfileDemo() {
         </div>
     );
 }
+

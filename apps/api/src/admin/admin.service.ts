@@ -189,7 +189,7 @@ export class AdminService {
                     take: 10,
                     orderBy: { createdAt: 'desc' },
                 },
-                missionsAsExtra: {
+                missionsAsTalent: {
                     take: 10,
                     orderBy: { createdAt: 'desc' },
                 },
@@ -198,7 +198,7 @@ export class AdminService {
                         bookingsAsClient: true,
                         bookingsAsProvider: true,
                         missionsAsClient: true,
-                        missionsAsExtra: true,
+                        missionsAsTalent: true,
                         transactions: true,
                     },
                 },
@@ -528,10 +528,10 @@ export class AdminService {
         ]);
 
         // Process user stats
-        let total = 0, extras = 0, clients = 0, pendingVerification = 0;
+        let total = 0, talents = 0, clients = 0, pendingVerification = 0;
         userStats.forEach((stat: any) => {
             total += stat._count;
-            if (stat.role === 'EXTRA') extras += stat._count;
+            if (stat.role === 'TALENT') talents += stat._count;
             if (stat.role === 'CLIENT') clients += stat._count;
             if (stat.status === 'PENDING') pendingVerification += stat._count;
         });
@@ -544,7 +544,7 @@ export class AdminService {
         return {
             users: {
                 total,
-                extras,
+                talents,
                 clients,
                 pendingVerification,
                 newThisWeek,
@@ -685,7 +685,7 @@ export class AdminService {
                             establishment: { select: { name: true, logoUrl: true } },
                         },
                     },
-                    assignedExtra: {
+                    assignedTalent: {
                         select: {
                             id: true,
                             email: true,
@@ -719,12 +719,12 @@ export class AdminService {
                         profile: true,
                     },
                 },
-                assignedExtra: {
+                assignedTalent: {
                     include: { profile: true },
                 },
                 applications: {
                     include: {
-                        extra: {
+                        talent: {
                             include: { profile: true },
                         },
                     },

@@ -63,7 +63,7 @@ export class MatchingEngineService {
     /**
      * Find candidates for a relief mission
      * Implements the matching algorithm with:
-     * - Role filtering (EXTRA only)
+     * - Role filtering (TALENT only)
      * - Skills/diplomas matching
      * - Geographic distance calculation
      * - Availability verification
@@ -91,10 +91,10 @@ export class MatchingEngineService {
 
             this.logger.log(`Finding candidates for mission: ${mission.title}`);
 
-            // 2. Get all EXTRA users with their profiles
-            const extras = await this.prisma.user.findMany({
+            // 2. Get all TALENT users with their profiles
+            const talents = await this.prisma.user.findMany({
                 where: {
-                    role: 'EXTRA',
+                    role: 'TALENT',
                     status: 'VERIFIED',
                 },
                 include: {
@@ -118,10 +118,10 @@ export class MatchingEngineService {
 
             const candidates: CandidateResultDto[] = [];
 
-            for (const extra of extras) {
-                if (!extra.profile) continue;
+            for (const talent of talents) {
+                if (!talent.profile) continue;
 
-                const profile = extra.profile;
+                const profile = talent.profile;
                 const profileLocation: GeoPoint = {
                     latitude: profile.latitude || 0,
                     longitude: profile.longitude || 0,
@@ -163,7 +163,7 @@ export class MatchingEngineService {
 
                 candidates.push({
                     id: profile.id,
-                    userId: extra.id,
+                    userId: talent.id,
                     firstName: profile.firstName,
                     lastName: profile.lastName,
                     avatarUrl: profile.avatarUrl,
@@ -379,12 +379,12 @@ export class MatchingEngineService {
                     client: {
                         include: { establishment: true },
                     },
-                    assignedExtra: {
+                    assignedTalent: {
                         include: { profile: true },
                     },
                     applications: {
                         include: {
-                            extra: {
+                            talent: {
                                 include: { profile: true },
                             },
                         },
@@ -412,7 +412,7 @@ export class MatchingEngineService {
      */
     async applyToMission(
         missionId: string,
-        extraId: string,
+        talentId: string,
         coverLetter?: string,
         proposedRate?: number,
     ) {
@@ -433,7 +433,7 @@ export class MatchingEngineService {
             // Check not already applied
             const existingApplication = await this.prisma.missionApplication.findUnique({
                 where: {
-                    missionId_extraId: { missionId, extraId },
+                    missionId_talentId: { missionId, talentId },
                 },
             });
 
@@ -445,20 +445,20 @@ export class MatchingEngineService {
             const application = await this.prisma.missionApplication.create({
                 data: {
                     missionId,
-                    extraId,
+                    talentId,
                     coverLetter,
                     proposedRate,
                     status: 'PENDING',
                 },
                 include: {
                     mission: true,
-                    extra: {
+                    talent: {
                         include: { profile: true },
                     },
                 },
             });
 
-            this.logger.log(`Application created for mission ${missionId} by extra ${extraId}`);
+            this.logger.log(`Application created for mission ${missionId} by talent ${talentId}`);
 
             return application;
         } catch (error) {

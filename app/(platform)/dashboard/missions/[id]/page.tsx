@@ -29,7 +29,7 @@ type MissionInfo = {
     city?: string;
     address?: string;
     startDate?: string;
-    assignedExtraId?: string;
+    assignedTalentId?: string;
     contract?: {
         status?: ContractStatus;
         signatureUrl?: string;
@@ -90,7 +90,7 @@ export default function MissionDetailPage({ params }: PageProps) {
                 city: response?.city,
                 address: response?.address,
                 startDate: response?.startDate,
-                assignedExtraId: response?.assignedExtraId,
+                assignedTalentId: response?.assignedTalentId,
                 contract: response?.contract
                     ? {
                           status: response.contract.status,
@@ -275,3 +275,4 @@ export default function MissionDetailPage({ params }: PageProps) {
         </div>
     );
 }
+

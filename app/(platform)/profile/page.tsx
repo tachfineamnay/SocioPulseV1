@@ -40,7 +40,7 @@ export default function ProfilePage() {
         phone: user.phone || '',
         avatarUrl: user.profile?.avatarUrl || null,
         coverUrl: user.profile?.coverUrl || null,
-        headline: user.profile?.headline || `${user.role === 'EXTRA' ? 'Professionnel' : user.role === 'CLIENT' ? 'Établissement' : 'Administrateur'} Les Extras`,
+        headline: user.profile?.headline || `${user.role === 'TALENT' ? 'Professionnel' : user.role === 'CLIENT' ? 'Établissement' : 'Administrateur'} Les TALENTs`,
         bio: user.profile?.bio || null,
         city: user.profile?.city || '',
         memberSince: new Date(user.createdAt),
@@ -84,7 +84,7 @@ export default function ProfilePage() {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: `${profileData.firstName} ${profileData.lastName} - Les Extras`,
+                    title: `${profileData.firstName} ${profileData.lastName} - Les TALENTs`,
                     url: window.location.href,
                 });
             } catch (err) {
@@ -162,3 +162,4 @@ export default function ProfilePage() {
         </div>
     );
 }
+

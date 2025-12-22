@@ -74,7 +74,7 @@ export class AuthService {
                     },
                 });
 
-                // 2. Create Profile if firstName/lastName provided (for EXTRA or CLIENT)
+                // 2. Create Profile if firstName/lastName provided (for TALENT or CLIENT)
                 if (dto.firstName && dto.lastName) {
                     await tx.profile.create({
                         data: {
@@ -314,3 +314,4 @@ export class AuthService {
         return bytes.toString('base64url').slice(0, length);
     }
 }
+

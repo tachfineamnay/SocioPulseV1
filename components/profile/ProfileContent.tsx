@@ -22,7 +22,7 @@ import { AmenitiesList, Amenity, parseAmenities } from './AmenitiesList';
 
 export interface ProfileAboutData {
     bio?: string | null;
-    /** For EXTRA: skills/specialties as colored pills */
+    /** For TALENT: skills/specialties as colored pills */
     specialties?: string[];
     /** For CLIENT: amenities/advantages with icons */
     amenities?: string[];
@@ -39,7 +39,7 @@ export interface ProfileAboutData {
 
 export interface ProfileContentProps {
     /** User role */
-    role: 'EXTRA' | 'CLIENT' | 'ADMIN';
+    role: 'TALENT' | 'CLIENT' | 'ADMIN';
     /** User's first name for empty states */
     userName?: string;
     /** Whether viewing own profile */
@@ -66,7 +66,7 @@ const TABS: Tab[] = [
 
 interface AboutSectionProps {
     about: ProfileAboutData;
-    role: 'EXTRA' | 'CLIENT' | 'ADMIN';
+    role: 'TALENT' | 'CLIENT' | 'ADMIN';
     isOwnProfile?: boolean;
 }
 
@@ -109,7 +109,7 @@ function AboutSection({ about, role, isOwnProfile }: AboutSectionProps) {
             )}
 
             {/* === FREELANCER VIEW: Skills/Specialties as colored pills === */}
-            {role === 'EXTRA' && skills.length > 0 && (
+            {role === 'TALENT' && skills.length > 0 && (
                 <div>
                     <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
                         <Briefcase className="w-4 h-4 text-slate-400" />
@@ -160,7 +160,7 @@ function AboutSection({ about, role, isOwnProfile }: AboutSectionProps) {
             )}
 
             {/* Diplomas (Freelance) */}
-            {role === 'EXTRA' && about.diplomas && about.diplomas.length > 0 && (
+            {role === 'TALENT' && about.diplomas && about.diplomas.length > 0 && (
                 <div>
                     <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
                         <GraduationCap className="w-4 h-4 text-slate-400" />
@@ -192,7 +192,7 @@ function AboutSection({ about, role, isOwnProfile }: AboutSectionProps) {
             )}
 
             {/* Experience & Rate (Freelance only) */}
-            {role === 'EXTRA' && (about.yearsExperience || about.hourlyRate || about.radiusKm) && (
+            {role === 'TALENT' && (about.yearsExperience || about.hourlyRate || about.radiusKm) && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {about.yearsExperience && (
                         <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
@@ -224,7 +224,7 @@ function AboutSection({ about, role, isOwnProfile }: AboutSectionProps) {
             )}
 
             {/* Video Coaching Badge */}
-            {role === 'EXTRA' && about.isVideoEnabled && (
+            {role === 'TALENT' && about.isVideoEnabled && (
                 <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100">
                     <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
                         <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -314,3 +314,4 @@ export function ProfileContent({
         </div>
     );
 }
+

@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
     const tokenCheck = await verifyToken(token);
     const role = tokenCheck.role?.toUpperCase();
     const isAdmin = role === 'ADMIN';
-    const isClientOrExtra = role === 'CLIENT' || role === 'EXTRA';
+    const isClientOrTalent = role === 'CLIENT' || role === 'TALENT';
 
     const loginUrl = new URL('/auth/login', request.url);
 
@@ -99,7 +99,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (PLATFORM_PROTECTED_PATHS.some((route) => pathname.startsWith(route))) {
-        if (!tokenCheck.valid || (!isClientOrExtra && !isAdmin)) {
+        if (!tokenCheck.valid || (!isClientOrTalent && !isAdmin)) {
             const response = NextResponse.redirect(loginUrl);
             if (token) response.cookies.delete('accessToken');
             return response;

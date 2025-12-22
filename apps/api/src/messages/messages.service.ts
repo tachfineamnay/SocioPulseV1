@@ -30,7 +30,7 @@ export class MessagesService {
             if (error instanceof NotFoundException) {
                 throw error;
             }
-            throw new InternalServerErrorException('Erreur lors de lenvoi du message');
+            throw new InternalServerErrorException("Erreur lors de l'envoi du message");
         }
     }
 }

@@ -102,7 +102,7 @@ export class WallFeedService {
                                 establishment: { select: { name: true, type: true } },
                             },
                         },
-                        assignedExtra: {
+                        assignedTalent: {
                             include: {
                                 profile: { select: { firstName: true, lastName: true } },
                             },
@@ -114,16 +114,16 @@ export class WallFeedService {
             // Format recent success for frontend
             const recentSuccess = recentMissions.map((mission) => {
                 const establishmentName = mission.client?.establishment?.name || 'Établissement';
-                const extraName = mission.assignedExtra?.profile
-                    ? `${mission.assignedExtra.profile.firstName} ${mission.assignedExtra.profile.lastName}`.trim()
-                    : 'Extra';
+                const talentName = mission.assignedTalent?.profile
+                    ? `${mission.assignedTalent.profile.firstName} ${mission.assignedTalent.profile.lastName}`.trim()
+                    : 'Talent';
                 const completedAt = mission.completedAt || mission.endDate;
 
                 return {
                     id: mission.id,
                     establishmentName,
                     jobTitle: mission.jobTitle,
-                    extraName,
+                    talentName,
                     completedAt,
                 };
             });
@@ -470,12 +470,12 @@ export class WallFeedService {
     }
 
     /**
-     * Create a new service (Offer) for EXTRA users
+     * Create a new service (Offer) for TALENT users
      */
     async createService(userId: string, userRole: string, dto: CreateServiceDto) {
         try {
-            if (userRole !== 'EXTRA') {
-                throw new ForbiddenException('Seuls les profils EXTRA peuvent créer une offre.');
+            if (userRole !== 'TALENT') {
+                throw new ForbiddenException('Seuls les profils TALENT peuvent créer une offre.');
             }
 
             const name = dto.name?.trim();
@@ -488,7 +488,7 @@ export class WallFeedService {
             });
 
             if (!profile) {
-                throw new BadRequestException('Profil EXTRA requis pour créer une offre.');
+                throw new BadRequestException('Profil TALENT requis pour créer une offre.');
             }
 
             const slug = await this.generateUniqueServiceSlug(name);
@@ -1207,7 +1207,7 @@ export class WallFeedService {
             authorId: profile?.userId || service.profileId,
             authorName,
             authorAvatar: profile?.avatarUrl || null,
-            authorRole: 'EXTRA',
+            authorRole: 'TALENT',
             city: profile?.city || null,
             postalCode: profile?.postalCode || null,
             tags: this.asStringArray(service.tags),

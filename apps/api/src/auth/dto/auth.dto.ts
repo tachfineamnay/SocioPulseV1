@@ -15,7 +15,7 @@ export class RegisterDto {
     @MinLength(8, { message: 'Le mot de passe doit contenir au moins 8 caractères' })
     password: string;
 
-    @ApiProperty({ enum: UserRole, example: UserRole.EXTRA })
+    @ApiProperty({ enum: UserRole, example: UserRole.TALENT })
     @IsEnum(UserRole, { message: 'Rôle invalide' })
     role: UserRole;
 

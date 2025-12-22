@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 // ============================================
-// 🎨 LES EXTRAS - Design System 2026
+// 🎨 LES TALENTS - Design System 2026
 // ============================================
 // Brand: Coral (#F87171) + Cool Gray (#6B7280)
 // Style: Zero Interface, Minimalist, Premium B2B
@@ -397,3 +397,4 @@ export default function BookingWidget() {
         </>
     );
 }
+

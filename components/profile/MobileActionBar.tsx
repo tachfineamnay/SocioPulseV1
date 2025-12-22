@@ -11,7 +11,7 @@ import {
 
 export interface MobileActionBarProps {
     /** User role being viewed */
-    role: 'EXTRA' | 'CLIENT' | 'ADMIN';
+    role: 'TALENT' | 'CLIENT' | 'ADMIN';
     /** Whether this is the current user's own profile */
     isOwnProfile?: boolean;
     /** Whether the user is in favorites */
@@ -39,8 +39,8 @@ export function MobileActionBar({
     if (isOwnProfile) return null;
 
     // Role-specific CTA text
-    // EXTRA profile = propose a mission, CLIENT profile = send application
-    const primaryCTA = role === 'EXTRA'
+    // TALENT profile = propose a mission, CLIENT profile = send application
+    const primaryCTA = role === 'TALENT'
         ? 'Proposer une mission'
         : 'Envoyer une candidature';
 
@@ -127,7 +127,7 @@ export function MobileActionBar({
  * Use this inside the profile content area on desktop
  */
 export interface DesktopActionsProps {
-    role: 'EXTRA' | 'CLIENT' | 'ADMIN';
+    role: 'TALENT' | 'CLIENT' | 'ADMIN';
     isOwnProfile?: boolean;
     isFavorite?: boolean;
     onPrimaryAction?: () => void;
@@ -149,8 +149,8 @@ export function DesktopActions({
 }: DesktopActionsProps) {
     if (isOwnProfile) return null;
 
-    // EXTRA profile = propose a mission, CLIENT profile = send application
-    const primaryCTA = role === 'EXTRA' ? 'Proposer une mission' : 'Envoyer une candidature';
+    // TALENT profile = propose a mission, CLIENT profile = send application
+    const primaryCTA = role === 'TALENT' ? 'Proposer une mission' : 'Envoyer une candidature';
     const PrimaryIcon = Send;
 
     return (
@@ -220,3 +220,4 @@ export function DesktopActions({
         </div>
     );
 }
+

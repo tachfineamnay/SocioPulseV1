@@ -39,7 +39,7 @@ interface DocumentToModerate {
     user: {
         id: string;
         email: string;
-        role: 'CLIENT' | 'EXTRA' | 'ADMIN';
+        role: 'CLIENT' | 'TALENT' | 'ADMIN';
         profile?: {
             firstName: string;
             lastName: string;
@@ -89,7 +89,7 @@ const getDocTypeName = (type: string) => {
         CERTIFICATE: 'Certificat',
         INSURANCE: 'Assurance RC Pro',
         PHOTO: 'Photo de profil',
-        KBIS: 'Extrait Kbis',
+        KBIS: 'TALENTit Kbis',
         OTHER: 'Autre document',
     };
     return types[type] || type;
@@ -198,7 +198,7 @@ function DocumentCard({
                             {userName}
                         </Link>
                         <p className="text-xs text-slate-500">
-                            {doc.user.role === 'EXTRA' ? 'Talent Extra' : 'Client'}
+                            {doc.user.role === 'TALENT' ? 'Talent TALENT' : 'Client'}
                         </p>
                     </div>
                 </div>
@@ -313,7 +313,7 @@ export default function ModerationPage() {
                     user: {
                         id: 'user1',
                         email: 'marie.dupont@email.com',
-                        role: 'EXTRA' as const,
+                        role: 'TALENT' as const,
                         profile: { firstName: 'Marie', lastName: 'Dupont' },
                     },
                 },
@@ -327,7 +327,7 @@ export default function ModerationPage() {
                     user: {
                         id: 'user2',
                         email: 'jean.martin@email.com',
-                        role: 'EXTRA' as const,
+                        role: 'TALENT' as const,
                         profile: { firstName: 'Jean', lastName: 'Martin' },
                     },
                 },
@@ -549,3 +549,4 @@ export default function ModerationPage() {
         </div>
     );
 }
+

@@ -61,7 +61,7 @@ export class MatchingEngineController {
     @Post('missions/:missionId/apply')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
-    @Roles('EXTRA')
+    @Roles('TALENT')
     @ApiOperation({ summary: 'Postuler à une mission SOS' })
     @ApiParam({ name: 'missionId', description: 'ID de la mission' })
     async applyToMission(

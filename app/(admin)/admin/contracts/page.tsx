@@ -35,7 +35,7 @@ interface Contract {
     id: string;
     reference?: string;
     type: 'MISSION_SOS' | 'SERVICE_BOOKING' | 'FRAMEWORK';
-    status: 'DRAFT' | 'PENDING' | 'PENDING_CLIENT' | 'PENDING_EXTRA' | 'SIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'DISPUTED' | 'CANCELLED';
+    status: 'DRAFT' | 'PENDING' | 'PENDING_CLIENT' | 'PENDING_TALENT' | 'SIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'DISPUTED' | 'CANCELLED';
     title?: string;
     totalAmount?: number;
     startDate?: string;
@@ -45,7 +45,7 @@ interface Contract {
     clientSignedAt?: string;
     pdfUrl?: string;
     createdAt: string;
-    extra: {
+    talent: {
         id: string;
         email: string;
         profile?: {
@@ -115,7 +115,7 @@ function StatusBadge({ status }: { status: Contract['status'] }) {
         DRAFT: { bg: 'bg-slate-100', text: 'text-slate-600', icon: <FileText className="w-3.5 h-3.5" />, label: 'Brouillon' },
         PENDING: { bg: 'bg-amber-100', text: 'text-amber-700', icon: <Clock className="w-3.5 h-3.5" />, label: 'En attente' },
         PENDING_CLIENT: { bg: 'bg-orange-100', text: 'text-orange-700', icon: <PenTool className="w-3.5 h-3.5" />, label: 'Sign. Client' },
-        PENDING_EXTRA: { bg: 'bg-purple-100', text: 'text-purple-700', icon: <PenTool className="w-3.5 h-3.5" />, label: 'Sign. Extra' },
+        PENDING_TALENT: { bg: 'bg-purple-100', text: 'text-purple-700', icon: <PenTool className="w-3.5 h-3.5" />, label: 'Sign. Talent' },
         SIGNED: { bg: 'bg-green-100', text: 'text-green-700', icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Signé' },
         IN_PROGRESS: { bg: 'bg-blue-100', text: 'text-blue-700', icon: <Clock className="w-3.5 h-3.5" />, label: 'En cours' },
         COMPLETED: { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: <FileCheck className="w-3.5 h-3.5" />, label: 'Terminé' },
@@ -158,9 +158,9 @@ function TypeBadge({ type }: { type: Contract['type'] }) {
 // ===========================================
 
 function ContractRow({ contract }: { contract: Contract }) {
-    const extraName = contract.extra.profile
-        ? `${contract.extra.profile.firstName} ${contract.extra.profile.lastName}`
-        : contract.extra.email;
+    const talentName = contract.talent.profile
+        ? `${contract.talent.profile.firstName} ${contract.talent.profile.lastName}`
+        : contract.talent.email;
 
     const clientName = contract.client
         ? contract.client.establishment?.name ||
@@ -186,15 +186,15 @@ function ContractRow({ contract }: { contract: Contract }) {
                 <div className="flex-1 min-w-0 grid grid-cols-2 gap-4">
                     {/* Extra */}
                     <div className="flex items-center gap-2">
-                        {contract.extra.profile?.avatarUrl ? (
-                            <img src={contract.extra.profile.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        {contract.talent.profile?.avatarUrl ? (
+                            <img src={contract.talent.profile.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
                         ) : (
                             <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
                                 <User className="w-4 h-4 text-purple-600" />
                             </div>
                         )}
                         <div className="min-w-0">
-                            <p className="text-sm font-medium text-slate-900 truncate">{extraName}</p>
+                            <p className="text-sm font-medium text-slate-900 truncate">{talentName}</p>
                             <p className="text-xs text-slate-500">Extra</p>
                         </div>
                         {contract.extraSignedAt && (
@@ -286,7 +286,7 @@ export default function ContractsAdminPage() {
     // Stats
     const stats = {
         total: contracts.length,
-        pending: contracts.filter(c => ['PENDING', 'PENDING_CLIENT', 'PENDING_EXTRA'].includes(c.status)).length,
+        pending: contracts.filter(c => ['PENDING', 'PENDING_CLIENT', 'PENDING_TALENT'].includes(c.status)).length,
         signed: contracts.filter(c => c.status === 'SIGNED').length,
         disputed: contracts.filter(c => c.status === 'DISPUTED').length,
     };
@@ -329,7 +329,7 @@ export default function ContractsAdminPage() {
                     extraSignedAt: new Date().toISOString(),
                     clientSignedAt: new Date().toISOString(),
                     createdAt: new Date(Date.now() - 86400000).toISOString(),
-                    extra: {
+                    talent: {
                         id: 'e1',
                         email: 'marie@email.com',
                         profile: { firstName: 'Marie', lastName: 'Dupont' },
@@ -350,7 +350,7 @@ export default function ContractsAdminPage() {
                     totalAmount: 45000,
                     extraSignedAt: new Date().toISOString(),
                     createdAt: new Date(Date.now() - 172800000).toISOString(),
-                    extra: {
+                    talent: {
                         id: 'e2',
                         email: 'jean@email.com',
                         profile: { firstName: 'Jean', lastName: 'Martin' },
@@ -367,7 +367,7 @@ export default function ContractsAdminPage() {
                     status: 'DISPUTED',
                     totalAmount: 28000,
                     createdAt: new Date(Date.now() - 259200000).toISOString(),
-                    extra: {
+                    talent: {
                         id: 'e3',
                         email: 'paul@email.com',
                         profile: { firstName: 'Paul', lastName: 'Durand' },
@@ -389,11 +389,11 @@ export default function ContractsAdminPage() {
     const filteredContracts = contracts.filter(c => {
         if (searchQuery) {
             const search = searchQuery.toLowerCase();
-            const extraName = c.extra.profile ? `${c.extra.profile.firstName} ${c.extra.profile.lastName}` : c.extra.email;
+            const talentName = c.talent.profile ? `${c.talent.profile.firstName} ${c.talent.profile.lastName}` : c.talent.email;
             const clientName = c.client?.establishment?.name || c.client?.email || '';
             return (
                 c.reference?.toLowerCase().includes(search) ||
-                extraName.toLowerCase().includes(search) ||
+                talentName.toLowerCase().includes(search) ||
                 clientName.toLowerCase().includes(search)
             );
         }
@@ -463,7 +463,7 @@ export default function ContractsAdminPage() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                             <input
                                 type="text"
-                                placeholder="Rechercher par référence, extra, client..."
+                                placeholder="Rechercher par référence, talent, client..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -523,3 +523,8 @@ export default function ContractsAdminPage() {
         </div>
     );
 }
+
+
+
+
+

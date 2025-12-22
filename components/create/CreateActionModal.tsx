@@ -8,7 +8,7 @@ import { ArrowLeft, Loader2, Plus, Siren, Sparkles, X } from 'lucide-react';
 import { ToastContainer, useToasts } from '@/components/ui/Toast';
 import { createSocialPost } from '@/app/(platform)/services/wall.service';
 
-type UserRole = 'CLIENT' | 'EXTRA' | 'ADMIN';
+type UserRole = 'CLIENT' | 'TALENT' | 'ADMIN';
 
 export interface CreateActionModalUser {
     id: string;
@@ -62,16 +62,16 @@ export function CreateActionModal({
     const [ethicsConfirmed, setEthicsConfirmed] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const isExtra = user.role === 'EXTRA';
+    const isTALENT = user.role === 'TALENT';
     const isClient = user.role === 'CLIENT';
 
     const postCategory = useMemo(() => {
-        if (isExtra) return 'EXPERIENCE' as const;
+        if (isTALENT) return 'EXPERIENCE' as const;
         return 'NEWS' as const;
-    }, [isExtra]);
+    }, [isTALENT]);
 
-    const postLabel = isExtra ? 'Partager une expérience' : 'Partager une actu';
-    const postSubtitle = isExtra
+    const postLabel = isTALENT ? 'Partager une expérience' : 'Partager une actu';
+    const postSubtitle = isTALENT
         ? 'Valorisez votre savoir-faire (retour terrain, tips, apprentissages).'
         : 'Partagez une info utile (actualité, besoin, insight).';
 
@@ -159,7 +159,7 @@ export function CreateActionModal({
         }
     };
 
-    if (!isExtra && !isClient) return null;
+    if (!isTALENT && !isClient) return null;
 
     return (
         <>
@@ -353,3 +353,5 @@ export function CreateActionModal({
         </>
     );
 }
+
+
