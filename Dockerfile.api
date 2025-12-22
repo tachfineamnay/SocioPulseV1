@@ -24,6 +24,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Ensure Nest CLI available during build
+RUN npm install -g @nestjs/cli
+
 # Generate Prisma client for types/runtime
 RUN npx prisma generate
 
