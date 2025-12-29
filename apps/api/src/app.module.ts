@@ -6,7 +6,7 @@ import { APP_GUARD } from '@nestjs/core';
 // Core
 import { PrismaModule } from './common/prisma/prisma.module';
 import { GeocodingModule } from './common/services/geocoding.module';
-import { RedisModule } from './common/redis';
+// import { RedisModule } from './common/redis';
 import { UploadModule } from './common/uploads';
 import { MailModule } from './common/mailer';
 
@@ -53,8 +53,9 @@ import { NotificationsModule } from './notifications/notifications.module';
 
         // Core
         PrismaModule,
+        PrismaModule,
         GeocodingModule,
-        RedisModule,
+        // RedisModule, // DELETED
         UploadModule,
         MailModule,
 
