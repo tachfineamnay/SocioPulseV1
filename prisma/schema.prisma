@@ -33,6 +33,8 @@ enum UserStatus {
   VERIFIED     // Vérifié et actif
   SUSPENDED    // Suspendu temporairement
   BANNED       // Banni définitivement
+  PENDING_INVITE // En attente d'envoi de l'invitation
+  INVITED        // Invité mais n'a pas encore activé son compte
 }
 
 enum ServiceType {
@@ -171,6 +173,7 @@ model User {
   
   // Vérification et onboarding
   isVerified    Boolean    @default(false)
+  isMarketplaceVisible Boolean @default(false) // Visible sur la marketplace (si false = visible uniquement par ses TalentPools)
   onboardingStep Int       @default(1)
   
   // CRM - Tags internes pour filtrage admin
@@ -408,6 +411,7 @@ model TalentPoolMember {
   profileId    String
   profile      Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
   
+  tags         Json       @default("[]") // Tags spécifiques à l'établissement (ex: "Équipe nuit")
   note         String?    // Note privée de l'établissement
   addedAt      DateTime   @default(now())
   

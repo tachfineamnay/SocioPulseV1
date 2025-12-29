@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Star, Filter } from 'lucide-react';
+import { Search, MapPin, Star, Filter, Upload } from 'lucide-react';
+import { TalentImportModal } from '@/components/vivier/TalentImportModal';
+import { useAuth } from '@/lib/useAuth';
 
 // Mock Data for Talent Pool
 const MOCK_TALENTS = [
@@ -54,6 +56,11 @@ const MOCK_TALENTS = [
 
 export default function VivierPage() {
     const [search, setSearch] = useState('');
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const { user } = useAuth(); // Assuming useAuth gives us the current user/establisment
+
+    // Fallback ID if not found (in a real app, strict auth logic prevents this)
+    const establishmentId = user?.establishment?.id || "demo-establishment-id";
 
     const filteredTalents = MOCK_TALENTS.filter(t =>
         t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -63,15 +70,31 @@ export default function VivierPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
+            <TalentImportModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                establishmentId={establishmentId}
+            />
+
             {/* Header */}
             <div className="bg-white border-b border-slate-100 sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center gap-4">
-                        <Link href="/" className="p-2 -ml-2 rounded-xl hover:bg-slate-50 text-slate-500">
-                            ← Retour
-                        </Link>
-                        <h1 className="text-xl font-bold text-slate-900">Mon Vivier</h1>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Link href="/" className="p-2 -ml-2 rounded-xl hover:bg-slate-50 text-slate-500">
+                                ← Retour
+                            </Link>
+                            <h1 className="text-xl font-bold text-slate-900">Mon Vivier</h1>
+                        </div>
+                        <button
+                            onClick={() => setIsImportModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-medium transition-colors shadow-sm shadow-brand-200"
+                        >
+                            <Upload className="w-4 h-4" />
+                            <span className="hidden sm:inline">Importer</span>
+                        </button>
                     </div>
+
 
                     {/* Search Bar */}
                     <div className="mt-4 relative">
