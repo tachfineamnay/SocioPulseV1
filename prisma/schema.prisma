@@ -149,6 +149,24 @@ enum ContractType {
   FRAMEWORK       // Contrat cadre (missions récurrentes)
 }
 
+enum OrganizationType {
+  PUBLIC
+  PRIVATE
+  ASSOCIATION
+}
+
+enum PaymentMode {
+  STRIPE
+  CHORUS_DEFERRED
+}
+
+enum ChorusStatus {
+  PENDING
+  SENT
+  PAID
+  REJECTED
+}
+
 // =============================================================================
 // USER & AUTHENTICATION
 // =============================================================================
@@ -354,6 +372,10 @@ model Establishment {
   // Informations établissement
   name          String
   type          String?  // Ex: "EHPAD", "IME", "Crèche", "Hôpital"
+  organizationType OrganizationType? // PUBLIC / PRIVATE / ASSOCIATION (pour Chorus Pro)
+  creditLimit   Int      @default(0) // En centimes. 0 = Pas de crédit (paiement immédiat)
+  currentOutstanding Int @default(0) // En centimes. Dette actuelle
+  billingDetails Json    @default("{}") // { "serviceCode": "...", "ejNumber": "...", "siretPayer": "..." }
   siret         String?  @unique
   logoUrl       String?
   description   String?  @db.Text
@@ -818,6 +840,8 @@ model Booking {
   
   stripePaymentIntentId String?   @unique
   stripeTransferId  String?       // Transfer ID vers le compte Connect
+  paymentMode       PaymentMode?  // STRIPE ou CHORUS_DEFERRED
+  chorusStatus      ChorusStatus? // Statut pour Chorus Pro
   paidAt            DateTime?
   
   // ===== Statut =====
