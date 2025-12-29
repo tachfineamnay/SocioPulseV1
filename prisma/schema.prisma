@@ -167,6 +167,28 @@ enum ChorusStatus {
   REJECTED
 }
 
+enum ResourceStatus {
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum ResourceType {
+  DOCUMENT
+  IMAGE
+  VIDEO
+  LINK
+}
+
+enum StructureType {
+  MECS
+  EHPAD
+  ITEP
+  CHRS
+  OTHER
+}
+
 // =============================================================================
 // USER & AUTHENTICATION
 // =============================================================================
@@ -233,6 +255,7 @@ model User {
   adminNotesReceived  AdminNote[]       @relation("AdminTarget")
   auditLogsPerformed  AuditLog[]        @relation("AuditAdmin")
   auditLogsReceived   AuditLog[]        @relation("AuditTarget")
+  resources           Resource[]        @relation("AuthorResources")
   
   // Mission Hub Relations
   missionMessages       MissionMessage[]
@@ -1304,4 +1327,42 @@ model MissionTimelineEvent {
   @@index([missionId])
   @@index([type])
   @@index([createdAt])
+}
+
+// =============================================================================
+// RESOURCE HUB (TOOLBOX) - Bibliothèque de contenus gamifiée
+// =============================================================================
+
+model Resource {
+  id          String   @id @default(cuid())
+  
+  title       String
+  description String?  @db.Text
+  
+  fileUrl     String
+  fileSize    Int?     // In bytes
+  fileType    String?  // MIME type
+  
+  type        ResourceType @default(DOCUMENT)
+  structureType StructureType?
+  
+  tags        Json     @default("[]")
+  
+  authorId    String
+  author      User     @relation("AuthorResources", fields: [authorId], references: [id], onDelete: Cascade)
+  
+  status      ResourceStatus @default(PENDING_REVIEW)
+  
+  viewCount     Int    @default(0)
+  downloadCount Int    @default(0)
+  
+  moderatedBy   String?
+  // moderatedByUser User? @relation("ModeratorResources", fields: [moderatedBy], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([status])
+  @@index([structureType])
+  @@index([authorId])
 }
