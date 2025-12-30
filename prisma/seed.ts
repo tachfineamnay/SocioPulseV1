@@ -813,6 +813,7 @@ async function main() {
         validUntil: daysFromNow(14),
         createdAt: hoursAgo(2 + index),
         mediaUrls: [pic(`post-offer-${index + 1}`, 900, 600)],
+        isActive: true,
       },
     });
   }
@@ -879,6 +880,7 @@ async function main() {
         validUntil: daysFromNow(template.validInDays),
         createdAt: hoursAgo(1 + index),
         mediaUrls: [pic(`post-need-${index + 1}`, 900, 600)],
+        isActive: true,
       },
     });
   }
@@ -916,6 +918,7 @@ async function main() {
         content: post.content,
         mediaUrls: post.mediaUrls,
         createdAt: post.createdAt,
+        isActive: true,
       },
     });
   }
