@@ -39,8 +39,7 @@ type InitialFeed = {
 async function getInitialFeed(): Promise<InitialFeed> {
     try {
         const response = await fetch(`${getApiBase()}/wall/feed`, {
-            cache: 'no-store',
-            next: { revalidate: 0 }
+            cache: 'no-store'
         });
         if (!response.ok) return { items: [], nextCursor: null, hasNextPage: false };
 
