@@ -701,7 +701,6 @@ export class WallFeedService {
 
         return {
             isActive: true,
-            type: PostType.SOCIAL,
             AND: and,
         };
     }
