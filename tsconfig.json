@@ -39,6 +39,9 @@
   "exclude": [
     "node_modules",
     "apps/api",
-    "scripts"
+    "scripts",
+    "debug-feed.ts",
+    "debug-check.ts",
+    "test-db-connection.ts"
   ]
 }
