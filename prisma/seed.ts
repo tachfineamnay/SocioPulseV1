@@ -559,6 +559,7 @@ async function main() {
         tags: workshop.tags,
         imageUrl: pic(`svc-${workshopSlug}`),
         galleryUrls: [pic(`svc-${workshopSlug}-2`), pic(`svc-${workshopSlug}-3`)],
+        isActive: true, // ENSURE VISIBILITY
       },
     });
 
@@ -594,6 +595,7 @@ async function main() {
         ageGroups: ['Parents', 'Adultes'],
         tags: video.tags,
         imageUrl: pic(`svc-${videoSlug}`),
+        isActive: true, // ENSURE VISIBILITY
       },
     });
 
