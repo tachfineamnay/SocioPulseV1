@@ -26,25 +26,12 @@ async function bootstrap() {
         .filter(Boolean);
 
     app.enableCors({
-        origin: (origin, callback) => {
-            // Allow requests with no origin (mobile apps, Postman, etc.)
-            if (!origin) {
-                return callback(null, true);
-            }
-
-            // Check if origin is in allowed list
-            if (allowedOrigins.includes(origin)) {
-                return callback(null, true);
-            }
-
-            // In dev mode, allow localhost and sslip.io domains
-            if (isDev || origin.includes('localhost') || origin.includes('sslip.io')) {
-                return callback(null, true);
-            }
-
-            // Reject other origins
-            callback(new Error('Not allowed by CORS'));
-        },
+        origin: [
+            'http://localhost:3000',
+            /^http:\/\/localhost:\d+$/,
+            /^https?:\/\/.*\.sslip\.io$/,
+            ...allowedOrigins,
+        ],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
