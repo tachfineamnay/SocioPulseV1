@@ -15,7 +15,11 @@ COPY package.json package-lock.json ./
 COPY packages ./packages
 COPY apps/api/package.json ./apps/api/package.json
 
-RUN npm ci
+RUN if [ -f pnpm-lock.yaml ]; then npm install -g pnpm && pnpm install --frozen-lockfile; \
+    elif [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then npm ci; \
+    else echo "Lockfile not found." && exit 1; \
+    fi
 
 # Build artefacts
 FROM base AS builder
