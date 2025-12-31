@@ -71,9 +71,13 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
 
     const port = process.env.PORT || 4000;
-    await app.listen(port);
-    console.log(`🚀 Les Extras API running on http://localhost:${port}`);
-    console.log(`📚 Swagger docs: http://localhost:${port}/docs`);
+    // 👇 CRITICAL: Bind to 0.0.0.0 for Docker container accessibility
+    await app.listen(port, '0.0.0.0');
+
+    const appUrl = await app.getUrl();
+    logger.log(`🚀 API running on: ${appUrl}`);
+    logger.log(`📚 Swagger docs: ${appUrl}/docs`);
+    logger.log(`🌐 API endpoint: ${appUrl}/api/v1`);
 }
 
 bootstrap();
