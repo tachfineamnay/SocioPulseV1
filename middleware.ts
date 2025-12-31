@@ -12,7 +12,6 @@ const DASH_SUBDOMAIN_PREFIX = 'dash.';
 const AUTH_PATH_PREFIXES = ['/auth', '/onboarding'];
 const PLATFORM_PROTECTED_PATHS = [
     '/dashboard',
-    '/wall',
     '/bookings',
     '/messages',
     '/finance',
