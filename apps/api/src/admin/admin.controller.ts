@@ -6,7 +6,10 @@ import {
     Body,
     Param,
     Query,
+    Headers,
     UseGuards,
+    UnauthorizedException,
+    Logger,
 } from '@nestjs/common';
 import {
     ApiTags,
@@ -26,7 +29,37 @@ import { Roles, CurrentUser, CurrentUserPayload } from '../common/decorators';
 @Roles('ADMIN')
 @ApiBearerAuth()
 export class AdminController {
-    constructor(private readonly adminService: AdminService) {}
+    private readonly logger = new Logger(AdminController.name);
+
+    constructor(private readonly adminService: AdminService) { }
+
+    // =========================================================================
+    // DATABASE SEED (uses header secret, not JWT)
+    // =========================================================================
+
+    @Post('seed')
+    @ApiOperation({ summary: 'Seed the database (protected by ADMIN_SECRET header)' })
+    @ApiResponse({ status: 200, description: 'Database seeded successfully' })
+    @ApiResponse({ status: 401, description: 'Invalid admin secret' })
+    async seedDatabase(@Headers('x-admin-secret') secret: string) {
+        const adminSecret = process.env.ADMIN_SECRET;
+
+        if (!adminSecret || secret !== adminSecret) {
+            this.logger.warn('Invalid admin secret attempt');
+            throw new UnauthorizedException('Invalid admin secret');
+        }
+
+        this.logger.log('🌱 Starting database seed via API...');
+
+        try {
+            const result = await this.adminService.seedDatabase();
+            this.logger.log('✅ Database seeded successfully');
+            return { success: true, ...result };
+        } catch (error) {
+            this.logger.error(`❌ Seed failed: ${error.message}`, error.stack);
+            throw error;
+        }
+    }
 
     // =========================================================================
     // DASHBOARD

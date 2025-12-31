@@ -30,7 +30,7 @@ export class AdminService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly gamificationService: GamificationService,
-    ) {}
+    ) { }
 
     /**
      * Vérifie que l'utilisateur est un admin
@@ -740,4 +740,226 @@ export class AdminService {
 
         return mission;
     }
+
+    // ===========================================
+    // DATABASE SEED (Production-safe)
+    // ===========================================
+
+    /**
+     * Seed the database with initial data
+     * This is a simplified version for production that doesn't require tsx
+     */
+    async seedDatabase() {
+        this.logger.log('🌱 Starting database seed...');
+
+        const bcrypt = await import('bcrypt');
+        const passwordHash = await bcrypt.hash('password123', 10);
+
+        const hoursFromNow = (hours: number) => new Date(Date.now() + hours * 60 * 60 * 1000);
+
+        const pic = (seed: string, width = 1200, height = 800) =>
+            `https://picsum.photos/seed/${seed}/${width}/${height}`;
+        const avatar = (img: number) => `https://i.pravatar.cc/150?img=${img}`;
+
+        // Clean database
+        this.logger.log('🧹 Cleaning existing data...');
+        await this.prisma.externalNews.deleteMany();
+        await this.prisma.transaction.deleteMany();
+        await this.prisma.message.deleteMany();
+        await this.prisma.review.deleteMany();
+        await this.prisma.booking.deleteMany();
+        await this.prisma.missionApplication.deleteMany();
+        await this.prisma.contract.deleteMany();
+        await this.prisma.reliefMission.deleteMany();
+        await this.prisma.service.deleteMany();
+        await this.prisma.availabilitySlot.deleteMany();
+        await this.prisma.talentPoolMember.deleteMany();
+        await this.prisma.talentPool.deleteMany();
+        await this.prisma.profile.deleteMany();
+        await this.prisma.establishment.deleteMany();
+        await this.prisma.notification.deleteMany();
+        await this.prisma.post.deleteMany();
+        await this.prisma.pointLog.deleteMany();
+        await this.prisma.tag.deleteMany();
+        await this.prisma.user.deleteMany();
+
+        // Create Admin
+        this.logger.log('👤 Creating admin...');
+        await this.prisma.user.create({
+            data: {
+                email: 'admin@sociopulse.fr',
+                passwordHash,
+                role: 'ADMIN',
+                status: 'VERIFIED',
+                walletBalance: 500000,
+                referralCode: 'admin0001',
+                profile: {
+                    create: {
+                        firstName: 'Admin',
+                        lastName: 'System',
+                        bio: 'Super Admin',
+                        specialties: [],
+                        diplomas: [],
+                    },
+                },
+            },
+        });
+
+        // Create Clients
+        this.logger.log('🏢 Creating clients...');
+        const clientsData = [
+            { email: 'ehpad.paris@exemple.fr', name: 'EHPAD Les Jardins', type: 'EHPAD', city: 'Paris', postalCode: '75004' },
+            { email: 'ime.paris@exemple.fr', name: "IME L'Espoir", type: 'IME', city: 'Paris', postalCode: '75001' },
+            { email: 'creche.lyon@exemple.fr', name: 'Crèche Les Petits Pas', type: 'Crèche', city: 'Lyon', postalCode: '69002' },
+        ];
+
+        const clients: any[] = [];
+        for (let i = 0; i < clientsData.length; i++) {
+            const d = clientsData[i];
+            const client = await this.prisma.user.create({
+                data: {
+                    email: d.email,
+                    passwordHash,
+                    role: 'CLIENT',
+                    status: 'VERIFIED',
+                    walletBalance: 200000,
+                    establishment: {
+                        create: {
+                            name: d.name,
+                            type: d.type,
+                            city: d.city,
+                            postalCode: d.postalCode,
+                            contactName: 'Direction',
+                            contactRole: 'Direction',
+                            siret: `SEED${String(i + 1).padStart(12, '0')}`,
+                            logoUrl: pic(`est-${d.name.toLowerCase().replace(/\s/g, '-')}`, 128, 128),
+                        },
+                    },
+                },
+                include: { establishment: true },
+            });
+            clients.push(client);
+        }
+
+        // Create Talents
+        this.logger.log('🧑‍⚕️ Creating talents...');
+        const talentsData = [
+            { email: 'jean.dupont@exemple.fr', firstName: 'Jean', lastName: 'Dupont', headline: 'Infirmier', city: 'Paris', postalCode: '75011', hourlyRate: 35, isVideoEnabled: false, avatarImg: 12 },
+            { email: 'marie.curie@exemple.fr', firstName: 'Marie', lastName: 'Curie', headline: 'Aide-soignante', city: 'Paris', postalCode: '75004', hourlyRate: 28, isVideoEnabled: false, avatarImg: 32 },
+            { email: 'paul.verlaine@exemple.fr', firstName: 'Paul', lastName: 'Verlaine', headline: 'Éducateur spécialisé', city: 'Lyon', postalCode: '69002', hourlyRate: 32, isVideoEnabled: true, avatarImg: 5 },
+            { email: 'ines.martin@exemple.fr', firstName: 'Inès', lastName: 'Martin', headline: 'Coach parental', city: 'Nantes', postalCode: '44000', hourlyRate: 55, isVideoEnabled: true, avatarImg: 47 },
+        ];
+
+        const talents: any[] = [];
+        for (let i = 0; i < talentsData.length; i++) {
+            const t = talentsData[i];
+            const talent = await this.prisma.user.create({
+                data: {
+                    email: t.email,
+                    passwordHash,
+                    role: 'TALENT',
+                    status: 'VERIFIED',
+                    stripeAccountId: `acct_seed_${i + 1}`,
+                    stripeOnboarded: true,
+                    profile: {
+                        create: {
+                            firstName: t.firstName,
+                            lastName: t.lastName,
+                            avatarUrl: avatar(t.avatarImg),
+                            headline: t.headline,
+                            bio: `Disponible pour des missions de renfort. ${t.headline}.`,
+                            city: t.city,
+                            postalCode: t.postalCode,
+                            specialties: ['renfort', 'terrain'],
+                            diplomas: [{ name: "Diplôme d'État", year: 2018 }],
+                            hourlyRate: t.hourlyRate,
+                            isVideoEnabled: t.isVideoEnabled,
+                            averageRating: 4.6,
+                            totalReviews: 18,
+                        },
+                    },
+                },
+                include: { profile: true },
+            });
+            talents.push(talent);
+        }
+
+        // Create Services
+        this.logger.log('🛍️ Creating services...');
+        const serviceTemplates = [
+            { name: 'Atelier Boxe éducative', category: 'Sport adapté', basePrice: 70, shortDescription: 'Un atelier structuré pour canaliser l\'énergie.' },
+            { name: 'Atelier Mémoire', category: 'Seniors', basePrice: 55, shortDescription: 'Stimulation cognitive douce.' },
+            { name: 'Coaching parental (Visio)', category: 'Educat\'heure', basePrice: 60, shortDescription: 'Un rendez-vous pour débloquer une situation du quotidien.', isVideo: true },
+        ];
+
+        for (let i = 0; i < talents.length; i++) {
+            const talent = talents[i];
+            if (!talent.profile) continue;
+            const template = serviceTemplates[i % serviceTemplates.length];
+            const slug = `${template.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${i}`;
+
+            await this.prisma.service.create({
+                data: {
+                    profileId: talent.profile.id,
+                    name: template.name,
+                    slug,
+                    description: template.shortDescription,
+                    shortDescription: template.shortDescription,
+                    type: template.isVideo ? 'COACHING_VIDEO' : 'WORKSHOP',
+                    category: template.category,
+                    basePrice: template.basePrice,
+                    tags: ['wall', 'featured'],
+                    imageUrl: pic(`svc-${slug}`),
+                    isActive: true,
+                },
+            });
+        }
+
+        // Create Missions
+        this.logger.log('🆘 Creating missions...');
+        const missionTemplates = [
+            { title: 'Renfort IDE Nuit - urgence', jobTitle: 'Infirmier', urgencyLevel: 'CRITICAL', hourlyRate: 38, skills: ['nuit', 'soins'] },
+            { title: 'Renfort éducateur TSA', jobTitle: 'Éducateur spécialisé', urgencyLevel: 'HIGH', hourlyRate: 32, skills: ['TSA', 'groupe'] },
+            { title: 'Renfort crèche - ouverture', jobTitle: 'EJE', urgencyLevel: 'HIGH', hourlyRate: 28, skills: ['petite_enfance'] },
+            { title: 'Veille éducative - nuit', jobTitle: 'Éducateur', urgencyLevel: 'MEDIUM', hourlyRate: 30, skills: ['veilles'] },
+        ];
+
+        for (let i = 0; i < missionTemplates.length; i++) {
+            const m = missionTemplates[i];
+            const client = clients[i % clients.length];
+            const est = client?.establishment;
+            if (!client || !est) continue;
+
+            await this.prisma.reliefMission.create({
+                data: {
+                    clientId: client.id,
+                    title: m.title,
+                    description: `Mission urgente: ${m.title}`,
+                    jobTitle: m.jobTitle,
+                    urgencyLevel: m.urgencyLevel as any,
+                    status: 'OPEN',
+                    startDate: hoursFromNow(6),
+                    endDate: hoursFromNow(14),
+                    hourlyRate: m.hourlyRate,
+                    estimatedHours: 8,
+                    totalBudget: m.hourlyRate * 8,
+                    address: est.address || 'Adresse à préciser',
+                    city: est.city,
+                    postalCode: est.postalCode || '',
+                    requiredSkills: m.skills,
+                    requiredDiplomas: ["Diplôme d'État"],
+                    isNightShift: m.title.toLowerCase().includes('nuit'),
+                },
+            });
+        }
+
+        this.logger.log('✅ Database seeding completed!');
+
+        return {
+            users: 1 + clients.length + talents.length,
+            services: talents.length,
+            missions: missionTemplates.length,
+        };
+    }
 }
+
