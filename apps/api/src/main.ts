@@ -71,13 +71,16 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
 
     const port = process.env.PORT || 4000;
-    // 👇 CRITICAL: Bind to 0.0.0.0 for Docker container accessibility
-    await app.listen(port, '0.0.0.0');
+    const host = '0.0.0.0';
 
-    const appUrl = await app.getUrl();
-    logger.log(`🚀 API running on: ${appUrl}`);
-    logger.log(`📚 Swagger docs: ${appUrl}/docs`);
-    logger.log(`🌐 API endpoint: ${appUrl}/api/v1`);
+    // 👇 CRITICAL: Bind to 0.0.0.0 for Docker container accessibility
+    await app.listen(port, host);
+
+    logger.log(`🚀 API running on: http://${host}:${port}`);
+    logger.log(`📚 Swagger docs: http://${host}:${port}/docs`);
+    logger.log(`🌐 API endpoint: http://${host}:${port}/api/v1`);
+    logger.log(`🔧 NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
 }
 
 bootstrap();
+
