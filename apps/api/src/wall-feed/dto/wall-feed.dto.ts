@@ -1,5 +1,5 @@
 import { IsString, IsEnum, IsOptional, IsNumber, IsArray, Min, Max, IsBoolean, Equals } from 'class-validator';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { PostCategory, ServiceType } from '@prisma/client';
 
@@ -170,4 +170,28 @@ export class CreateServiceDto {
     @IsArray()
     @IsString({ each: true })
     galleryUrls?: string[];
+}
+
+export class CreateBookingDto {
+    @ApiProperty({ description: 'ID du service à réserver' })
+    @IsString()
+    serviceId: string;
+
+    @ApiProperty({ description: 'Date de réservation (ISO format)' })
+    @IsString()
+    date: string;
+
+    @ApiProperty({ description: 'Heure de début (format HH:MM)' })
+    @IsString()
+    startTime: string;
+
+    @ApiProperty({ description: 'Durée en heures' })
+    @IsNumber()
+    @Min(1)
+    duration: number;
+
+    @ApiPropertyOptional({ description: 'Message optionnel' })
+    @IsOptional()
+    @IsString()
+    message?: string;
 }

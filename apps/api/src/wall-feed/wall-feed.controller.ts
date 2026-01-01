@@ -15,7 +15,7 @@ import {
     ApiBearerAuth,
 } from '@nestjs/swagger';
 import { WallFeedService } from './wall-feed.service';
-import { GetFeedDto, CreatePostDto, CreateServiceDto } from './dto';
+import { GetFeedDto, CreatePostDto, CreateServiceDto, CreateBookingDto } from './dto';
 import { JwtAuthGuard } from '../common/guards';
 import { CurrentUser, CurrentUserPayload } from '../common/decorators';
 
@@ -82,16 +82,16 @@ export class WallFeedController {
     async getUserBookings(@CurrentUser() user: CurrentUserPayload) {
         return this.wallService.getUserBookings(user.id);
     }
-    
+
     @Post('bookings')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Créer une réservation' })
     async createBooking(
         @CurrentUser() user: CurrentUserPayload,
-        @Body() body: { serviceId: string; date: string; startTime: string; duration: number; message?: string },
+        @Body() dto: CreateBookingDto,
     ) {
-        return this.wallService.createBooking(user.id, body);
+        return this.wallService.createBooking(user.id, dto);
     }
 
     @Delete('posts/:id')

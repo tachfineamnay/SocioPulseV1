@@ -13,7 +13,7 @@ import {
     ApiBearerAuth,
 } from '@nestjs/swagger';
 import { VideoBookingService } from './video-booking.service';
-import { CreateVideoSessionDto, VideoRoomDto, VideoTokenDto } from './dto';
+import { CreateVideoSessionDto, VideoRoomDto, VideoTokenDto, EndSessionDto } from './dto';
 import { JwtAuthGuard } from '../common/guards';
 import { CurrentUser, CurrentUserPayload } from '../common/decorators';
 
@@ -55,9 +55,9 @@ export class VideoBookingController {
     @ApiOperation({ summary: 'Terminer une session vidéo' })
     async endSession(
         @Param('roomId') roomId: string,
-        @Body() body: { recordingUrl?: string },
+        @Body() dto: EndSessionDto,
     ): Promise<{ success: boolean }> {
-        await this.videoService.endVideoSession(roomId, body.recordingUrl);
+        await this.videoService.endVideoSession(roomId, dto.recordingUrl);
         return { success: true };
     }
 

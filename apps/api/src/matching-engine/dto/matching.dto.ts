@@ -173,3 +173,17 @@ export class CreateMissionDto {
     @IsString({ each: true })
     requiredDiplomas?: string[];
 }
+
+export class ApplyMissionDto {
+    @ApiPropertyOptional({ description: 'Lettre de motivation' })
+    @IsOptional()
+    @IsString()
+    coverLetter?: string;
+
+    @ApiPropertyOptional({ description: 'Taux horaire proposé (peut différer du taux mission)' })
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    @Min(0)
+    proposedRate?: number;
+}

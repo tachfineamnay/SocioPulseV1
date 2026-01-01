@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, MinLength, IsOptional, IsArray } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateAdminNoteDto {
     @ApiProperty({ description: 'Contenu de la note', example: 'Excellent profil, à privilégier pour les missions urgentes.' })
@@ -62,4 +62,36 @@ export class UserListDto {
     establishment?: {
         name: string;
     };
+}
+
+export class SuspendUserDto {
+    @ApiPropertyOptional({ description: 'Raison de la suspension' })
+    @IsOptional()
+    @IsString()
+    reason?: string;
+}
+
+export class BanUserDto {
+    @ApiPropertyOptional({ description: 'Raison du bannissement' })
+    @IsOptional()
+    @IsString()
+    reason?: string;
+}
+
+export class UpdateTagsDto {
+    @ApiProperty({ description: 'Liste des tags CRM internes', type: [String] })
+    @IsArray()
+    @IsString({ each: true })
+    tags: string[];
+}
+
+export class UpdateDocStatusDto {
+    @ApiProperty({ description: 'Nouveau statut du document (APPROVED, REJECTED)' })
+    @IsString()
+    status: string;
+
+    @ApiPropertyOptional({ description: 'Commentaire (notamment pour les rejets)' })
+    @IsOptional()
+    @IsString()
+    comment?: string;
 }

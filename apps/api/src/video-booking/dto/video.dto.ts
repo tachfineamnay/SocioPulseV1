@@ -50,3 +50,10 @@ export class VideoTokenDto {
     @ApiProperty()
     meetingUrl: string;
 }
+
+export class EndSessionDto {
+    @ApiPropertyOptional({ description: 'URL de l\'enregistrement (si disponible)' })
+    @IsOptional()
+    @IsString()
+    recordingUrl?: string;
+}

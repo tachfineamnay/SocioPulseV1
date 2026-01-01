@@ -19,7 +19,7 @@ import {
     ApiQuery,
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
-import { CreateAdminNoteDto, AdminNoteResponseDto } from './dto';
+import { CreateAdminNoteDto, AdminNoteResponseDto, SuspendUserDto, BanUserDto, UpdateTagsDto, UpdateDocStatusDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../common/guards';
 import { Roles, CurrentUser, CurrentUserPayload } from '../common/decorators';
 
@@ -116,10 +116,10 @@ export class AdminController {
     @ApiResponse({ status: 200, description: 'Utilisateur suspendu' })
     async suspendUser(
         @Param('id') targetUserId: string,
-        @Body() body: { reason?: string },
+        @Body() dto: SuspendUserDto,
         @CurrentUser() admin: CurrentUserPayload,
     ) {
-        return this.adminService.suspendUser(admin.id, targetUserId, body.reason);
+        return this.adminService.suspendUser(admin.id, targetUserId, dto.reason);
     }
 
     @Patch('users/:id/ban')
@@ -127,10 +127,10 @@ export class AdminController {
     @ApiResponse({ status: 200, description: 'Utilisateur banni' })
     async banUser(
         @Param('id') targetUserId: string,
-        @Body() body: { reason?: string },
+        @Body() dto: BanUserDto,
         @CurrentUser() admin: CurrentUserPayload,
     ) {
-        return this.adminService.banUser(admin.id, targetUserId, body.reason);
+        return this.adminService.banUser(admin.id, targetUserId, dto.reason);
     }
 
     @Patch('users/:id/tags')
@@ -138,10 +138,10 @@ export class AdminController {
     @ApiResponse({ status: 200, description: 'Tags mis à jour' })
     async updateInternalTags(
         @Param('id') targetUserId: string,
-        @Body() body: { tags: string[] },
+        @Body() dto: UpdateTagsDto,
         @CurrentUser() admin: CurrentUserPayload,
     ) {
-        return this.adminService.updateInternalTags(admin.id, targetUserId, body.tags);
+        return this.adminService.updateInternalTags(admin.id, targetUserId, dto.tags);
     }
 
     // =========================================================================
@@ -196,10 +196,10 @@ export class AdminController {
     @ApiResponse({ status: 200, description: 'Document mis à jour' })
     async updateDocumentStatus(
         @Param('id') documentId: string,
-        @Body() body: { status: string; comment?: string },
+        @Body() dto: UpdateDocStatusDto,
         @CurrentUser() admin: CurrentUserPayload,
     ) {
-        return this.adminService.updateDocumentStatus(admin.id, documentId, body.status, body.comment);
+        return this.adminService.updateDocumentStatus(admin.id, documentId, dto.status, dto.comment);
     }
 
     // =========================================================================

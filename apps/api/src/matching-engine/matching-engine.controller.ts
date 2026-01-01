@@ -15,7 +15,7 @@ import {
     ApiParam,
 } from '@nestjs/swagger';
 import { MatchingEngineService } from './matching-engine.service';
-import { FindCandidatesDto, MatchingResultDto, CreateMissionDto } from './dto';
+import { FindCandidatesDto, MatchingResultDto, CreateMissionDto, ApplyMissionDto } from './dto';
 import { JwtAuthGuard, MissionAccessGuard, RolesGuard } from '../common/guards';
 import { Roles, CurrentUser, CurrentUserPayload } from '../common/decorators';
 
@@ -68,13 +68,13 @@ export class MatchingEngineController {
     async applyToMission(
         @Param('missionId') missionId: string,
         @CurrentUser() user: CurrentUserPayload,
-        @Body() body: { coverLetter?: string; proposedRate?: number },
+        @Body() dto: ApplyMissionDto,
     ) {
         return this.matchingService.applyToMission(
             missionId,
             user.id,
-            body.coverLetter,
-            body.proposedRate,
+            dto.coverLetter,
+            dto.proposedRate,
         );
     }
 }
