@@ -24,16 +24,6 @@ function PlatformFooter() {
                     <Link href="/profile" className="hover:text-slate-900 transition-colors">Profil</Link>
                 </div>
             </div>
-            {/* SEO Section */}
-            <div className="border-t border-slate-100 bg-slate-50/50">
-                <div className="max-w-7xl mx-auto px-6 py-6">
-                    <p className="text-xs text-slate-400 leading-relaxed max-w-4xl">
-                        <strong className="text-slate-500">SocioPulse</strong> est la première plateforme de mise en relation dédiée aux structures sociales et médico-sociales (ESSMS).
-                        <span className="hidden sm:inline"> Pour les Directeurs : Gestion simplifiée des vacataires, facturation Chorus Pro, vérification des diplômes (AES, IDE, ES) et conformité ARS.
-                            Pour les Talents : Trouvez des missions en Intérim, CDD ou Freelance dans votre région. Valorisez votre expertise via des ateliers et visios.</span>
-                    </p>
-                </div>
-            </div>
         </footer>
     );
 }
