@@ -48,6 +48,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4000
 
+# Install curl for Coolify healthcheck
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nestjs
 
