@@ -10,6 +10,12 @@ async function bootstrap() {
     const logger = new Logger('Bootstrap');
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+    // Root healthcheck endpoint (before prefix, for Coolify)
+    const expressApp = app.getHttpAdapter().getInstance();
+    expressApp.get('/', (_req: any, res: any) => {
+        res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+    });
+
     // Global prefix
     app.setGlobalPrefix('api/v1');
 
@@ -83,4 +89,3 @@ async function bootstrap() {
 }
 
 bootstrap();
-
