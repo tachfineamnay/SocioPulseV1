@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { Bell, CheckCircle2, Clock, Inbox, Loader2 } from 'lucide-react';
+import { getApiBaseWithVersion } from '@/lib/config';
 
 type Notification = {
     id: string;
@@ -16,12 +17,7 @@ type Notification = {
     readAt?: string | null;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
-const buildApiBase = () => {
-    const normalized = API_URL.replace(/\/+$/, '');
-    return normalized.endsWith('/api/v1') ? normalized : `${normalized}/api/v1`;
-};
+const buildApiBase = getApiBaseWithVersion;
 
 export default function NotificationsPage() {
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -104,9 +100,8 @@ export default function NotificationsPage() {
         return (
             <div
                 key={notification.id}
-                className={`p-4 rounded-2xl border transition-all bg-white ${
-                    notification.isRead ? 'border-slate-200' : 'border-indigo-200 shadow-sm'
-                }`}
+                className={`p-4 rounded-2xl border transition-all bg-white ${notification.isRead ? 'border-slate-200' : 'border-indigo-200 shadow-sm'
+                    }`}
             >
                 <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-3">
@@ -154,17 +149,15 @@ export default function NotificationsPage() {
                         <div className="inline-flex rounded-full bg-white border border-slate-200 p-1">
                             <button
                                 onClick={() => setFilter('all')}
-                                className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                                    filter === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600'
-                                }`}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium ${filter === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600'
+                                    }`}
                             >
                                 Toutes
                             </button>
                             <button
                                 onClick={() => setFilter('unread')}
-                                className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                                    filter === 'unread' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600'
-                                }`}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium ${filter === 'unread' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600'
+                                    }`}
                             >
                                 Non lues
                             </button>

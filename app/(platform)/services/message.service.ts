@@ -1,10 +1,8 @@
 'use client';
 
-const getApiBase = () => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:4000';
-    const normalized = apiBase.replace(/\/+$/, '');
-    return normalized.endsWith('/api/v1') ? normalized : `${normalized}/api/v1`;
-};
+import { getApiBaseWithVersion } from '@/lib/config';
+
+const getApiBase = getApiBaseWithVersion;
 
 const getToken = () => {
     if (typeof window === 'undefined') return null;

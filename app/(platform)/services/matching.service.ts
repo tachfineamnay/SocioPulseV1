@@ -1,5 +1,7 @@
 'use client';
 
+import { getApiBaseWithVersion } from '@/lib/config';
+
 export interface CreateReliefMissionInput {
     title?: string;
     jobTitle?: string;
@@ -19,11 +21,7 @@ export interface CreateReliefMissionInput {
     requiredDiplomas?: string[];
 }
 
-const getApiBase = () => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:4000';
-    const normalized = apiBase.replace(/\/+$/, '');
-    return normalized.endsWith('/api/v1') ? normalized : `${normalized}/api/v1`;
-};
+const getApiBase = getApiBaseWithVersion;
 
 const getToken = () => {
     if (typeof window === 'undefined') return null;

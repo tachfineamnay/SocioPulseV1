@@ -11,12 +11,9 @@ import {
 import '@livekit/components-styles';
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { getApiBaseWithVersion } from '@/lib/config';
 
-const getApiBase = () => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    const normalized = apiBase.replace(/\/+$/, '');
-    return normalized.endsWith('/api/v1') ? normalized : `${normalized}/api/v1`;
-};
+const getApiBase = getApiBaseWithVersion;
 
 const getToken = () => {
     if (typeof window === 'undefined') return null;

@@ -1,7 +1,8 @@
 
 import Cookies from 'js-cookie';
+import { getApiUrl } from './config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'; // Fallback for dev
+const API_URL = getApiUrl();
 
 // Cookie options for proper persistence
 const getCookieOptions = (): Cookies.CookieAttributes => {
@@ -53,7 +54,7 @@ export const auth = {
     Cookies.remove('accessToken', { path: '/' });
     window.location.href = '/auth/login';
   },
-  
+
   isAuthenticated() {
     return !!Cookies.get('accessToken');
   }
