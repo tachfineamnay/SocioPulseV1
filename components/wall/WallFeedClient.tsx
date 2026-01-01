@@ -114,7 +114,7 @@ function FeedModeToggle({ mode, onChange }: { mode: FeedMode; onChange: (mode: F
                 className={`pill-toggle-item ${mode === 'renfort' ? 'text-rose-700' : 'text-slate-500 hover:text-slate-700'}`}
             >
                 <MapPin className="w-4 h-4" />
-                <span>Renfort Terrain</span>
+                <span>SOS Renfort & Vacations</span>
             </button>
         </div>
     );
@@ -188,7 +188,7 @@ export function WallFeedClient({
                         className="mb-8"
                     >
                         <h1 className="hero-title">
-                            <span className="text-reveal" style={{ animationDelay: '0.1s' }}>LA PLATEFORME</span>
+                            <span className="text-reveal" style={{ animationDelay: '0.1s' }}>SOCIOPULSE : LE CŒUR RÉACTIF</span>
                             <br />
                             <span className="hero-title-gradient text-reveal" style={{ animationDelay: '0.3s' }}>
                                 DU MÉDICO-SOCIAL
@@ -203,9 +203,9 @@ export function WallFeedClient({
                         transition={{ duration: 0.8, delay: 0.4 }}
                         className="text-xl sm:text-2xl lg:text-3xl font-semibold text-slate-600/90 max-w-3xl mx-auto leading-relaxed"
                     >
-                        Un renfort demain.{' '}
+                        Recrutez un renfort qualifié en urgence.{' '}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-live-500 to-brand-500">
-                            Une Visio ou un Atelier maintenant.
+                            Réservez un atelier QVT pour vos équipes.
                         </span>
                     </motion.h2>
 
@@ -216,7 +216,7 @@ export function WallFeedClient({
                         transition={{ duration: 0.8, delay: 0.5 }}
                         className="mt-6 text-base sm:text-lg font-medium text-slate-400 max-w-xl mx-auto"
                     >
-                        La plateforme des pro de l'éducation spécialisée et du médico-social.
+                        La solution tout-en-un pour EHPAD, MECS et structures Handicap.
                     </motion.p>
 
                     {/* Mode Switcher - Premium Pill Design */}
@@ -242,7 +242,7 @@ export function WallFeedClient({
                                 <input
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    placeholder="Rechercher un renfort, une séance SocioLive ou un atelier..."
+                                    placeholder="De qui avez-vous besoin ? (ex: Aide-Soignant, Éducateur, Psychologue...)"
                                     className="w-full bg-transparent pl-14 pr-6 py-4 text-base font-medium tracking-tight text-slate-900 placeholder:text-slate-400/80 outline-none"
                                     autoComplete="off"
                                 />
