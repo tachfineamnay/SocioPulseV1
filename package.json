@@ -17,7 +17,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "api:dev": "cd apps/api && npm run dev",
-    "api:build": "cd apps/api && npm run build"
+    "api:build": "cd apps/api && npm run build",
+    "db:seed:sociopulse": "tsx scripts/generate_seed_sociopulse.ts && tsx prisma/import_seed_json.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -41,6 +42,7 @@
     "livekit-client": "^2.16.1",
     "lucide-react": "^0.556.0",
     "next": "14.0.0",
+    "tsx": "^4.21.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-dropzone": "^14.3.8",
@@ -61,7 +63,6 @@
     "postcss": "^8.4.32",
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4.0",
-    "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   }
 }
