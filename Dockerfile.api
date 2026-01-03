@@ -65,6 +65,10 @@ COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
 COPY --from=builder /app/packages/shared-types ./packages/shared-types
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/scripts ./scripts
+
+# Install tsx globally for seed scripts
+RUN npm install -g tsx
 
 USER nestjs
 
