@@ -11,6 +11,8 @@ import * as bcrypt from 'bcrypt';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import * as os from 'os';
+
 const prisma = new PrismaClient();
 
 // Helper to normalize strings
@@ -28,7 +30,9 @@ const slugify = (text: string) => {
 };
 
 async function main() {
-    const jsonPath = path.join(process.cwd(), 'sociopulse_seed_2026.json');
+    // Use /tmp for Docker containers (non-writable /app), otherwise use cwd
+    const jsonDir = process.env.NODE_ENV === 'production' ? os.tmpdir() : process.cwd();
+    const jsonPath = path.join(jsonDir, 'sociopulse_seed_2026.json');
 
     if (!fs.existsSync(jsonPath)) {
         console.error(`❌ File not found: ${jsonPath}`);

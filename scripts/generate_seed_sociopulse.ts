@@ -1,9 +1,12 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 
 // --- CONFIGURATION ---
-const OUTPUT_FILE = path.join(process.cwd(), 'sociopulse_seed_2026.json');
+// Use /tmp for Docker containers (non-writable /app), otherwise use cwd
+const OUTPUT_DIR = process.env.NODE_ENV === 'production' ? os.tmpdir() : process.cwd();
+const OUTPUT_FILE = path.join(OUTPUT_DIR, 'sociopulse_seed_2026.json');
 const CITIES = [
     'Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice',
     'Nantes', 'Montpellier', 'Strasbourg', 'Bordeaux', 'Lille'
