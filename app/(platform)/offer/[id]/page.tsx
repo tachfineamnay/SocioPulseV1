@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getApiBaseWithVersion } from '@/lib/config';
 
 type ServiceWithProfile = {
     id: string;
@@ -26,7 +27,7 @@ type ServiceWithProfile = {
     } | null;
 };
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1').replace(/\/$/, '');
+const API_BASE = getApiBaseWithVersion();
 
 async function fetchService(id: string): Promise<ServiceWithProfile | null> {
     const res = await fetch(`${API_BASE}/wall/services/${id}`, {

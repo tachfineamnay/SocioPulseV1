@@ -18,20 +18,29 @@ if (!ENV.API_URL && typeof window !== 'undefined') {
  * @returns API base URL (e.g., "https://api.sociopulse.fr/api/v1")
  */
 export const getApiUrl = (): string => {
-    let baseUrl: string;
-
-    if (ENV.API_URL) {
-        baseUrl = ENV.API_URL;
-    } else if (ENV.IS_PROD) {
-        // Fallback for production if env var is missing
-        baseUrl = 'https://api.sociopulse.fr/api/v1';
-    } else {
-        // Development fallback
-        baseUrl = 'http://localhost:4000';
+    // Client-side: always use the public URL
+    if (typeof window !== 'undefined') {
+        return (process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopulse.fr/api/v1').replace(/\/+$/, '');
     }
 
-    // Remove trailing slash to prevent double slashes in URLs
-    return baseUrl.replace(/\/+$/, '');
+    // Server-side (SSR):
+    // 1. Explicit internal networking URL (Recommended for Docker)
+    if (process.env.INTERNAL_API_URL) {
+        return process.env.INTERNAL_API_URL.replace(/\/+$/, '');
+    }
+
+    // 2. Fallback to public URL if no internal one is set
+    if (process.env.NEXT_PUBLIC_API_URL) {
+        return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+    }
+
+    // 3. Production Docker Fallback (Task/Service name usually 'api')
+    if (process.env.NODE_ENV === 'production') {
+        return 'http://api:4000/api/v1';
+    }
+
+    // 4. Local Development
+    return 'http://localhost:4000';
 };
 
 /**

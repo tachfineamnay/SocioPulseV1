@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { getApiBaseWithVersion } from '@/lib/config';
 
 type MissionDetail = {
     id: string;
@@ -22,7 +23,7 @@ type MissionDetail = {
     requiredSkills?: string[] | null;
 };
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1').replace(/\/$/, '');
+const API_BASE = getApiBaseWithVersion();
 
 async function fetchMission(id: string): Promise<MissionDetail | null> {
     const res = await fetch(`${API_BASE}/matching/missions/${id}`, { cache: 'no-store' });
