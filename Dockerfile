@@ -19,6 +19,8 @@ COPY . .
 RUN rm -rf apps/api
 RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED 1
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
 FROM base AS runner
