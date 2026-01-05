@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import {
-    ChevronLeft, ChevronRight, ChevronDown, Flame, Loader2, MapPin,
+    ChevronDown, Loader2, MapPin,
     Sparkles, Video, Palette, Search, Plus
 } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
@@ -14,11 +14,13 @@ import { CreateActionModal, type CreateActionModalUser } from '@/components/crea
 import { MissionCard } from './MissionCard';
 import { ServiceCard } from './ServiceCard';
 import { FeedSidebar, type SidebarData } from './FeedSidebar';
+import { DemandsCarousel } from './DemandsCarousel';
+import { FeaturedOffers } from './FeaturedOffers';
 import { useWallFeed } from './useWallFeed';
 
 // ===========================================
 // WALL FEED CLIENT - Sociopulse "Wall Experience"
-// HERO PLEIN ÉCRAN + Awwwards Level Design
+// NEW LAYOUT: Carousel + Featured + Mixed Feed
 // ===========================================
 
 export interface TalentPoolItem {
@@ -35,7 +37,6 @@ export interface ActivityItem {
     time: string;
 }
 
-// Page-based pagination meta
 export interface FeedMeta {
     total: number;
     page: number;
@@ -47,7 +48,6 @@ interface WallFeedClientProps {
     initialData?: any[];
     initialFeed?: any[];
     initialMeta?: FeedMeta;
-    // Legacy props for backward compatibility
     initialNextCursor?: string | null;
     initialHasNextPage?: boolean;
     talentPool?: TalentPoolItem[];
@@ -55,16 +55,7 @@ interface WallFeedClientProps {
     sidebarData?: SidebarData;
 }
 
-type FeedMode = 'all' | 'renfort' | 'services';
-
 const isType = (item: any, type: string) => String(item?.type || '').toUpperCase() === type;
-
-const isUrgentMission = (mission: any) => {
-    const urgency = String(mission?.urgencyLevel || '').toUpperCase();
-    return urgency === 'HIGH' || urgency === 'CRITICAL';
-};
-
-// Grid layout: strict 3-column layout (removed Masonry variable heights)
 
 function SectionEmptyState({ icon: Icon, title, description, action }: { icon: LucideIcon; title: string; description: string; action?: ReactNode }) {
     return (
@@ -79,52 +70,6 @@ function SectionEmptyState({ icon: Icon, title, description, action }: { icon: L
     );
 }
 
-function FeedModeToggle({ mode, onChange }: { mode: FeedMode; onChange: (mode: FeedMode) => void }) {
-    const toggle = (target: 'services' | 'renfort') => {
-        if (mode === target) {
-            onChange('all');
-        } else {
-            onChange(target);
-        }
-    };
-
-    return (
-        <div className="pill-toggle">
-            {/* Sliding Indicator */}
-            <motion.div
-                className="pill-toggle-indicator"
-                initial={false}
-                animate={{
-                    left: mode === 'services' ? '4px' : mode === 'renfort' ? '50%' : '-100%',
-                    width: mode === 'all' ? '0%' : '48%',
-                    backgroundColor: mode === 'services' ? '#F0FDFA' : mode === 'renfort' ? '#FFF1F2' : 'transparent',
-                    borderColor: mode === 'services' ? '#99F6E4' : mode === 'renfort' ? '#FECDD3' : 'transparent',
-                    borderWidth: mode === 'all' ? 0 : 1,
-                }}
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            />
-
-            <button
-                type="button"
-                onClick={() => toggle('services')}
-                className={`pill-toggle-item ${mode === 'services' ? 'text-teal-700' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-                <Video className="w-4 h-4" />
-                <span>SocioLive & Ateliers</span>
-            </button>
-
-            <button
-                type="button"
-                onClick={() => toggle('renfort')}
-                className={`pill-toggle-item ${mode === 'renfort' ? 'text-rose-700' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-                <MapPin className="w-4 h-4" />
-                <span>Renfort Terrain</span>
-            </button>
-        </div>
-    );
-}
-
 export function WallFeedClient({
     initialData,
     initialFeed,
@@ -135,8 +80,6 @@ export function WallFeedClient({
     sidebarData,
 }: WallFeedClientProps) {
     const resolvedInitialData = Array.isArray(initialData) ? initialData : Array.isArray(initialFeed) ? initialFeed : [];
-
-    // Support both new meta-based and legacy cursor-based initialization
     const resolvedHasNextPage = initialMeta?.hasNextPage ?? initialHasNextPage;
 
     const { user } = useAuth();
@@ -149,27 +92,26 @@ export function WallFeedClient({
         initialHasNextPage: resolvedHasNextPage,
     });
 
-    const [feedMode, setFeedMode] = useState<FeedMode>('all');
-
-    const missions = useMemo(() => feed.filter((item) => isType(item, 'MISSION')), [feed]);
-    const services = useMemo(() => feed.filter((item) => isType(item, 'SERVICE')), [feed]);
-    const urgentMissions = useMemo(() => missions.filter(isUrgentMission).slice(0, 12), [missions]);
-
-    // Logic: 'all' shows everything (default), otherwise filter by type
-    const displayedItems = useMemo(() => {
-        if (feedMode === 'renfort') return missions;
-        if (feedMode === 'services') return services;
-        return feed;
-    }, [feedMode, missions, services, feed]);
-
-    const urgentRailRef = useRef<HTMLDivElement>(null);
     const feedSectionRef = useRef<HTMLDivElement>(null);
 
-    const scrollUrgentRail = (direction: 'prev' | 'next') => {
-        const node = urgentRailRef.current;
-        if (!node) return;
-        node.scrollBy({ left: direction === 'prev' ? -360 : 360, behavior: 'smooth' });
-    };
+    // Separate missions and services
+    const missions = useMemo(() => feed.filter((item) => isType(item, 'MISSION')), [feed]);
+    const services = useMemo(() => feed.filter((item) => isType(item, 'SERVICE')), [feed]);
+
+    // Featured: first 4 services for the grid
+    const featuredServices = useMemo(() => services.slice(0, 4), [services]);
+
+    // Mixed feed: remaining items after featured (skip first 4 services, keep all missions)
+    const mixedFeed = useMemo(() => {
+        const remainingServices = services.slice(4);
+        // Combine and sort by createdAt (newest first)
+        const combined = [...missions, ...remainingServices];
+        return combined.sort((a, b) => {
+            const dateA = new Date(a.createdAt || 0).getTime();
+            const dateB = new Date(b.createdAt || 0).getTime();
+            return dateB - dateA;
+        }).slice(0, 26); // Limit to 26 items
+    }, [missions, services]);
 
     const scrollToFeed = () => {
         feedSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -177,12 +119,12 @@ export function WallFeedClient({
 
     return (
         <div className="relative min-h-screen bg-canvas overflow-hidden">
-            {/* ========== HERO PLEIN LARGEUR - 2026 Premium Design ========== */}
-            <section className="relative w-full min-h-[90vh] flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
-                {/* AMBIENT BACKGROUND - Elegant Mesh Gradient */}
+            {/* ========== HERO SECTION ========== */}
+            <section className="relative w-full min-h-[70vh] flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
+                {/* Ambient Background */}
                 <div aria-hidden className="hero-mesh-gradient" />
 
-                {/* FLOATING ORBS - Ultra subtle ambient glow */}
+                {/* Floating Orbs */}
                 <div aria-hidden className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="floating-orb floating-orb-1" style={{ top: '-15%', left: '10%' }} />
                     <div className="floating-orb floating-orb-2" style={{ top: '50%', right: '-10%' }} />
@@ -190,7 +132,7 @@ export function WallFeedClient({
                 </div>
 
                 <div className="relative max-w-5xl mx-auto text-center z-10">
-                    {/* Titre H1 Major - Statement Typography */}
+                    {/* Title */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -206,7 +148,7 @@ export function WallFeedClient({
                         </h1>
                     </motion.div>
 
-                    {/* Punchline Secondary - Clean & Elegant */}
+                    {/* Subtitle */}
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -219,31 +161,11 @@ export function WallFeedClient({
                         </span>
                     </motion.h2>
 
-                    {/* Mission Text - Subtle */}
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.5 }}
-                        className="mt-6 text-base sm:text-lg font-medium text-slate-400 max-w-xl mx-auto"
-                    >
-                        La plateforme des pro de l'éducation spécialisée et du médico-social.
-                    </motion.p>
-
-                    {/* Mode Switcher - Premium Pill Design */}
+                    {/* Search Bar */}
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.6 }}
-                        className="mt-12"
-                    >
-                        <FeedModeToggle mode={feedMode} onChange={setFeedMode} />
-                    </motion.div>
-
-                    {/* Smart Search Bar - Glowing Effect */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.7 }}
                         className="relative mt-10 max-w-2xl mx-auto hero-search-glow"
                     >
                         <div className="relative glass rounded-full border border-white/60 shadow-soft-lg overflow-hidden">
@@ -262,7 +184,7 @@ export function WallFeedClient({
 
                     {/* Publish CTA */}
                     {canPublish && user && (
-                        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} className="mt-8">
+                        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7 }} className="mt-8">
                             <CreateActionModal
                                 user={user as unknown as CreateActionModalUser}
                                 trigger={
@@ -276,124 +198,118 @@ export function WallFeedClient({
                     )}
                 </div>
 
-                {/* Scroll indicator - Gentle floating */}
+                {/* Scroll Indicator */}
                 <motion.button
                     onClick={scrollToFeed}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 1.2 }}
+                    transition={{ delay: 1 }}
                     className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors discover-btn"
                 >
                     <span className="text-sm font-medium tracking-wide">Découvrir</span>
                     <ChevronDown className="w-5 h-5" />
                 </motion.button>
 
-                {/* Subtle wave transition */}
                 <div className="wave-pattern" />
             </section>
 
             {/* ========== MAIN CONTENT ========== */}
-            <main ref={feedSectionRef} className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-16 pb-safe">
+            <main ref={feedSectionRef} className="mx-auto max-w-[1600px] px-4 sm:px-6 lg:px-8 py-12 pb-safe">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     <div className="lg:col-span-9">
 
-                        {/* URGENT MISSIONS RAIL */}
-                        <AnimatePresence mode="wait">
-                            {feedMode === 'renfort' && urgentMissions.length > 0 && (
-                                <motion.section key="urgent-rail" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="mb-10">
-                                    <div className="flex items-center justify-between gap-4 mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-11 w-11 rounded-2xl bg-rose-50 border border-rose-100 grid place-items-center">
-                                                <Flame className="h-5 w-5 text-rose-500" />
-                                            </div>
-                                            <div>
-                                                <p className="text-[11px] uppercase tracking-[0.22em] text-rose-600 font-semibold">🔥 À pourvoir en urgence</p>
-                                                <h2 className="text-lg font-bold tracking-tight text-slate-900">Missions Renfort Express</h2>
-                                            </div>
-                                        </div>
-                                        <div className="hidden md:flex items-center gap-2">
-                                            <button type="button" onClick={() => scrollUrgentRail('prev')} className="h-10 w-10 rounded-2xl bg-white/80 border border-slate-200 hover:bg-slate-50 shadow-soft grid place-items-center"><ChevronLeft className="h-5 w-5 text-slate-700" /></button>
-                                            <button type="button" onClick={() => scrollUrgentRail('next')} className="h-10 w-10 rounded-2xl bg-white/80 border border-slate-200 hover:bg-slate-50 shadow-soft grid place-items-center"><ChevronRight className="h-5 w-5 text-slate-700" /></button>
-                                        </div>
-                                    </div>
-                                    <div ref={urgentRailRef} className="flex gap-4 overflow-x-auto pb-4 scrollbar-none snap-x scroll-smooth -mx-1 px-1">
-                                        {urgentMissions.map((mission, index) => (
-                                            <div key={String(mission?.id ?? index)} className="flex-shrink-0 w-[300px] sm:w-[340px] snap-start">
-                                                <MissionCard data={mission} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </motion.section>
-                            )}
-                        </AnimatePresence>
+                        {/* 1. DEMANDS CAROUSEL */}
+                        <DemandsCarousel items={missions} />
 
-                        {/* MAIN FEED GRID */}
+                        {/* 2. FEATURED OFFERS (4 services) */}
+                        <FeaturedOffers items={services} />
+
+                        {/* 3. MIXED FEED - Fil d'actualité */}
                         <section>
                             <div className="flex items-center justify-between gap-4 mb-6">
                                 <div className="flex items-center gap-3">
-                                    <div className={`h-11 w-11 rounded-2xl grid place-items-center ${feedMode === 'renfort' ? 'bg-rose-50 border border-rose-100' : feedMode === 'services' ? 'bg-teal-50 border border-teal-100' : 'bg-indigo-50 border border-indigo-100'}`}>
-                                        {feedMode === 'renfort' ? <MapPin className="h-5 w-5 text-rose-500" /> : feedMode === 'services' ? <Palette className="h-5 w-5 text-teal-600" /> : <Sparkles className="h-5 w-5 text-indigo-600" />}
+                                    <div className="h-10 w-10 rounded-xl bg-indigo-50 border border-indigo-100 grid place-items-center">
+                                        <Sparkles className="h-5 w-5 text-indigo-600" />
                                     </div>
                                     <div>
-                                        <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">
-                                            {feedMode === 'renfort' ? '📍 Missions terrain' : feedMode === 'services' ? '✨ Experts & Ateliers' : '🌍 La plateforme'}
+                                        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500">
+                                            🌍 Toutes les annonces
                                         </p>
-                                        <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                                            {feedMode === 'renfort' ? 'Offres de Renfort' : feedMode === 'services' ? 'Catalogue SocioLive' : 'Fil d\'actualité'}
+                                        <h2 className="text-base font-bold tracking-tight text-slate-900">
+                                            Fil d'actualité
                                         </h2>
                                     </div>
                                 </div>
-                                {displayedItems.length > 0 && <span className="text-sm text-slate-500 font-medium">{displayedItems.length} {feedMode === 'renfort' ? 'missions' : feedMode === 'services' ? 'services' : 'publications'}</span>}
+                                {mixedFeed.length > 0 && (
+                                    <span className="text-sm text-slate-500 font-medium">
+                                        {mixedFeed.length} publications
+                                    </span>
+                                )}
                             </div>
 
-                            {isLoading && displayedItems.length === 0 ? (
+                            {isLoading && mixedFeed.length === 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {Array.from({ length: 9 }).map((_, index) => (
-                                        <div key={index} className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse min-h-[320px]" />
+                                    {Array.from({ length: 6 }).map((_, index) => (
+                                        <div key={index} className="rounded-2xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse min-h-[280px]" />
                                     ))}
                                 </div>
-                            ) : displayedItems.length > 0 ? (
+                            ) : mixedFeed.length > 0 ? (
                                 <AnimatePresence mode="wait">
-                                    <motion.div key={feedMode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {displayedItems.map((item, index) => (
-                                            <motion.div key={String(item?.id ?? index)} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: index * 0.03 }} className="h-full">
-                                                {isType(item, 'MISSION') ? <MissionCard data={item} /> : <ServiceCard data={item} currentUserId={user?.id ?? undefined} />}
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                                    >
+                                        {mixedFeed.map((item, index) => (
+                                            <motion.div
+                                                key={String(item?.id ?? index)}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.3, delay: index * 0.02 }}
+                                                className="h-full"
+                                            >
+                                                {isType(item, 'MISSION') ? (
+                                                    <MissionCard data={item} />
+                                                ) : (
+                                                    <ServiceCard data={item} currentUserId={user?.id ?? undefined} />
+                                                )}
                                             </motion.div>
                                         ))}
                                     </motion.div>
                                 </AnimatePresence>
                             ) : (
                                 <SectionEmptyState
-                                    icon={feedMode === 'renfort' ? MapPin : Sparkles}
-                                    title={feedMode === 'renfort' ? 'Aucune mission disponible' : feedMode === 'services' ? 'Aucun expert disponible' : 'Aucune publication'}
+                                    icon={Sparkles}
+                                    title="Aucune publication"
                                     description="Affinez votre recherche ou revenez un peu plus tard."
                                     action={canPublish && user ? (
                                         <CreateActionModal user={user as unknown as CreateActionModalUser} trigger={
                                             <button type="button" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-teal-500 px-5 py-3 text-sm font-semibold text-white shadow-soft">
-                                                <Plus className="h-4 w-4" />{feedMode === 'renfort' ? 'Publier une mission' : 'Publier une annonce'}
+                                                <Plus className="h-4 w-4" />
+                                                Publier une annonce
                                             </button>
                                         } />
                                     ) : undefined}
                                 />
                             )}
 
-                            {/* LOAD MORE SECTION */}
+                            {/* Load More */}
                             {hasMore && (
                                 <div className="mt-8">
-                                    {/* Skeleton Cards during loading */}
                                     {isLoadingMore && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
                                             {[1, 2, 3].map((i) => (
                                                 <div
                                                     key={`skeleton-${i}`}
-                                                    className="rounded-2xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse h-[320px]"
+                                                    className="rounded-2xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse h-[280px]"
                                                     aria-hidden="true"
                                                 />
                                             ))}
                                         </div>
                                     )}
 
-                                    {/* Load More Button - Accessible */}
                                     <div className="flex justify-center">
                                         <button
                                             type="button"
