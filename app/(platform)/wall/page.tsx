@@ -4,7 +4,7 @@ import { getApiBaseWithVersion } from '@/lib/config';
 
 // ===========================================
 // SOCIOPULSE WALL EXPERIENCE - Wall Page
-// Redirect from /wall to homepage
+// SSR: 10 premiers items pour SEO
 // ===========================================
 
 export const metadata: Metadata = {
@@ -26,27 +26,55 @@ export const metadata: Metadata = {
 
 const getApiBase = getApiBaseWithVersion;
 
-type InitialFeed = {
-    items: any[];
-    nextCursor: string | null;
+// Page-based pagination meta interface
+interface FeedMeta {
+    total: number;
+    page: number;
+    lastPage: number;
     hasNextPage: boolean;
-};
+}
 
-async function getInitialFeed(): Promise<InitialFeed> {
+interface InitialFeedResponse {
+    data: any[];
+    meta: FeedMeta;
+    // Legacy fields for backward compatibility
+    items?: any[];
+    pageInfo?: { nextCursor?: string; hasNextPage?: boolean };
+}
+
+async function getInitialFeed(): Promise<{ data: any[]; meta: FeedMeta }> {
+    const defaultMeta: FeedMeta = { total: 0, page: 1, lastPage: 1, hasNextPage: false };
+
     try {
-        const response = await fetch(`${getApiBase()}/wall/feed`, {
+        // SSR fetch: first page with 10 items for SEO
+        const response = await fetch(`${getApiBase()}/wall/feed?page=1&limit=10`, {
             cache: 'no-store',
             next: { revalidate: 0 }
         });
-        if (!response.ok) return { items: [], nextCursor: null, hasNextPage: false };
 
-        const data = await response.json();
-        const items = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
-        const nextCursor = typeof data?.pageInfo?.nextCursor === 'string' ? data.pageInfo.nextCursor : null;
-        const hasNextPage = Boolean(data?.pageInfo?.hasNextPage);
-        return { items, nextCursor, hasNextPage };
+        if (!response.ok) {
+            return { data: [], meta: defaultMeta };
+        }
+
+        const json: InitialFeedResponse = await response.json();
+
+        // Support both new format (data/meta) and legacy format (items/pageInfo)
+        const data = Array.isArray(json?.data)
+            ? json.data
+            : Array.isArray(json?.items)
+                ? json.items
+                : [];
+
+        const meta: FeedMeta = json?.meta ?? {
+            total: data.length,
+            page: 1,
+            lastPage: json?.pageInfo?.hasNextPage ? 2 : 1,
+            hasNextPage: Boolean(json?.pageInfo?.hasNextPage),
+        };
+
+        return { data, meta };
     } catch {
-        return { items: [], nextCursor: null, hasNextPage: false };
+        return { data: [], meta: defaultMeta };
     }
 }
 
@@ -55,11 +83,11 @@ export default async function WallPage() {
 
     return (
         <WallFeedClient
-            initialData={feed.items}
-            initialNextCursor={feed.nextCursor}
-            initialHasNextPage={feed.hasNextPage}
+            initialData={feed.data}
+            initialMeta={feed.meta}
             talentPool={[]}
             activity={[]}
         />
     );
 }
+

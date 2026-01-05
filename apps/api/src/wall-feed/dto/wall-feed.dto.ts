@@ -10,6 +10,32 @@ export enum FeedItemType {
     ALL = 'ALL',
 }
 
+// =============================================
+// Pagination Response DTOs
+// =============================================
+
+export class FeedMetaDto {
+    @ApiProperty({ description: 'Nombre total d\'items' })
+    total: number;
+
+    @ApiProperty({ description: 'Page actuelle (1-indexed)' })
+    page: number;
+
+    @ApiProperty({ description: 'Dernière page possible' })
+    lastPage: number;
+
+    @ApiProperty({ description: 'Y a-t-il une page suivante' })
+    hasNextPage: boolean;
+}
+
+export class PaginatedFeedResponseDto {
+    @ApiProperty({ description: 'Liste des items du feed', type: 'array' })
+    data: any[];
+
+    @ApiProperty({ description: 'Métadonnées de pagination', type: FeedMetaDto })
+    meta: FeedMetaDto;
+}
+
 export class GetFeedDto {
     @ApiPropertyOptional({ enum: FeedItemType, default: FeedItemType.ALL })
     @IsOptional()

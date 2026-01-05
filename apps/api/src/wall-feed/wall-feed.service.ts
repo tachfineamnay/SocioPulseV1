@@ -60,6 +60,14 @@ interface PaginatedFeedResult {
         hasNextPage: boolean;
         nextCursor: string | null;
     };
+    // New page-based meta for SEO pagination
+    data: FeedItem[];
+    meta: {
+        total: number;
+        page: number;
+        lastPage: number;
+        hasNextPage: boolean;
+    };
 }
 
 @Injectable()
@@ -152,7 +160,8 @@ export class WallFeedService {
             latitude,
             longitude,
             radiusKm = 50,
-            limit = 20,
+            limit = 10,
+            page = 1,
         } = filters;
 
         const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 50);
@@ -249,12 +258,26 @@ export class WallFeedService {
                 ? this.encodeNextCursor(pageItems, decodedCursor)
                 : null;
 
+            // Calculate total for page-based pagination (estimate from current fetch)
+            const estimatedTotal = distanceFiltered.length + (hasNextPage ? safeLimit : 0);
+            const currentPage = cursorRaw ? Math.ceil(estimatedTotal / safeLimit) : (filters.page || 1);
+            const lastPage = Math.max(1, Math.ceil(estimatedTotal / safeLimit));
+
             return {
+                // Legacy cursor-based format
                 items: pageItems,
                 pageInfo: {
                     limit: safeLimit,
                     hasNextPage,
                     nextCursor,
+                },
+                // New page-based format for SEO
+                data: pageItems,
+                meta: {
+                    total: estimatedTotal,
+                    page: currentPage,
+                    lastPage,
+                    hasNextPage,
                 },
             };
         } catch (error) {

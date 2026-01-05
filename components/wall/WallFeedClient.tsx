@@ -35,9 +35,19 @@ export interface ActivityItem {
     time: string;
 }
 
+// Page-based pagination meta
+export interface FeedMeta {
+    total: number;
+    page: number;
+    lastPage: number;
+    hasNextPage: boolean;
+}
+
 interface WallFeedClientProps {
     initialData?: any[];
     initialFeed?: any[];
+    initialMeta?: FeedMeta;
+    // Legacy props for backward compatibility
     initialNextCursor?: string | null;
     initialHasNextPage?: boolean;
     talentPool?: TalentPoolItem[];
@@ -118,6 +128,7 @@ function FeedModeToggle({ mode, onChange }: { mode: FeedMode; onChange: (mode: F
 export function WallFeedClient({
     initialData,
     initialFeed,
+    initialMeta,
     initialNextCursor = null,
     initialHasNextPage = false,
     talentPool = [],
@@ -125,13 +136,17 @@ export function WallFeedClient({
 }: WallFeedClientProps) {
     const resolvedInitialData = Array.isArray(initialData) ? initialData : Array.isArray(initialFeed) ? initialFeed : [];
 
+    // Support both new meta-based and legacy cursor-based initialization
+    const resolvedHasNextPage = initialMeta?.hasNextPage ?? initialHasNextPage;
+
     const { user } = useAuth();
     const canPublish = Boolean(user && (user.role === 'CLIENT' || user.role === 'TALENT'));
 
     const { feed, isLoading, isLoadingMore, hasMore, loadMore, searchTerm, setSearchTerm } = useWallFeed({
         initialItems: resolvedInitialData,
+        initialMeta,
         initialNextCursor,
-        initialHasNextPage,
+        initialHasNextPage: resolvedHasNextPage,
     });
 
     const [feedMode, setFeedMode] = useState<FeedMode>('all');
@@ -362,11 +377,41 @@ export function WallFeedClient({
                                 />
                             )}
 
+                            {/* LOAD MORE SECTION */}
                             {hasMore && (
-                                <div className="flex justify-center pt-8">
-                                    <button type="button" onClick={loadMore} className="btn-secondary" disabled={isLoadingMore}>
-                                        {isLoadingMore ? <><Loader2 className="h-4 w-4 animate-spin" />Chargement…</> : 'Charger plus'}
-                                    </button>
+                                <div className="mt-8">
+                                    {/* Skeleton Cards during loading */}
+                                    {isLoadingMore && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                                            {[1, 2, 3].map((i) => (
+                                                <div
+                                                    key={`skeleton-${i}`}
+                                                    className="rounded-2xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse h-[320px]"
+                                                    aria-hidden="true"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Load More Button - Accessible */}
+                                    <div className="flex justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={loadMore}
+                                            className="btn-secondary min-w-[180px]"
+                                            disabled={isLoadingMore}
+                                            aria-label="Charger plus de contenus"
+                                        >
+                                            {isLoadingMore ? (
+                                                <>
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                    Chargement…
+                                                </>
+                                            ) : (
+                                                'Charger plus'
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </section>

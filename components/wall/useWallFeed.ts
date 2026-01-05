@@ -3,8 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getFeed } from '@/app/(platform)/services/wall.service';
 
+// Page-based pagination meta
+export interface FeedMeta {
+    total: number;
+    page: number;
+    lastPage: number;
+    hasNextPage: boolean;
+}
+
 export interface UseWallFeedOptions {
     initialItems?: any[];
+    initialMeta?: FeedMeta;
+    // Legacy cursor-based options
     initialNextCursor?: string | null;
     initialHasNextPage?: boolean;
     debounceMs?: number;
@@ -26,10 +36,16 @@ type ParsedFeedResponse = {
     items: any[];
     nextCursor: string | null;
     hasNextPage: boolean;
+    // New page-based fields
+    page?: number;
+    lastPage?: number;
+    total?: number;
 };
 
 function parseFeedResponse(data: any): ParsedFeedResponse {
+    // Support both new format (data) and legacy format (items)
     const items =
+        (Array.isArray(data?.data) && data.data) ||
         (Array.isArray(data?.items) && data.items) ||
         (Array.isArray(data?.data?.items) && data.data.items) ||
         (Array.isArray(data?.feed?.items) && data.feed.items) ||
@@ -37,6 +53,10 @@ function parseFeedResponse(data: any): ParsedFeedResponse {
         (Array.isArray(data) && data) ||
         [];
 
+    // Support new meta format
+    const meta = data?.meta;
+
+    // Legacy pageInfo format
     const pageInfo =
         (data?.pageInfo && data.pageInfo) ||
         (data?.data?.pageInfo && data.data.pageInfo) ||
@@ -44,13 +64,21 @@ function parseFeedResponse(data: any): ParsedFeedResponse {
         null;
 
     const nextCursor = pageInfo && typeof pageInfo?.nextCursor === 'string' ? pageInfo.nextCursor : null;
-    const hasNextPage = Boolean(pageInfo?.hasNextPage);
+    const hasNextPage = meta?.hasNextPage ?? Boolean(pageInfo?.hasNextPage);
 
-    return { items: Array.isArray(items) ? items : [], nextCursor, hasNextPage };
+    return {
+        items: Array.isArray(items) ? items : [],
+        nextCursor,
+        hasNextPage,
+        page: meta?.page,
+        lastPage: meta?.lastPage,
+        total: meta?.total,
+    };
 }
 
 export function useWallFeed({
     initialItems = [],
+    initialMeta,
     initialNextCursor = null,
     initialHasNextPage = false,
     debounceMs = 320,
@@ -60,7 +88,12 @@ export function useWallFeed({
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
-    const [hasMore, setHasMore] = useState(Boolean(initialHasNextPage && initialNextCursor));
+
+    // Page-based pagination state
+    const [currentPage, setCurrentPage] = useState(initialMeta?.page ?? 1);
+    const [hasMore, setHasMore] = useState(
+        initialMeta?.hasNextPage ?? Boolean(initialHasNextPage && initialNextCursor)
+    );
 
     const didInitFetchRef = useRef(false);
 
@@ -85,19 +118,27 @@ export function useWallFeed({
     }, [searchTerm]);
 
     const loadMore = useCallback(async () => {
-        if (!hasMore || !nextCursor || isLoadingMore) return;
+        if (!hasMore || isLoadingMore) return;
 
         setIsLoadingMore(true);
         try {
             const normalizedSearch = searchTerm.trim();
-            const params: Record<string, any> = { cursor: nextCursor };
+            const nextPage = currentPage + 1;
+
+            // Use page-based pagination (preferred) or fallback to cursor
+            const params: Record<string, any> = {
+                page: nextPage,
+                limit: 10
+            };
+            if (nextCursor) params.cursor = nextCursor;
             if (normalizedSearch) params.search = normalizedSearch;
 
             const data = await getFeed(params);
             const parsed = parseFeedResponse(data);
 
             setNextCursor(parsed.nextCursor);
-            setHasMore(Boolean(parsed.hasNextPage && parsed.nextCursor));
+            setCurrentPage(parsed.page ?? nextPage);
+            setHasMore(parsed.hasNextPage);
 
             if (parsed.items.length > 0) {
                 setFeed((prev) => {
@@ -117,7 +158,7 @@ export function useWallFeed({
         } finally {
             setIsLoadingMore(false);
         }
-    }, [hasMore, isLoadingMore, nextCursor, searchTerm]);
+    }, [hasMore, isLoadingMore, nextCursor, searchTerm, currentPage]);
 
     useEffect(() => {
         const handler = (event: Event) => {
