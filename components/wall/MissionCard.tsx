@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MapPin, Euro, Calendar, Zap, Clock, Building2, ArrowRight, Sun, Moon } from 'lucide-react';
+import { getCardStyle } from '@/lib/categoryStyles';
 
 // ===========================================
 // MISSION CARD - Design "Job Board Pro"

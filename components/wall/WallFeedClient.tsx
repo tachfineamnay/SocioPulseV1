@@ -54,12 +54,7 @@ const isUrgentMission = (mission: any) => {
     return urgency === 'HIGH' || urgency === 'CRITICAL';
 };
 
-const getMasonrySpan = (index: number, itemCount: number) => {
-    if (index === 0) return 'sm:col-span-2 lg:row-span-2';
-    if (index % 7 === 3) return 'sm:col-span-2';
-    if (index % 11 === 5 && itemCount > 8) return 'lg:col-span-2';
-    return '';
-};
+// Grid layout: strict 3-column layout (removed Masonry variable heights)
 
 function SectionEmptyState({ icon: Icon, title, description, action }: { icon: LucideIcon; title: string; description: string; action?: ReactNode }) {
     return (
@@ -337,16 +332,16 @@ export function WallFeedClient({
                             </div>
 
                             {isLoading && displayedItems.length === 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-fr gap-6 [grid-auto-flow:dense]">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {Array.from({ length: 9 }).map((_, index) => (
-                                        <div key={index} className={`rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse min-h-[320px] ${index === 0 ? 'sm:col-span-2 xl:row-span-2' : ''}`} />
+                                        <div key={index} className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse min-h-[320px]" />
                                     ))}
                                 </div>
                             ) : displayedItems.length > 0 ? (
                                 <AnimatePresence mode="wait">
-                                    <motion.div key={feedMode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-fr gap-6 [grid-auto-flow:dense]">
+                                    <motion.div key={feedMode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {displayedItems.map((item, index) => (
-                                            <motion.div key={String(item?.id ?? index)} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: index * 0.03 }} className={`h-full ${getMasonrySpan(index, displayedItems.length)}`}>
+                                            <motion.div key={String(item?.id ?? index)} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: index * 0.03 }} className="h-full">
                                                 {isType(item, 'MISSION') ? <MissionCard data={item} /> : <ServiceCard data={item} currentUserId={user?.id ?? undefined} />}
                                             </motion.div>
                                         ))}

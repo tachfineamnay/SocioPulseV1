@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Video, Palette, Star, MapPin, MessageCircle, Play, Clock, Users } from 'lucide-react';
+import { getCardStyle } from '@/lib/categoryStyles';
 
 // ===========================================
 // SERVICE CARD - Design "Airbnb Experience"
@@ -35,13 +36,7 @@ const serviceTypeBadge = {
     DEFAULT: { label: 'Service', icon: Palette, bgColor: 'bg-slate-700', textColor: 'text-white', emoji: '✨', gradient: 'from-slate-600 to-slate-700' },
 };
 
-const FALLBACK_IMAGES = [
-    'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80',
-    'https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=800&q=80',
-    'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=800&q=80',
-    'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80',
-    'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=800&q=80',
-];
+// Category gradient fallback replaces static images
 
 export function ServiceCard({ data, currentUserId, onClick, onSelfContact }: ServiceCardProps) {
     const service = data || {};
@@ -67,9 +62,11 @@ export function ServiceCard({ data, currentUserId, onClick, onSelfContact }: Ser
     const cardId = service?.id || service?.serviceId;
     const detailHref = cardId ? `/offer/${cardId}` : undefined;
 
-    const imageUrl = service?.imageUrl || (Array.isArray(service?.imageUrls) ? service.imageUrls[0] : undefined) ||
-        (Array.isArray(service?.galleryUrls) ? service.galleryUrls[0] : undefined) || service?.coverImage ||
-        FALLBACK_IMAGES[Math.abs(cardId?.charCodeAt(0) || 0) % FALLBACK_IMAGES.length];
+    // Get actual image URL (no fallback to placeholder images)
+    const actualImageUrl = service?.imageUrl || (Array.isArray(service?.imageUrls) ? service.imageUrls[0] : undefined) ||
+        (Array.isArray(service?.galleryUrls) ? service.galleryUrls[0] : undefined) || service?.coverImage || null;
+    const hasImage = Boolean(actualImageUrl);
+    const categoryStyle = getCardStyle(category || serviceType);
 
     const badgeConfig = serviceTypeBadge[serviceType] || serviceTypeBadge.DEFAULT;
     const BadgeIcon = badgeConfig.icon;
@@ -99,9 +96,13 @@ export function ServiceCard({ data, currentUserId, onClick, onSelfContact }: Ser
             className="group relative bg-white rounded-3xl overflow-hidden cursor-pointer shadow-soft hover:shadow-xl transition-all duration-300 h-full flex flex-col"
             itemScope itemType="https://schema.org/Service"
         >
-            {/* IMAGE HERO */}
-            <div className="relative h-56 sm:h-64 overflow-hidden">
-                <img src={imageUrl} alt={imageAlt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" itemProp="image" />
+            {/* IMAGE HERO or CATEGORY GRADIENT */}
+            <div className="relative h-48 overflow-hidden">
+                {hasImage ? (
+                    <img src={actualImageUrl!} alt={imageAlt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" itemProp="image" />
+                ) : (
+                    <div className={`w-full h-full ${categoryStyle.gradientClass}`} aria-hidden="true" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
                 <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
