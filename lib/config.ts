@@ -34,9 +34,10 @@ export const getApiUrl = (): string => {
         return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
     }
 
-    // 3. Production Docker Fallback (Task/Service name usually 'api')
+    // 3. Production fallback: use the public API URL
+    // The internal Docker hostname 'api' may not resolve across networks
     if (process.env.NODE_ENV === 'production') {
-        return 'http://api:4000/api/v1';
+        return 'https://api.sociopulse.fr/api/v1';
     }
 
     // 4. Local Development
