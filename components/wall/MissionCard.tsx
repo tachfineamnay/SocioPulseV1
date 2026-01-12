@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MapPin, Euro, Calendar, Zap, Clock, Building2, ArrowRight, Sun, Moon } from 'lucide-react';
 import { getCardStyle } from '@/lib/categoryStyles';
+import { JobPostingJsonLd } from './JsonLdSchema';
 
 // ===========================================
 // MISSION CARD - Design "Job Board Pro"
@@ -196,5 +197,27 @@ export function MissionCard({ data, onClick }: MissionCardProps) {
         </motion.article>
     );
 
-    return detailHref ? <Link href={detailHref} className="block h-full">{card}</Link> : card;
+    // JSON-LD data for SEO
+    const jsonLdData = {
+        id: missionId ?? '',
+        title: missionTitle,
+        description: description || undefined,
+        createdAt: mission?.createdAt,
+        validUntil: mission?.validUntil,
+        establishmentName: establishment,
+        city: city !== 'Non précisé' ? city : undefined,
+        postalCode: mission?.postalCode || undefined,
+        hourlyRate: hourlyRate,
+    };
+
+    const wrappedCard = (
+        <>
+            <JobPostingJsonLd data={jsonLdData} />
+            {card}
+        </>
+    );
+
+    return detailHref
+        ? <Link href={detailHref} className="block h-full">{wrappedCard}</Link>
+        : wrappedCard;
 }

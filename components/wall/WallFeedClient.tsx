@@ -250,7 +250,7 @@ export function WallFeedClient({
                             {isLoading && mixedFeed.length === 0 ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {Array.from({ length: 6 }).map((_, index) => (
-                                        <div key={index} className="rounded-2xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse min-h-[280px]" />
+                                        <div key={index} className="rounded-2xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse h-[380px]" />
                                     ))}
                                 </div>
                             ) : mixedFeed.length > 0 ? (
@@ -303,7 +303,7 @@ export function WallFeedClient({
                                             {[1, 2, 3].map((i) => (
                                                 <div
                                                     key={`skeleton-${i}`}
-                                                    className="rounded-2xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse h-[280px]"
+                                                    className="rounded-2xl bg-white/60 backdrop-blur-md border border-white/60 shadow-soft animate-pulse h-[380px]"
                                                     aria-hidden="true"
                                                 />
                                             ))}

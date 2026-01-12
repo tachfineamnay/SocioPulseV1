@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Video, Palette, Star, MapPin, MessageCircle, Play, Clock, Users } from 'lucide-react';
 import { getCardStyle } from '@/lib/categoryStyles';
+import { CourseJsonLd, EventJsonLd } from './JsonLdSchema';
 
 // ===========================================
 // SERVICE CARD - Design "Airbnb Experience"
@@ -178,5 +179,31 @@ export function ServiceCard({ data, currentUserId, onClick, onSelfContact }: Ser
         </motion.article>
     );
 
-    return detailHref ? <Link href={detailHref} className="block h-full">{card}</Link> : card;
+    // JSON-LD data for SEO
+    const jsonLdData = {
+        id: cardId ?? '',
+        title: title,
+        description: description || undefined,
+        createdAt: service?.createdAt,
+        providerName: providerName,
+        city: city || undefined,
+        basePrice: basePrice,
+        serviceType: serviceType,
+        duration: typeof duration === 'number' ? duration : undefined,
+        category: category || undefined,
+    };
+
+    // Use EventJsonLd for SocioLive, CourseJsonLd for Workshop/Atelier
+    const JsonLdComponent = isSocioLive ? EventJsonLd : CourseJsonLd;
+
+    const wrappedCard = (
+        <>
+            <JsonLdComponent data={jsonLdData} />
+            {card}
+        </>
+    );
+
+    return detailHref
+        ? <Link href={detailHref} className="block h-full">{wrappedCard}</Link>
+        : wrappedCard;
 }

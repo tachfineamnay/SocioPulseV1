@@ -12,6 +12,15 @@ export { SmartCard, type SmartCardProps, type DiscoveryMode } from './SmartCard'
 export { ImmersiveCard, type ImmersiveCardProps } from './ImmersiveCard';
 export { useWallFeed, type UseWallFeedOptions, type UseWallFeedResult } from './useWallFeed';
 
+// JSON-LD Schema Components for SEO
+export {
+    JobPostingJsonLd,
+    CourseJsonLd,
+    EventJsonLd,
+    type MissionJsonLdData,
+    type ServiceJsonLdData
+} from './JsonLdSchema';
+
 // Sidebar Widgets
 export { FeedSidebar, type FeedSidebarProps, type SidebarData } from './FeedSidebar';
 export { NewsWidget, type NewsWidgetProps, type NewsItem } from './NewsWidget';

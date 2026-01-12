@@ -46,8 +46,8 @@ async function getInitialFeed(): Promise<{ data: any[]; meta: FeedMeta }> {
     const defaultMeta: FeedMeta = { total: 0, page: 1, lastPage: 1, hasNextPage: false };
 
     try {
-        // SSR fetch: first page with 40 items for sections (carousel + featured + feed)
-        const response = await fetch(`${getApiBase()}/wall/feed?page=1&limit=40`, {
+        // SSR fetch: first page with 10 items for SEO and fast LCP
+        const response = await fetch(`${getApiBase()}/wall/feed?page=1&limit=10`, {
             cache: 'no-store',
             next: { revalidate: 0 }
         });

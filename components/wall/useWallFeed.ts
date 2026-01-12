@@ -1,7 +1,28 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { getFeed } from '@/app/(platform)/services/wall.service';
+
+// Helper to get initial page from URL
+function getInitialPageFromUrl(): number {
+    if (typeof window === 'undefined') return 1;
+    const params = new URLSearchParams(window.location.search);
+    const pageParam = params.get('page');
+    const page = pageParam ? parseInt(pageParam, 10) : 1;
+    return Number.isNaN(page) || page < 1 ? 1 : page;
+}
+
+// Helper to update URL silently without navigation
+function updateUrlWithPage(page: number) {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    if (page > 1) {
+        url.searchParams.set('page', String(page));
+    } else {
+        url.searchParams.delete('page');
+    }
+    window.history.pushState({}, '', url.toString());
+}
 
 // Page-based pagination meta
 export interface FeedMeta {
@@ -89,8 +110,14 @@ export function useWallFeed({
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
 
-    // Page-based pagination state
-    const [currentPage, setCurrentPage] = useState(initialMeta?.page ?? 1);
+    // useTransition for non-blocking UI during Load More
+    const [isPending, startTransition] = useTransition();
+
+    // Page-based pagination state - initialize from URL if available
+    const [currentPage, setCurrentPage] = useState(() => {
+        const urlPage = getInitialPageFromUrl();
+        return urlPage > 1 ? urlPage : (initialMeta?.page ?? 1);
+    });
     const [hasMore, setHasMore] = useState(
         initialMeta?.hasNextPage ?? Boolean(initialHasNextPage && initialNextCursor)
     );
@@ -118,7 +145,7 @@ export function useWallFeed({
     }, [searchTerm]);
 
     const loadMore = useCallback(async () => {
-        if (!hasMore || isLoadingMore) return;
+        if (!hasMore || isLoadingMore || isPending) return;
 
         setIsLoadingMore(true);
         try {
@@ -136,29 +163,35 @@ export function useWallFeed({
             const data = await getFeed(params);
             const parsed = parseFeedResponse(data);
 
-            setNextCursor(parsed.nextCursor);
-            setCurrentPage(parsed.page ?? nextPage);
-            setHasMore(parsed.hasNextPage);
+            // Use startTransition for non-blocking state updates
+            startTransition(() => {
+                setNextCursor(parsed.nextCursor);
+                setCurrentPage(parsed.page ?? nextPage);
+                setHasMore(parsed.hasNextPage);
 
-            if (parsed.items.length > 0) {
-                setFeed((prev) => {
-                    const seen = new Set(prev.map((item) => String(item?.id ?? '')));
-                    const merged = [...prev];
-                    for (const item of parsed.items) {
-                        const id = String(item?.id ?? '');
-                        if (!id || seen.has(id)) continue;
-                        seen.add(id);
-                        merged.push(item);
-                    }
-                    return merged;
-                });
-            }
+                // Update URL silently with new page number for shareable links
+                updateUrlWithPage(parsed.page ?? nextPage);
+
+                if (parsed.items.length > 0) {
+                    setFeed((prev) => {
+                        const seen = new Set(prev.map((item) => String(item?.id ?? '')));
+                        const merged = [...prev];
+                        for (const item of parsed.items) {
+                            const id = String(item?.id ?? '');
+                            if (!id || seen.has(id)) continue;
+                            seen.add(id);
+                            merged.push(item);
+                        }
+                        return merged;
+                    });
+                }
+            });
         } catch (error) {
             console.error('useWallFeed.loadMore error:', error);
         } finally {
             setIsLoadingMore(false);
         }
-    }, [hasMore, isLoadingMore, nextCursor, searchTerm, currentPage]);
+    }, [hasMore, isLoadingMore, isPending, nextCursor, searchTerm, currentPage]);
 
     useEffect(() => {
         const handler = (event: Event) => {
