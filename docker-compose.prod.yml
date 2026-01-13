@@ -1,0 +1,131 @@
+# =============================================================================
+# SOCIOPULSE + MEDICOPULSE - Multi-Tenant Production Docker Compose
+# Same codebase, two brands, one API
+# =============================================================================
+#
+# Usage:
+#   docker-compose -f docker-compose.prod.yml up --build
+#
+# Endpoints:
+#   - localhost:3000 → SocioPulse (Social/Éducatif) - Teal
+#   - localhost:3001 → MedicoPulse (Médical/Soin) - Rose
+#   - localhost:4000 → API NestJS (shared backend)
+#
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ===========================================================================
+  # DATABASE - PostgreSQL (shared)
+  # ===========================================================================
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-sociopulse}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================================================
+  # API - NestJS Backend (shared by both frontends)
+  # ===========================================================================
+  api:
+    container_name: pulse-api
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/sociopulse}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      PORT: 4000
+      NODE_ENV: production
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:4000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================================================
+  # SOCIOPULSE - Frontend (Social/Éducatif)
+  # Port 3000 - Teal theme - EDUC/SOCIAL/HANDICAP/PETITE_ENFANCE
+  # ===========================================================================
+  sociopulse-web:
+    container_name: socio-front
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_MODE: SOCIAL
+        NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:4000/api/v1}
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================================================
+  # MEDICOPULSE - Frontend (Médical/Soin)
+  # Port 3001 - Rose theme - SOIN only
+  # ===========================================================================
+  medicopulse-web:
+    container_name: medico-front
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_MODE: MEDICAL
+        NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:4000/api/v1}
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "3001:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+
+# =============================================================================
+# NETWORKS (optional - for isolation)
+# =============================================================================
+networks:
+  default:
+    name: pulse-network
