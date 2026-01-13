@@ -4,6 +4,12 @@ import type { CSSProperties, KeyboardEvent } from 'react';
 import { useId, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
+import { currentBrand, isMedical } from '@/lib/brand';
+
+// ===========================================
+// SMART SEARCH BAR - Brand-Aware
+// Adapts placeholder and visuals to brand
+// ===========================================
 
 export type FloatingAvatar = {
     id: string;
@@ -19,7 +25,24 @@ export interface SmartSearchBarProps {
     avatars?: FloatingAvatar[];
 }
 
-const DEFAULT_PLACEHOLDER = "Besoin d'un renfort pour demain ? Ou d'une visio Eduat'heure ?";
+// Dynamic placeholders based on brand
+const PLACEHOLDERS = {
+    SOCIAL: "Besoin d'un renfort pour demain ? Ou d'une visio Eduat'heure ?",
+    MEDICAL: "Besoin d'un soignant en urgence ? IDE, AS, Kiné ?",
+};
+
+// Dynamic default avatars based on brand
+const DEFAULT_AVATARS_SOCIAL: FloatingAvatar[] = [
+    { id: 'lx-0', name: 'Les Extras', avatarUrl: null },
+    { id: 'lx-1', name: 'Educateur', avatarUrl: null },
+    { id: 'lx-2', name: 'Renfort', avatarUrl: null },
+];
+
+const DEFAULT_AVATARS_MEDICAL: FloatingAvatar[] = [
+    { id: 'mp-0', name: 'MedicoPulse', avatarUrl: null },
+    { id: 'mp-1', name: 'Infirmier', avatarUrl: null },
+    { id: 'mp-2', name: 'Aide-Soignant', avatarUrl: null },
+];
 
 const ORBIT_POSITIONS: CSSProperties[] = [
     { top: '-22px', left: '10%' },
@@ -41,11 +64,27 @@ export function SmartSearchBar({
     value,
     onChange,
     onSubmit,
-    placeholder = DEFAULT_PLACEHOLDER,
+    placeholder,
     avatars = [],
 }: SmartSearchBarProps) {
     const inputId = useId();
     const [isFocused, setIsFocused] = useState(false);
+
+    // Brand-aware placeholder
+    const resolvedPlaceholder = placeholder ?? PLACEHOLDERS[currentBrand.mode];
+
+    // Brand-aware glow color
+    const glowGradient = isMedical()
+        ? 'from-rose-500/35 via-red-500/30 to-rose-500/25'
+        : 'from-indigo-500/35 via-teal-500/30 to-indigo-500/25';
+
+    // Brand-aware ring colors for avatars
+    const getRingColor = (index: number) => {
+        if (isMedical()) {
+            return index % 2 === 0 ? 'ring-rose-500/30' : 'ring-red-500/25';
+        }
+        return index % 2 === 0 ? 'ring-indigo-500/30' : 'ring-teal-500/25';
+    };
 
     const floatingAvatars = useMemo(() => {
         const normalized = avatars
@@ -56,11 +95,8 @@ export function SmartSearchBar({
             return normalized;
         }
 
-        return [
-            { id: 'lx-0', name: 'Les Extras', avatarUrl: null },
-            { id: 'lx-1', name: 'Educateur', avatarUrl: null },
-            { id: 'lx-2', name: 'Renfort', avatarUrl: null },
-        ] satisfies FloatingAvatar[];
+        // Return brand-specific default avatars
+        return isMedical() ? DEFAULT_AVATARS_MEDICAL : DEFAULT_AVATARS_SOCIAL;
     }, [avatars]);
 
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -75,7 +111,7 @@ export function SmartSearchBar({
                     const style = ORBIT_POSITIONS[index % ORBIT_POSITIONS.length];
                     const duration = 5.4 + index * 0.55;
                     const delay = index * 0.18;
-                    const ringColor = index % 2 === 0 ? 'ring-indigo-500/30' : 'ring-teal-500/25';
+                    const ringColor = getRingColor(index);
 
                     return (
                         <motion.div
@@ -118,7 +154,7 @@ export function SmartSearchBar({
             >
                 <motion.div
                     aria-hidden
-                    className="absolute -inset-2 rounded-[2rem] bg-gradient-to-r from-indigo-500/35 via-teal-500/30 to-indigo-500/25 blur-2xl"
+                    className={`absolute -inset-2 rounded-[2rem] bg-gradient-to-r ${glowGradient} blur-2xl`}
                     animate={{ opacity: isFocused ? 1 : 0.35 }}
                     transition={{ duration: 0.35, ease: 'easeOut' }}
                 />
@@ -136,7 +172,7 @@ export function SmartSearchBar({
                             onKeyDown={handleKeyDown}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            placeholder={placeholder}
+                            placeholder={resolvedPlaceholder}
                             className="w-full bg-transparent pl-16 pr-6 py-5 text-lg sm:text-xl font-medium tracking-tight text-slate-900 placeholder:text-slate-400/90 outline-none"
                             aria-label="Rechercher une mission ou une visio"
                             autoComplete="off"

@@ -1,5 +1,5 @@
 // Feed Components - Barrel Export
-export { FeedFilters, FILTER_BADGES } from './FeedFilters';
+export { FeedFilters } from './FeedFilters';
 export type { FilterBadge, FeedFiltersProps } from './FeedFilters';
 
 export { FeedSidebar } from './FeedSidebar';

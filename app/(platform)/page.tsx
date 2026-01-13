@@ -1,35 +1,47 @@
 import { Metadata } from 'next';
 import { HomeHero, QuickGuide, UniverseRail, StructureGrid, SeoFooter } from '@/components/landing';
-import { getSoinItems, getEducItems, getSocioliveItems } from '@/lib/seedData';
+import { SEED_DATA } from '@/lib/seedData';
+import { currentBrand, isCategoryAllowed, isMedical } from '@/lib/brand';
 
 // ===========================================
-// SOCIOPULSE LANDING PAGE - Netflix Architecture
-// Premium Marketing Vitrine
-// Design: Awwwards Level for Investor Demo
+// LANDING PAGE - Brand-Aware Netflix Architecture
+// Adapts to SOCIAL (SocioPulse) or MEDICAL (MedicoPulse)
 // ===========================================
 
 export const metadata: Metadata = {
-    title: 'Sociopulse - La plateforme du médico-social | Renfort & SocioLive',
-    description: 'La plateforme de mise en relation médico-sociale. Un renfort demain, une visio ou un atelier maintenant. Trouvez votre mission ou expert en temps réel.',
-    keywords: 'renfort médico-social, interim social, SocioLive, atelier, EHPAD, IDE, aide-soignant, éducateur, infirmier, missions medico-social',
+    title: currentBrand.metaTitle,
+    description: currentBrand.metaDescription,
+    keywords: isMedical()
+        ? 'renfort soignant, interim santé, infirmier, aide-soignant, EHPAD, clinique, IDE, AS, AES'
+        : 'renfort médico-social, interim social, SocioLive, atelier, éducateur, travailleur social, MECS, IME',
     openGraph: {
-        title: 'Sociopulse - La plateforme du médico-social',
-        description: 'La plateforme de mise en relation médico-sociale B2B2C. Missions de renfort et services SocioLive.',
+        title: currentBrand.metaTitle,
+        description: currentBrand.metaDescription,
         type: 'website',
-        siteName: 'Sociopulse',
+        siteName: currentBrand.appName,
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'Sociopulse - La plateforme du médico-social',
-        description: 'Un renfort demain. Une Visio ou un Atelier maintenant.',
+        title: currentBrand.appName,
+        description: currentBrand.heroSubtitle,
     },
 };
 
 export default function LandingPage() {
-    // Get filtered items from seed data
-    const soinItems = getSoinItems();
-    const educItems = getEducItems();
-    const socioliveItems = getSocioliveItems();
+    // Filter seed data by allowed categories for current brand
+    const soinItems = SEED_DATA.filter(item => item.category === 'SOIN');
+    const educItems = SEED_DATA.filter(item =>
+        item.category === 'EDUC' || item.category === 'HANDICAP' || item.category === 'SOCIAL'
+    );
+    const socioliveItems = SEED_DATA.filter(item => item.category === 'SOCIOLIVE');
+
+    // Check what rails should be displayed based on brand config
+    const showSoinRail = isCategoryAllowed('SOIN');
+    const showEducRail = isCategoryAllowed('EDUC');
+    const showSocioliveRail = currentBrand.showAteliers;
+
+    // Section header label color
+    const labelColorClass = isMedical() ? 'text-alert-600' : 'text-brand-600';
 
     return (
         <div className="relative min-h-screen bg-canvas overflow-hidden">
@@ -44,40 +56,49 @@ export default function LandingPage() {
                 <div className="max-w-[1600px] mx-auto">
                     {/* Section Header */}
                     <div className="text-center mb-8 px-4 sm:px-6 lg:px-8">
-                        <p className="text-sm font-semibold tracking-[0.2em] uppercase text-brand-600 mb-3">
-                            Les Univers
+                        <p className={`text-sm font-semibold tracking-[0.2em] uppercase ${labelColorClass} mb-3`}>
+                            {isMedical() ? 'Nos Soignants' : 'Les Univers'}
                         </p>
                         <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
-                            Explorez nos domaines d'expertise
+                            {isMedical()
+                                ? 'Trouvez votre renfort soignant'
+                                : 'Explorez nos domaines d\'expertise'
+                            }
                         </h2>
                     </div>
 
-                    {/* RAIL A: Pôle Soin & Urgence */}
-                    <UniverseRail
-                        title="🚑 PÔLE SOIN & URGENCE"
-                        punchline="La continuité de service quand le planning craque."
-                        accentColor="rose"
-                        items={soinItems}
-                        viewAllHref="/feed?category=soin"
-                    />
+                    {/* RAIL A: Pôle Soin & Urgence - Only if SOIN is allowed */}
+                    {showSoinRail && soinItems.length > 0 && (
+                        <UniverseRail
+                            title="🚑 PÔLE SOIN & URGENCE"
+                            punchline="La continuité de service quand le planning craque."
+                            accentColor="rose"
+                            items={soinItems}
+                            viewAllHref="/feed?category=soin"
+                        />
+                    )}
 
-                    {/* RAIL B: Pôle Éducatif & Social */}
-                    <UniverseRail
-                        title="🧩 PÔLE ÉDUCATIF & SOCIAL"
-                        punchline="L'expertise terrain pour vos publics fragiles."
-                        accentColor="indigo"
-                        items={educItems}
-                        viewAllHref="/feed?category=educ"
-                    />
+                    {/* RAIL B: Pôle Éducatif & Social - Only if EDUC is allowed */}
+                    {showEducRail && educItems.length > 0 && (
+                        <UniverseRail
+                            title="🧩 PÔLE ÉDUCATIF & SOCIAL"
+                            punchline="L'expertise terrain pour vos publics fragiles."
+                            accentColor="indigo"
+                            items={educItems}
+                            viewAllHref="/feed?category=educ"
+                        />
+                    )}
 
-                    {/* RAIL C: SocioLive & Ateliers */}
-                    <UniverseRail
-                        title="🎓 SOCIOLIVE & ATELIERS"
-                        punchline="Formations et bien-être pour réenchanter le quotidien."
-                        accentColor="teal"
-                        items={socioliveItems}
-                        viewAllHref="/feed?category=sociolive"
-                    />
+                    {/* RAIL C: SocioLive & Ateliers - Only if showAteliers is true */}
+                    {showSocioliveRail && socioliveItems.length > 0 && (
+                        <UniverseRail
+                            title="🎓 SOCIOLIVE & ATELIERS"
+                            punchline="Formations et bien-être pour réenchanter le quotidien."
+                            accentColor="teal"
+                            items={socioliveItems}
+                            viewAllHref="/feed?category=sociolive"
+                        />
+                    )}
                 </div>
             </section>
 

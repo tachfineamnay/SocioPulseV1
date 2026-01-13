@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -11,7 +11,11 @@ import {
     Heart,
     Palette,
     Filter,
+    Stethoscope,
+    Users,
 } from 'lucide-react';
+import { currentBrand, isMedical } from '@/lib/brand';
+import { getAvailableServiceTypes } from '@/lib/jobs';
 
 // ===========================================
 // TYPES
@@ -22,6 +26,8 @@ export interface FilterBadge {
     label: string;
     icon: typeof Zap;
     color: string;
+    /** If true, only show in specific brand mode */
+    brandRestriction?: 'MEDICAL' | 'SOCIAL' | null;
 }
 
 export interface FeedFiltersProps {
@@ -34,15 +40,24 @@ export interface FeedFiltersProps {
 }
 
 // ===========================================
-// CONSTANTS
+// CONSTANTS - Brand-Aware Filters
 // ===========================================
 
-export const FILTER_BADGES: FilterBadge[] = [
-    { id: 'urgent', label: 'Urgent', icon: Zap, color: 'text-red-500' },
-    { id: 'sport', label: 'Sport', icon: Dumbbell, color: 'text-blue-500' },
-    { id: 'visio', label: 'Visio', icon: Video, color: 'text-purple-500' },
-    { id: 'bien-etre', label: 'Bien-être', icon: Heart, color: 'text-pink-500' },
-    { id: 'art', label: 'Art', icon: Palette, color: 'text-orange-500' },
+const ALL_FILTER_BADGES: FilterBadge[] = [
+    // Common filters
+    { id: 'urgent', label: 'Urgent', icon: Zap, color: 'text-red-500', brandRestriction: null },
+
+    // Medical-specific
+    { id: 'soin', label: 'Soins', icon: Stethoscope, color: 'text-blue-500', brandRestriction: 'MEDICAL' },
+
+    // Social-specific
+    { id: 'sport', label: 'Sport', icon: Dumbbell, color: 'text-blue-500', brandRestriction: 'SOCIAL' },
+    { id: 'bien-etre', label: 'Bien-être', icon: Heart, color: 'text-pink-500', brandRestriction: 'SOCIAL' },
+    { id: 'art', label: 'Art', icon: Palette, color: 'text-orange-500', brandRestriction: 'SOCIAL' },
+
+    // Ateliers/Visio - Only if showAteliers is true
+    { id: 'visio', label: 'Visio', icon: Video, color: 'text-purple-500', brandRestriction: 'SOCIAL' },
+    { id: 'educ', label: 'Éducatif', icon: Users, color: 'text-amber-500', brandRestriction: 'SOCIAL' },
 ];
 
 // ===========================================
@@ -58,6 +73,29 @@ export function FeedFilters({
 }: FeedFiltersProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    // Filter badges based on current brand
+    const availableFilters = useMemo(() => {
+        const currentMode = currentBrand.mode;
+
+        return ALL_FILTER_BADGES.filter(filter => {
+            // If no brand restriction, always show
+            if (filter.brandRestriction === null) return true;
+
+            // Check brand restriction
+            if (filter.brandRestriction === currentMode) return true;
+
+            // Hide visio filter if ateliers are disabled
+            if (filter.id === 'visio' && !currentBrand.showAteliers) return false;
+
+            return false;
+        });
+    }, []);
+
+    // Dynamic placeholder based on brand
+    const searchPlaceholder = isMedical()
+        ? 'Rechercher un soignant, une mission...'
+        : 'Rechercher un professionnel, une mission, un atelier...';
 
     // Sync filter to URL when changed
     const handleFilterToggle = useCallback((filterId: string) => {
@@ -97,6 +135,9 @@ export function FeedFilters({
         }
     }, [onSearchChange, syncToUrl, searchParams, router]);
 
+    // Color for filter icon header
+    const filterIconColor = isMedical() ? 'text-alert-400' : 'text-slate-400';
+
     return (
         <div className="space-y-4">
             {/* Search Bar */}
@@ -104,7 +145,7 @@ export function FeedFilters({
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                     type="text"
-                    placeholder="Rechercher un professionnel, une mission, un service..."
+                    placeholder={searchPlaceholder}
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
                     className="input-premium pl-12 pr-4 w-full"
@@ -114,10 +155,10 @@ export function FeedFilters({
 
             {/* Filter Badges */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                <span className="flex-shrink-0 text-xs font-medium text-slate-400 mr-1">
+                <span className={`flex-shrink-0 text-xs font-medium ${filterIconColor} mr-1`}>
                     <Filter className="w-4 h-4" />
                 </span>
-                {FILTER_BADGES.map((filter) => {
+                {availableFilters.map((filter) => {
                     const Icon = filter.icon;
                     const isActive = activeFilters.includes(filter.id);
                     return (
