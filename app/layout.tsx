@@ -3,13 +3,15 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { SonnerToaster } from "@/components/ui/SonnerToaster";
 import { SocketProvider } from "@/components/providers";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { currentBrand } from "@/lib/brand";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Sociopulse | Plateforme Médico-Sociale",
-    description: "La plateforme B2B2C pour le secteur médico-social. Trouvez des renforts, réservez des ateliers, connectez-vous avec des professionnels qualifiés.",
-    keywords: ["médico-social", "EHPAD", "Sociopulse", "renforts", "ateliers", "professionnels de santé"],
+    title: currentBrand.metaTitle,
+    description: currentBrand.metaDescription,
+    keywords: ["médico-social", "EHPAD", currentBrand.appName, "renforts", "ateliers", "professionnels de santé"],
 };
 
 export const viewport: Viewport = {
@@ -25,12 +27,17 @@ export default function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
+    // Determine initial theme from brand (SSR-safe)
+    const initialTheme = currentBrand.mode === 'MEDICAL' ? 'medical' : 'social';
+
     return (
-        <html lang="fr" className="smooth-scroll">
+        <html lang="fr" className="smooth-scroll" data-theme={initialTheme}>
             <body className={outfit.className}>
-                <SocketProvider>
-                    {children}
-                </SocketProvider>
+                <ThemeProvider>
+                    <SocketProvider>
+                        {children}
+                    </SocketProvider>
+                </ThemeProvider>
                 <SonnerToaster />
             </body>
         </html>

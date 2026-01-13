@@ -3,9 +3,104 @@
 @tailwind utilities;
 
 /* ========================================
-   SOCIOPULSE - Design System 2026
-   Premium B2B Aesthetic
+   SOCIOPULSE/MEDICOPULSE - Polymorphic Design System
+   Theme-aware CSS Variables
    ======================================== */
+
+/* ===========================================
+   ROOT VARIABLES - Default (Social/SocioPulse)
+   Friendly, rounded, teal/indigo palette
+   =========================================== */
+:root {
+  /* Border Radius - Soft/Friendly */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Primary Color - Teal (HSL) */
+  --primary-h: 170;
+  --primary-s: 70%;
+  --primary-l: 40%;
+  --primary: var(--primary-h) var(--primary-s) var(--primary-l);
+
+  /* Secondary Color - Indigo */
+  --secondary-h: 239;
+  --secondary-s: 84%;
+  --secondary-l: 60%;
+  --secondary: var(--secondary-h) var(--secondary-s) var(--secondary-l);
+
+  /* Accent Color - Brand Indigo */
+  --accent-h: 239;
+  --accent-s: 84%;
+  --accent-l: 67%;
+  --accent: var(--accent-h) var(--accent-s) var(--accent-l);
+
+  /* Spacing - Airy/Spacious */
+  --spacing-card: 1.5rem;
+  --spacing-section: 5rem;
+
+  /* Shadows - Soft */
+  --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px -4px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px -8px rgba(0, 0, 0, 0.12);
+
+  /* Transitions */
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+
+  /* Button Sizing */
+  --btn-height: 2.75rem;
+  --btn-padding-x: 1.25rem;
+}
+
+/* ===========================================
+   MEDICAL THEME - MedicoPulse Override
+   Clinical, squared, rose/blue palette
+   =========================================== */
+[data-theme="medical"],
+.theme-medical {
+  /* Border Radius - Sharp/Clinical */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.625rem;
+  --radius-2xl: 0.75rem;
+  --radius-full: 0.5rem;
+  /* Even "full" becomes squared */
+
+  /* Primary Color - Rose/Medical Red */
+  --primary-h: 347;
+  --primary-s: 77%;
+  --primary-l: 50%;
+
+  /* Secondary Color - Medical Blue */
+  --secondary-h: 217;
+  --secondary-s: 91%;
+  --secondary-l: 60%;
+
+  /* Accent Color - Deep Rose */
+  --accent-h: 347;
+  --accent-s: 77%;
+  --accent-l: 45%;
+
+  /* Spacing - Compact/Dense */
+  --spacing-card: 1rem;
+  --spacing-section: 3rem;
+
+  /* Shadows - Crisp */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+  /* Button Sizing - Compact */
+  --btn-height: 2.5rem;
+  --btn-padding-x: 1rem;
+}
+
+/* ======================================== */
 
 @layer base {
   * {
@@ -141,21 +236,21 @@
      Category Gradients - Card Fallback Backgrounds
      Used when no image is provided
      ======================================== */
-  
+
   /* SOIN (Medical/Healthcare) - Blue theme */
   .category-gradient-soin {
     @apply relative overflow-hidden;
     background: linear-gradient(135deg, #DBEAFE 0%, #60A5FA 50%, #2563EB 100%);
   }
-  
+
   .category-gradient-soin::before {
     content: '';
     @apply absolute inset-0 opacity-20;
-    background-image: 
+    background-image:
       radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
       radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.2) 0%, transparent 40%);
   }
-  
+
   .category-gradient-soin::after {
     content: '🩺';
     @apply absolute inset-0 flex items-center justify-center text-5xl opacity-20;
@@ -166,15 +261,15 @@
     @apply relative overflow-hidden;
     background: linear-gradient(135deg, #FEF3C7 0%, #F59E0B 50%, #D97706 100%);
   }
-  
+
   .category-gradient-educ::before {
     content: '';
     @apply absolute inset-0 opacity-20;
-    background-image: 
+    background-image:
       radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
       radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.2) 0%, transparent 40%);
   }
-  
+
   .category-gradient-educ::after {
     content: '👥';
     @apply absolute inset-0 flex items-center justify-center text-5xl opacity-20;
@@ -185,15 +280,15 @@
     @apply relative overflow-hidden;
     background: linear-gradient(135deg, #CCFBF1 0%, #14B8A6 50%, #0D9488 100%);
   }
-  
+
   .category-gradient-sociolive::before {
     content: '';
     @apply absolute inset-0 opacity-20;
-    background-image: 
+    background-image:
       radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.3) 0%, transparent 50%),
       radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.2) 0%, transparent 40%);
   }
-  
+
   .category-gradient-sociolive::after {
     content: '🎥';
     @apply absolute inset-0 flex items-center justify-center text-5xl opacity-20;
@@ -204,14 +299,14 @@
     @apply relative overflow-hidden;
     background: linear-gradient(135deg, #F1F5F9 0%, #94A3B8 50%, #64748B 100%);
   }
-  
+
   .category-gradient-default::before {
     content: '';
     @apply absolute inset-0 opacity-15;
-    background-image: 
+    background-image:
       radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
   }
-  
+
   .category-gradient-default::after {
     content: '✨';
     @apply absolute inset-0 flex items-center justify-center text-5xl opacity-20;
