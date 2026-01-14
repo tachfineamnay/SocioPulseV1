@@ -366,6 +366,15 @@ model Profile {
   averageRating   Float  @default(0)
   totalReviews    Int    @default(0)
   
+  // Oracle Onboarding - Sanctuary fields
+  birthDate         DateTime?
+  birthTime         String?      // "HH:MM" format
+  birthPlace        String?
+  birthLatitude     Float?
+  birthLongitude    Float?
+  spiritualIntention String?     @db.Text
+  hasPhotos         Boolean      @default(false)
+  
   // Relations
   availabilitySlots AvailabilitySlot[]
   services          Service[]

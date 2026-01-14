@@ -1,10 +1,48 @@
+'use client';
+
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { Siren, Calendar, User, Search, ArrowRight } from 'lucide-react';
 import { GrowthDashboardWidgets } from '@/components/growth';
+import { OracleOnboardingChat } from '@/components/onboarding';
+
+// =============================================================================
+// DASHBOARD HUB PAGE - With Oracle Onboarding Integration
+// Shows OracleOnboardingChat for incomplete profiles
+// =============================================================================
+
+// Simulated user profile check (replace with real auth/data)
+const useUserProfile = () => {
+    // TODO: Replace with real user data from auth context or API
+    const [profile, setProfile] = useState({
+        birthDate: null as string | null,
+        hasPhotos: false,
+    });
+
+    const isOnboardingComplete = Boolean(profile.birthDate && profile.hasPhotos);
+
+    const completeOnboarding = useCallback(() => {
+        setProfile({
+            birthDate: new Date().toISOString(),
+            hasPhotos: true,
+        });
+    }, []);
+
+    return { profile, isOnboardingComplete, completeOnboarding };
+};
 
 export default function DashboardHubPage() {
+    const { isOnboardingComplete, completeOnboarding } = useUserProfile();
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 relative">
+            {/* Oracle Onboarding Overlay */}
+            {!isOnboardingComplete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 oracle-backdrop">
+                    <OracleOnboardingChat onComplete={completeOnboarding} />
+                </div>
+            )}
+
             {/* Header */}
             <header className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
@@ -18,8 +56,9 @@ export default function DashboardHubPage() {
                 </div>
             </header>
 
-            {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Main Content - Blurred when onboarding active */}
+            <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 transition-all duration-300 ${!isOnboardingComplete ? 'blur-sm opacity-50 pointer-events-none' : ''
+                }`}>
                 <div className="mb-10">
                     <GrowthDashboardWidgets />
                 </div>
@@ -38,7 +77,7 @@ export default function DashboardHubPage() {
                                 <Siren className="w-7 h-7 text-white" />
                             </div>
                             <div>
-                                <h1 className="font-bold text-slate-900">Desk Admin</h1>
+                                <h3 className="font-bold text-slate-900">Desk Admin</h3>
                                 <p className="text-xs text-slate-500">Sociopulse V2</p>
                             </div>
                             <h2 className="text-2xl font-bold text-gray-900 mb-2">SOS Renfort</h2>
