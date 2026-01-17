@@ -24,22 +24,36 @@ async function bootstrap() {
         prefix: '/uploads/',
     });
 
-    // CORS - Dynamic origin support for development and production
-    const isDev = process.env.NODE_ENV !== 'production';
-    const allowedOrigins = (process.env.FRONTEND_URL || process.env.FRONTEND_URLS || 'http://localhost:3000')
+    // CORS - Multi-Domain Support for Multi-Tenant Architecture
+    // FRONTEND_URL can be a comma-separated list: "https://sociopulse.fr,https://medicopulse.fr"
+    const frontendUrlEnv = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const allowedOrigins = frontendUrlEnv
         .split(',')
-        .map((o) => o.trim())
+        .map((origin) => origin.trim())
         .filter(Boolean);
+
+    // Static origins always allowed
+    const staticOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'https://sociopulse.fr',
+        'https://www.sociopulse.fr',
+        'https://dash.sociopulse.fr',
+        'https://medicopulse.fr',
+        'https://www.medicopulse.fr',
+        'https://api.sociopulse.fr',
+    ];
+
+    // Combine static + dynamic origins (deduplicated)
+    const allOrigins = [...new Set([...staticOrigins, ...allowedOrigins])];
+
+    logger.log(`🌐 CORS enabled for origins: ${allOrigins.join(', ')}`);
 
     app.enableCors({
         origin: [
-            'http://localhost:3000',
-            /^http:\/\/localhost:\d+$/,
-            /^https?:\/\/.*\.sslip\.io$/,
-            'https://sociopulse.fr',
-            'https://www.sociopulse.fr',
-            'https://api.sociopulse.fr',
-            ...allowedOrigins,
+            ...allOrigins,
+            /^http:\/\/localhost:\d+$/,      // Any localhost port (dev)
+            /^https?:\/\/.*\.sslip\.io$/,    // sslip.io tunnels (dev)
         ],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],

@@ -18,7 +18,8 @@
     "db:studio": "prisma studio",
     "api:dev": "cd apps/api && npm run dev",
     "api:build": "cd apps/api && npm run build",
-    "db:seed:sociopulse": "tsx scripts/generate_seed_sociopulse.ts && tsx prisma/import_seed_json.ts"
+    "db:seed:sociopulse": "tsx scripts/generate_seed_sociopulse.ts && tsx prisma/import_seed_json.ts",
+    "seed:import": "tsx prisma/import_seed_json.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
