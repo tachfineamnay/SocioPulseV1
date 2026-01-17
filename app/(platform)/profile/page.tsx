@@ -5,6 +5,7 @@ import { UserProfile, UserProfileData, ProfileContent, ProfileAboutData, Mission
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/useAuth';
 import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui';
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -14,9 +15,9 @@ export default function ProfilePage() {
     // Show loading state
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="min-h-screen bg-canvas flex items-center justify-center">
                 <div className="text-center space-y-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-brand-600 mx-auto" />
+                    <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto" />
                     <p className="text-slate-500">Chargement du profil...</p>
                 </div>
             </div>
@@ -105,7 +106,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 pb-24 md:pb-8">
+        <div className="min-h-screen bg-canvas py-8 px-4 sm:px-6 lg:px-8 pb-24 md:pb-8">
             <div className="max-w-3xl mx-auto space-y-6">
                 {/* Profile Header Card */}
                 <UserProfile
@@ -138,23 +139,25 @@ export default function ProfilePage() {
 
                 {/* Additional Sections for Own Profile */}
                 {isOwnProfile && (
-                    <div className="bg-white rounded-2xl shadow-soft p-6 border border-slate-100">
+                    <div className="bg-white rounded-theme-xl shadow-soft p-6 border border-slate-100">
                         <h3 className="font-semibold text-slate-900 mb-4">
                             Actions rapides
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
-                            <button 
+                            <Button
+                                variant="default"
                                 onClick={() => router.push('/dashboard/relief')}
-                                className="p-4 rounded-xl bg-brand-50 text-brand-700 text-sm font-medium hover:bg-brand-100 transition-colors text-left"
+                                className="justify-start"
                             >
                                 Trouver une mission
-                            </button>
-                            <button 
+                            </Button>
+                            <Button
+                                variant="secondary"
                                 onClick={() => router.push('/messages')}
-                                className="p-4 rounded-xl bg-slate-50 text-slate-700 text-sm font-medium hover:bg-slate-100 transition-colors text-left"
+                                className="justify-start"
                             >
                                 Voir mes messages
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )}
@@ -162,4 +165,3 @@ export default function ProfilePage() {
         </div>
     );
 }
-
