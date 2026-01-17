@@ -1,11 +1,12 @@
 import { Metadata } from 'next';
-import { HomeHero, QuickGuide, UniverseRail, StructureGrid, SeoFooter } from '@/components/landing';
-import { SEED_DATA } from '@/lib/seedData';
-import { currentBrand, isCategoryAllowed, isMedical } from '@/lib/brand';
+import { SeoFooter, type PublicOpportunityItem } from '@/components/landing';
+import { HomepageClient } from '@/components/landing/HomepageClient';
+import { currentBrand, isMedical, isCategoryAllowed } from '@/lib/brand';
+import { SEED_DATA, type SeedItem } from '@/lib/seedData';
 
 // ===========================================
-// LANDING PAGE - Brand-Aware Netflix Architecture
-// Adapts to SOCIAL (SocioPulse) or MEDICAL (MedicoPulse)
+// LANDING PAGE - Public Smart Feed Architecture
+// SSR with Client-Side Interactivity
 // ===========================================
 
 export const metadata: Metadata = {
@@ -27,85 +28,58 @@ export const metadata: Metadata = {
     },
 };
 
+// Transform seed data to PublicOpportunityItem format
+function transformSeedToFeedItems(data: SeedItem[]): PublicOpportunityItem[] {
+    return data
+        .filter(item => isCategoryAllowed(item.category))
+        .slice(0, 12) // Initial 12 items for SSR
+        .map((item, index) => {
+            // Determine type based on item.type and category
+            const opportunityType: 'mission' | 'profile' | 'service' =
+                item.type === 'MISSION' ? 'mission'
+                    : item.category === 'SOCIOLIVE' ? 'service'
+                        : 'profile';
+
+            // Build display name
+            const displayName = item.data.firstName && item.data.lastName
+                ? `${item.data.firstName} ${item.data.lastName}`
+                : item.data.structureName || item.data.title;
+
+            return {
+                id: `seed-${index}-${item.type}`,
+                type: opportunityType,
+                title: displayName,
+                subtitle: item.data.description,
+                location: item.city,
+                price: item.data.hourlyRate,
+                imageUrl: item.data.logoUrl,
+                isUrgent: item.data.tags.includes('Urgence'),
+                isAvailable: item.data.isAvailable,
+                tags: item.data.tags.filter(tag => tag !== 'Urgence'),
+                category: item.category,
+            };
+        });
+}
+
 export default function LandingPage() {
-    // Filter seed data by allowed categories for current brand
-    const soinItems = SEED_DATA.filter(item => item.category === 'SOIN');
-    const educItems = SEED_DATA.filter(item =>
-        item.category === 'EDUC' || item.category === 'HANDICAP' || item.category === 'SOCIAL'
-    );
-    const socioliveItems = SEED_DATA.filter(item => item.category === 'SOCIOLIVE');
+    // Transform seed data for initial SSR render
+    const initialItems = transformSeedToFeedItems(SEED_DATA);
 
-    // Check what rails should be displayed based on brand config
-    const showSoinRail = isCategoryAllowed('SOIN');
-    const showEducRail = isCategoryAllowed('EDUC');
-    const showSocioliveRail = currentBrand.showAteliers;
-
-    // Section header label color
-    const labelColorClass = isMedical() ? 'text-alert-600' : 'text-brand-600';
+    const initialMeta = {
+        page: 1,
+        hasNextPage: SEED_DATA.length > 12,
+        total: SEED_DATA.length,
+    };
 
     return (
         <div className="relative min-h-screen bg-canvas overflow-hidden">
-            {/* ========== SECTION 1: HERO ========== */}
-            <HomeHero />
+            {/* Client-side interactive components */}
+            <HomepageClient
+                initialItems={initialItems}
+                initialMeta={initialMeta}
+            />
 
-            {/* ========== SECTION 2: GUIDE RAPIDE ========== */}
-            <QuickGuide />
-
-            {/* ========== SECTION 3: LES UNIVERS (Netflix Rails) ========== */}
-            <section className="py-8 sm:py-12 bg-gradient-to-b from-canvas to-slate-50">
-                <div className="max-w-[1600px] mx-auto">
-                    {/* Section Header */}
-                    <div className="text-center mb-8 px-4 sm:px-6 lg:px-8">
-                        <p className={`text-sm font-semibold tracking-[0.2em] uppercase ${labelColorClass} mb-3`}>
-                            {isMedical() ? 'Nos Soignants' : 'Les Univers'}
-                        </p>
-                        <h2 className="text-3xl sm:text-4xl font-bold text-slate-900">
-                            {isMedical()
-                                ? 'Trouvez votre renfort soignant'
-                                : 'Explorez nos domaines d\'expertise'
-                            }
-                        </h2>
-                    </div>
-
-                    {/* RAIL A: Pôle Soin & Urgence - Only if SOIN is allowed */}
-                    {showSoinRail && soinItems.length > 0 && (
-                        <UniverseRail
-                            title="🚑 PÔLE SOIN & URGENCE"
-                            punchline="La continuité de service quand le planning craque."
-                            accentColor="rose"
-                            items={soinItems}
-                            viewAllHref="/feed?category=soin"
-                        />
-                    )}
-
-                    {/* RAIL B: Pôle Éducatif & Social - Only if EDUC is allowed */}
-                    {showEducRail && educItems.length > 0 && (
-                        <UniverseRail
-                            title="🧩 PÔLE ÉDUCATIF & SOCIAL"
-                            punchline="L'expertise terrain pour vos publics fragiles."
-                            accentColor="indigo"
-                            items={educItems}
-                            viewAllHref="/feed?category=educ"
-                        />
-                    )}
-
-                    {/* RAIL C: SocioLive & Ateliers - Only if showAteliers is true */}
-                    {showSocioliveRail && socioliveItems.length > 0 && (
-                        <UniverseRail
-                            title="🎓 SOCIOLIVE & ATELIERS"
-                            punchline="Formations et bien-être pour réenchanter le quotidien."
-                            accentColor="teal"
-                            items={socioliveItems}
-                            viewAllHref="/feed?category=sociolive"
-                        />
-                    )}
-                </div>
-            </section>
-
-            {/* ========== SECTION 4: BENTO GRID ========== */}
-            <StructureGrid />
-
-            {/* ========== SECTION 5: SEO FOOTER ========== */}
+            {/* SEO Footer - Server rendered */}
             <SeoFooter />
         </div>
     );
