@@ -43,6 +43,9 @@ COPY --from=deps /app/packages ./packages
 COPY . .
 RUN rm -rf apps/api
 
+# Ensure public directory exists
+RUN mkdir -p public
+
 # Generate Prisma client
 RUN npx prisma generate
 
@@ -70,6 +73,9 @@ RUN echo "==========================================" && \
 # Build the application
 RUN npm run build
 
+# Verify standalone output exists
+RUN ls -la .next/ && ls -la .next/standalone/ || echo "WARNING: standalone not found"
+
 # =============================================================================
 # STAGE 4: RUNNER (Production)
 # =============================================================================
@@ -86,9 +92,14 @@ RUN apk add --no-cache curl
 RUN addgroup --system --gid 1001 nodejs && \
   adduser --system --uid 1001 nextjs
 
+# Create required directories
+RUN mkdir -p .next/static public && chown -R nextjs:nodejs .
+
 # Copy standalone build output
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy public folder (if exists)
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
