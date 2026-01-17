@@ -1,77 +1,143 @@
-FROM node:20-slim AS base
+# =============================================================================
+# SOCIOPULSE / MEDICOPULSE - NestJS API Backend
+# Production-Ready Dockerfile with Multi-Stage Build
+# =============================================================================
+#
+# Usage:
+#   docker build -f Dockerfile.api -t pulse-api .
+#
+# =============================================================================
+
+# =============================================================================
+# STAGE 1: BASE
+# Lightweight Alpine image with essential dependencies
+# =============================================================================
+FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Base system deps for Prisma/Nest
-RUN apt-get update -y \
-    && apt-get install -y openssl ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install OpenSSL for Prisma + libc6-compat for Alpine compatibility
+RUN apk add --no-cache openssl libc6-compat
 
-# Install full workspace dependencies (dev + prod)
+# =============================================================================
+# STAGE 2: DEPS
+# Install all dependencies (cached layer)
+# =============================================================================
 FROM base AS deps
+
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+# Copy lockfiles and package manifests for monorepo
+COPY package.json package-lock.json* yarn.lock* pnpm-lock.yaml* ./
 COPY packages ./packages
 COPY apps/api/package.json ./apps/api/package.json
 
-RUN if [ -f pnpm-lock.yaml ]; then npm install -g pnpm && pnpm install --frozen-lockfile; \
-    elif [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-    elif [ -f package-lock.json ]; then npm ci; \
-    else echo "Lockfile not found." && exit 1; \
+# Install dependencies based on available lockfile
+RUN \
+    if [ -f pnpm-lock.yaml ]; then \
+    corepack enable pnpm && pnpm install --frozen-lockfile; \
+    elif [ -f yarn.lock ]; then \
+    corepack enable && yarn --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then \
+    npm ci --legacy-peer-deps; \
+    else \
+    echo "❌ Lockfile not found." && exit 1; \
     fi
 
-# Build artefacts
+# =============================================================================
+# STAGE 3: BUILDER
+# Build NestJS application and prune dev dependencies
+# =============================================================================
 FROM base AS builder
+
 WORKDIR /app
 
+# Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages ./packages
+
+# Copy all source files
 COPY . .
 
-# Ensure Nest CLI available during build
+# Install NestJS CLI globally for build
 RUN npm install -g @nestjs/cli
 
-# Generate Prisma client for types/runtime
+# Generate Prisma client (required for types and runtime)
 RUN npx prisma generate
 
-# Build shared types then API
+# Build shared-types package first (dependency of API)
 RUN cd packages/shared-types && npm run build
+
+# Build NestJS API
 RUN npm run api:build
 
-# Prune to production dependencies only
+# Log build completion
+RUN echo "==========================================" && \
+    echo "✅ NestJS API Build Complete" && \
+    echo "==========================================="
+
+# Prune dev dependencies for smaller production image
 RUN npm prune --omit=dev
 
-# Runtime image
-FROM base AS runner
+# =============================================================================
+# STAGE 4: RUNNER
+# Minimal production image with only necessary files
+# =============================================================================
+FROM node:20-alpine AS runner
+
 WORKDIR /app
 
+# Production environment
 ENV NODE_ENV=production
 ENV PORT=4000
 
-# Install curl and wget for Coolify healthcheck
-RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends curl wget \
-    && rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies
+# - curl: healthcheck probes
+# - openssl: Prisma runtime requirement
+RUN apk add --no-cache curl openssl
 
-RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nestjs
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
 
-RUN npm install -g prisma
+# Install global tools needed at runtime
+# - prisma: for migrations in production
+# - tsx: for running TypeScript seed scripts
+RUN npm install -g prisma tsx
 
-# Copy production node_modules and compiled artefacts
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
-COPY --from=builder /app/packages/shared-types ./packages/shared-types
-COPY --from=builder /app/apps/api/dist ./dist
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/scripts ./scripts
+# -----------------------------------------------------------------------------
+# Copy production artifacts
+# -----------------------------------------------------------------------------
 
-# Install tsx globally for seed scripts
-RUN npm install -g tsx
+# Node modules (pruned to production only)
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
 
+# Package manifests
+COPY --from=builder --chown=nestjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/package.json ./apps/api/package.json
+
+# Shared types package
+COPY --from=builder --chown=nestjs:nodejs /app/packages/shared-types ./packages/shared-types
+
+# Compiled NestJS application
+COPY --from=builder --chown=nestjs:nodejs /app/apps/api/dist ./dist
+
+# -----------------------------------------------------------------------------
+# IMPORTANT: Copy Prisma schema and seeds for production migrations/seeding
+# -----------------------------------------------------------------------------
+COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/seeds ./seeds
+COPY --from=builder --chown=nestjs:nodejs /app/scripts ./scripts
+
+# Switch to non-root user
 USER nestjs
 
+# Expose API port
 EXPOSE 4000
 
+# Healthcheck for container orchestrators
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:4000/ || exit 1
+
+# Start the NestJS server
 CMD ["node", "dist/main"]

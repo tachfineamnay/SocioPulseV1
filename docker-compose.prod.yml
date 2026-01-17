@@ -1,15 +1,18 @@
 # =============================================================================
-# SOCIOPULSE + MEDICOPULSE - Multi-Tenant Production Docker Compose
-# Same codebase, two brands, one API
+# SOCIOPULSE / MEDICOPULSE - Production Docker Compose
+# Multi-Tenant Stack with Traefik Routing (Coolify Compatible)
 # =============================================================================
 #
-# Usage:
-#   docker-compose -f docker-compose.prod.yml up --build
+# ⚠️  DATABASE: External PostgreSQL managed by Coolify (no postgres service)
 #
-# Endpoints:
-#   - localhost:3000 → SocioPulse (Social/Éducatif) - Teal
-#   - localhost:3001 → MedicoPulse (Médical/Soin) - Rose
-#   - localhost:4000 → API NestJS (shared backend)
+# Usage:
+#   docker-compose -f docker-compose.prod.yml up --build -d
+#
+# Domains:
+#   - api.sociopulse.fr      → API NestJS
+#   - sociopulse.fr          → SocioPulse Frontend
+#   - dash.sociopulse.fr     → SocioPulse Dashboard
+#   - medicopulse.fr         → MedicoPulse Frontend
 #
 # =============================================================================
 
@@ -17,54 +20,64 @@ version: '3.8'
 
 services:
   # ===========================================================================
-  # DATABASE - PostgreSQL (shared)
-  # ===========================================================================
-  postgres:
-    image: postgres:15-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-sociopulse}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # ===========================================================================
-  # API - NestJS Backend (shared by both frontends)
+  # SERVICE 1: API - NestJS Backend (shared by both frontends)
   # ===========================================================================
   api:
     container_name: pulse-api
     build:
       context: .
       dockerfile: Dockerfile.api
-    restart: always
+    restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/sociopulse}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
-      PORT: 4000
-      NODE_ENV: production
-    ports:
-      - "4000:4000"
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL:-https://sociopulse.fr}
+      # Stripe
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      # LiveKit
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      - LIVEKIT_URL=${LIVEKIT_URL}
+      # S3 Storage
+      - S3_BUCKET=${S3_BUCKET}
+      - S3_REGION=${S3_REGION}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      # Email
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - MAIL_FROM=${MAIL_FROM}
+    expose:
+      - "4000"
+    networks:
+      - pulse-network
+    labels:
+      # Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.docker.network=pulse-network"
+      # HTTP Router
+      - "traefik.http.routers.api.rule=Host(`api.sociopulse.fr`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.api.loadbalancer.server.port=4000"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:4000/" ]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
 
   # ===========================================================================
-  # SOCIOPULSE - Frontend (Social/Éducatif)
-  # Port 3000 - Teal theme - EDUC/SOCIAL/HANDICAP/PETITE_ENFANCE
+  # SERVICE 2: SOCIOPULSE-WEB - Frontend (Social/Éducatif)
+  # Theme: Teal - Sectors: EDUC/SOCIAL/HANDICAP/PETITE_ENFANCE
   # ===========================================================================
   sociopulse-web:
     container_name: socio-front
@@ -72,26 +85,45 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_APP_MODE: SOCIAL
-        NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:4000/api/v1}
-    restart: always
+        - NEXT_PUBLIC_APP_MODE=SOCIAL
+        - NEXT_PUBLIC_API_URL=${API_URL:-https://api.sociopulse.fr}
+    restart: unless-stopped
     environment:
-      NODE_ENV: production
-      PORT: 3000
-    ports:
-      - "3000:3000"
+      - NODE_ENV=production
+      - PORT=3000
+    expose:
+      - "3000"
+    networks:
+      - pulse-network
     depends_on:
       api:
         condition: service_healthy
+    labels:
+      # Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.docker.network=pulse-network"
+      # Main domain router (sociopulse.fr)
+      - "traefik.http.routers.sociopulse.rule=Host(`sociopulse.fr`) || Host(`www.sociopulse.fr`)"
+      - "traefik.http.routers.sociopulse.entrypoints=websecure"
+      - "traefik.http.routers.sociopulse.tls=true"
+      - "traefik.http.routers.sociopulse.tls.certresolver=letsencrypt"
+      # Dashboard subdomain router (dash.sociopulse.fr)
+      - "traefik.http.routers.sociopulse-dash.rule=Host(`dash.sociopulse.fr`)"
+      - "traefik.http.routers.sociopulse-dash.entrypoints=websecure"
+      - "traefik.http.routers.sociopulse-dash.tls=true"
+      - "traefik.http.routers.sociopulse-dash.tls.certresolver=letsencrypt"
+      # Service (shared by both routers)
+      - "traefik.http.services.sociopulse.loadbalancer.server.port=3000"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 5s
 
   # ===========================================================================
-  # MEDICOPULSE - Frontend (Médical/Soin)
-  # Port 3001 - Rose theme - SOIN only
+  # SERVICE 3: MEDICOPULSE-WEB - Frontend (Médical/Soin)
+  # Theme: Rose - Sector: SOIN
   # ===========================================================================
   medicopulse-web:
     container_name: medico-front
@@ -99,33 +131,41 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_APP_MODE: MEDICAL
-        NEXT_PUBLIC_API_URL: ${API_URL:-http://localhost:4000/api/v1}
-    restart: always
+        - NEXT_PUBLIC_APP_MODE=MEDICAL
+        - NEXT_PUBLIC_API_URL=${API_URL:-https://api.sociopulse.fr}
+    restart: unless-stopped
     environment:
-      NODE_ENV: production
-      PORT: 3000
-    ports:
-      - "3001:3000"
+      - NODE_ENV=production
+      - PORT=3000
+    expose:
+      - "3000"
+    networks:
+      - pulse-network
     depends_on:
       api:
         condition: service_healthy
+    labels:
+      # Traefik Configuration
+      - "traefik.enable=true"
+      - "traefik.docker.network=pulse-network"
+      # Main domain router (medicopulse.fr)
+      - "traefik.http.routers.medicopulse.rule=Host(`medicopulse.fr`) || Host(`www.medicopulse.fr`)"
+      - "traefik.http.routers.medicopulse.entrypoints=websecure"
+      - "traefik.http.routers.medicopulse.tls=true"
+      - "traefik.http.routers.medicopulse.tls.certresolver=letsencrypt"
+      # Service
+      - "traefik.http.services.medicopulse.loadbalancer.server.port=3000"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:3000/" ]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 5s
 
 # =============================================================================
-# VOLUMES
-# =============================================================================
-volumes:
-  postgres_data:
-    driver: local
-
-# =============================================================================
-# NETWORKS (optional - for isolation)
+# NETWORKS
 # =============================================================================
 networks:
-  default:
+  pulse-network:
     name: pulse-network
+    external: true # Created by Coolify/Traefik
