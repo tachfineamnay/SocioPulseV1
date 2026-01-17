@@ -1,9 +1,33 @@
+# Dependencies
 node_modules
+
+# Next.js
 .next
-.env
-.DS_Store
-LesExtrasV2/
-*.backup
+out
+
+# Build outputs
 dist/
 *.tsbuildinfo
-sociopulse_seed_2026.json
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Generated files
+sociopulse_seed_*.json
+
+# Legacy/Tools
+LesExtrasV2/
+*.backup
+.qoder/
