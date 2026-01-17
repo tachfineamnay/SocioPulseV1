@@ -67,9 +67,10 @@ export function PublicSmartFeed({
             try {
                 const nextPage = meta.page + 1;
                 const typeParam = viewMode === 'establishment' ? 'profile' : 'mission';
+                const appModeParam = currentBrand.mode; // SOCIAL or MEDICAL
 
                 const response = await fetch(
-                    `/api/v1/wall-feed?page=${nextPage}&limit=10&type=${typeParam}&public=true`
+                    `/api/v1/wall-feed?page=${nextPage}&limit=10&type=${typeParam}&appMode=${appModeParam}`
                 );
 
                 if (!response.ok) throw new Error('Failed to load');

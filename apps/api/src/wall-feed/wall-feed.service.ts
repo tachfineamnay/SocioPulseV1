@@ -7,7 +7,7 @@ import {
     Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { GetFeedDto, FeedItemType, CreatePostDto, CreateServiceDto } from './dto';
+import { GetFeedDto, FeedItemType, CreatePostDto, CreateServiceDto, AppMode } from './dto';
 import { Prisma, Post, ReliefMission, User, Profile, Establishment, Service, PostType, PostCategory, ServiceType, MissionStatus } from '@prisma/client';
 
 type DecodedFeedCursor = {
@@ -162,6 +162,7 @@ export class WallFeedService {
             radiusKm = 50,
             limit = 10,
             page = 1,
+            appMode = AppMode.SOCIAL,
         } = filters;
 
         const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 50);
@@ -181,7 +182,9 @@ export class WallFeedService {
 
         try {
             const shouldFetchPosts = type === FeedItemType.ALL || type === FeedItemType.POST;
-            const shouldFetchServices = type === FeedItemType.ALL || type === FeedItemType.SERVICE;
+            // MedicoPulse (MEDICAL) should NOT show SOCIOLIVE services (ateliers)
+            const shouldFetchServices = (type === FeedItemType.ALL || type === FeedItemType.SERVICE)
+                && appMode !== AppMode.MEDICAL; // Hide services on MedicoPulse
             const shouldFetchMissions = type === FeedItemType.ALL || type === FeedItemType.MISSION;
 
             const [posts, services, missions] = await Promise.all([

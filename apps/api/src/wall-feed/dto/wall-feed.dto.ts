@@ -10,6 +10,11 @@ export enum FeedItemType {
     ALL = 'ALL',
 }
 
+export enum AppMode {
+    SOCIAL = 'SOCIAL',
+    MEDICAL = 'MEDICAL',
+}
+
 // =============================================
 // Pagination Response DTOs
 // =============================================
@@ -103,6 +108,15 @@ export class GetFeedDto {
     @Min(1)
     @Max(50)
     limit?: number = 20;
+
+    @ApiPropertyOptional({
+        enum: AppMode,
+        description: 'Mode de l\'application (SOCIAL=SocioPulse, MEDICAL=MedicoPulse). Filtre les services par marque.',
+        default: AppMode.SOCIAL
+    })
+    @IsOptional()
+    @IsEnum(AppMode)
+    appMode?: AppMode = AppMode.SOCIAL;
 }
 
 export class CreatePostDto {
